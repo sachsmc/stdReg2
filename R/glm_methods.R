@@ -8,6 +8,14 @@
 #' @returns An object of class std. This is basically a list with components estimates and covariance
 #' @examples
 #'
+#' n <- 1000
+#' Z <- rnorm(n)
+#' X <- rnorm(n, mean=Z)
+#' Y <- rbinom(n, 1, prob=(1+exp(X+Z))^(-1))
+#' dd <- data.frame(Z, X, Y)
+#' fit <- glm(formula=Y~X+Z+X*Z, family="binomial", data=dd)
+#' standardize.glm(fit=fit, values = list(X = 0:1))
+#'
 standardize.glm <- function(fit, values, weights) {
 
   if(is.null(fit$data)) {
@@ -37,7 +45,7 @@ standardize.glm <- function(fit, values, weights) {
 
   for(i in 1:nrow(valuesout)){
     data.x <- do.call("transform", c(list(fit$data),
-                                     values[i,,drop = FALSE]))
+                                     valuesout[i,,drop = FALSE]))
 
     pred.x <- predict(object = fit, newdata = data.x)
     predmat[, i] <- fit$family$linkinv(pred.x)
