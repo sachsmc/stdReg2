@@ -1,0 +1,20 @@
+Package: stdReg2
+Type: Package
+Title: Regression Standardization for Causal Inference
+Version: 0.1.0
+Author: Michael C Sachs, Arvid Sjölander, Adam Brand, Erin E Gabriel
+Maintainer: Michael C Sachs <sachsmc@gmail.com>
+Description: Contains functionality for regression standardization. Four 
+      general classes of models are allowed; generalized linear models, 
+      conditional generalized estimating equation models, Cox proportional 
+      hazards models and shared frailty gamma-Weibull models. 
+      Sjolander, A. (2016) <doi:10.1007/s10654-016-0157-3>.
+License: AGPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
