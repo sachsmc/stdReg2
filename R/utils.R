@@ -7,10 +7,10 @@
 #' @param fit.detail Additional information for survival objects, see Details
 #'
 #' @export
-#' @return A list with the bread and meat
-#' @examples
+#' @return A list consisting of the Fisher information matrix (I) and the Score equations (U)
 
-
+globalVariables(".SD")
+globalVariables(".")
 
 sandwich <- function(fit, data, weights, t, fit.detail){
 
@@ -19,19 +19,14 @@ sandwich <- function(fit, data, weights, t, fit.detail){
     weights <- rep(1, n)
 
   if(inherits(x=fit, what="glm")){
-
-    #---meat---
-
+    ## Dispersion parameter = 1. Why?
     m <- expand(model.matrix(fit), rownames(data))
     res <- expand(residuals(fit, type="response"), rownames(data))
     U <- weights*m*res
     U[is.na(U)] <- 0
-
-    #---bread---
-
-    #summary(fit)$cov.unscaled is weighted
+    ## Derive Fisher information matrix from asymptotic covariance matrix (MLE theory)
+    ## NOTE: summary(fit)$cov.unscaled is weighted
     I <- -solve(summary(fit)$cov.unscaled)/n
-
   }
   if(inherits(x=fit, what="ah")){
 
@@ -58,7 +53,6 @@ sandwich <- function(fit, data, weights, t, fit.detail){
     #---bread for regression coefficients---
 
     #vcov(fit) is weighted
-    Icoef <- -solve(vcov(fit))/n
 
     if(missing(t)){
 
@@ -200,3 +194,112 @@ sandwich <- function(fit, data, weights, t, fit.detail){
   return(list(I=I, U=U))
 
 }
+
+##' @importFrom data.table ".N"
+##' @importFrom data.table ".SD"
+aggr <- function(x, clusters){
+  temp <- data.table(x)
+  temp <- as.matrix(temp[, j=lapply(.SD, sum), by=clusters])[, -1]
+}
+
+confintall <- function(object, parm, level=0.95, fun, type="plain", ...){
+
+  est <- do.call(what=fun, args=list(est=object$est))
+  var <- delmet(fun=fun, est=object$est, vcov=object$vcov)
+  ci <- CI(est=est, var=var, CI.type=type, CI.level=level)
+  return(ci)
+}
+
+CI <- function(est, var, CI.type="plain", CI.level=0.95){
+
+  se <- sqrt(var)
+  qqq <- abs(qnorm((1-CI.level)/2))
+
+  if(CI.type=="plain"){
+    lower <- est-qqq*se
+    upper <- est+qqq*se
+  }
+  if(CI.type=="log"){
+    lower <- est*exp(-qqq*se/est)
+    upper <- est*exp(qqq*se/est)
+  }
+
+  ci <- cbind(lower, upper)
+  return(ci)
+
+}
+
+confint.stdCoxph <- confintall
+confint.stdGee <- confintall
+confint.stdGlm <- confintall
+confint.stdParfrailty <- confintall
+
+delmet <- function(fun, est, vcov){
+
+  if(!is.list(vcov)){
+    est <- matrix(est, nrow=1)
+    vcov <- list(vcov)
+  }
+  p <- length(vcov)
+  var <- vector(length=p)
+  for(i in 1:p){
+    gradient <- matrix(grad(func=fun, x=est[i, , drop=FALSE]), nrow=1)
+    var[i] <- gradient%*%vcov[[i]]%*%t(gradient)
+  }
+  return(var)
+
+}
+
+expand <- function(x, names){
+  if(is.vector(x))
+    x <- x[match(names, names(x))]
+  if(is.matrix(x))
+    x <- x[match(names, rownames(x)), , drop=FALSE]
+  return(x)
+}
+
+Hfun <- function(fit, data, fit.detail){
+  if(inherits(x=fit, what="survfit")){
+    #need to use summary(fit), since n.events and n.risk from fit
+    #behave strange when there is left truncation
+    ss <- summary(fit)
+    strata <- ss$strata
+    #n.strata is unweighted
+    n.strata <- summary(strata)
+    K <- length(n.strata)
+    names.strata <- names(n.strata)
+    time <- ss$time
+    #n.event and n.risk are weighted
+    n.event <- ss$n.event
+    n.risk <- ss$n.risk
+    dH <- n.event/n.risk
+    H <- list()
+    breaks <- c(0, cumsum(n.strata))
+    for(k in 1:K){
+      incl <- (breaks[k]+1):breaks[k+1]
+      H[[k]] <- stepfun(time[incl], c(0, cumsum(dH[incl])))
+    }
+    names(H) <- names.strata
+  }
+  if(inherits(x=fit, what="coxph")){
+    time <- fit.detail$time
+    #dH is weighted
+    dH <- fit.detail$hazard
+    H <- stepfun(time, c(0, cumsum(dH)))
+  }
+
+  return(H)
+}
+
+is.binary <- function(v){
+
+  if(is.numeric(v) & all(v==0 | v==1, na.rm=TRUE))
+    TRUE
+  else
+    FALSE
+
+}
+
+logit <- function(x) log(x)-log(1-x)
+
+odds <- function(x) x/(1-x)

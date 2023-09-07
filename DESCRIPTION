@@ -13,9 +13,12 @@ Description: Contains more modern tools for causal inference using regression
 License: AGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
+Imports:
+    data.table
 Suggests: 
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+RoxygenNote: 7.2.3
