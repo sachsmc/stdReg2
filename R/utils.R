@@ -6,14 +6,9 @@
 #' @param t Optional fixed time point for survival objects
 #' @param fit.detail Additional information for survival objects, see Details
 #'
-#' @export
 #' @return A list consisting of the Fisher information matrix (I) and the Score equations (U)
-
-globalVariables(".SD")
-globalVariables(".")
-
+#' @export sandwich
 sandwich <- function(fit, data, weights, t, fit.detail){
-
   n <- nrow(data)
   if(missing(weights))
     weights <- rep(1, n)
