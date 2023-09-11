@@ -27,7 +27,7 @@
 #' @references Gabriel E.E., Sachs, M.C., Martinussen T., Waernbaum I., Goetghebeur E., Vansteelandt S., Sjolander A. (????), Inverse probability of treatment weighting with generalized linear outcome models for doubly robust estimation. ????
 #' @examples
 #'
-#' # basic example
+#' # basic example (needs to correctly specify the outcome model and there to be no unmeasered confounders)
 #' set.seed(6)
 #' n <- 100
 #' Z <- rnorm(n)
@@ -41,6 +41,7 @@
 #' summary(x,reference = "0",contrast="ratio")
 #'
 #' # example from Sjolander (2016) with case-control data
+#' # here the matching variable needs to be passed as an argument
 #' library(AF)
 #' data("singapore")
 #' Mi <- singapore$Age
@@ -54,7 +55,9 @@
 #'                matched.density.controls = function(x) dnorm(x, m-d,s), matching.variable = Mi,
 #'                p.population = 19.3/100000)
 #'
-#' # doubly robust estimator
+#' # doubly robust estimator (needs to correctly specify either the outcome model or the exposure model
+#' # and there to be no unmeasered confounders)
+#' # NOTE: only works with binary exposures
 #' library(AF)
 #' data<- AF::clslowbwt
 #' x<-standardize_glm(formula.outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),
@@ -277,6 +280,7 @@ standardize_glm <- function(formula.outcome,
     ## Variance estimation based on Appendix of ????
 
     ## refit using unweighted estimating equations for variance estimation
+    ## why do we have to do this? and even so, why aren't the estimates from the weighted regression used in unweighted fits?
     fit.outcome.unweighted <- glm(formula.outcome, family = family.outcome, data = data)
     est1 <- predict(fit.outcome.unweighted, newdata = data.exposure1, type = "response")
     est0 <- predict(fit.outcome.unweighted, newdata = data.exposure0, type = "response")
@@ -287,7 +291,7 @@ standardize_glm <- function(formula.outcome,
 
     ## IF for the parametric models
     if.exposure <- t(vcov(fit.exposure) %*% t(sandwich::estfun(fit.exposure)))
-    if.outcome <- t(vcov(fit.outcome) %*% t(sandwich::estfun(fit.outcome.unweighted)))
+    if.outcome <- t(vcov(fit.outcome) %*% t(sandwich::estfun(fit.outcome.unweighted))) ## we don't want the weights in the influence function for the logistic regression (?)
 
     eifterms1 <- (exposure / g.weights * (outcome - est1) +
                     (est1 - standardized.estimate1)) / n
@@ -302,6 +306,7 @@ standardize_glm <- function(formula.outcome,
                                 (outcome - est1), nrow = 1, ncol = n) %*% model.matrix.exposure
     Kterm0 <- (1/n) * matrix((((1 - exposure) * gdot) / (1 - g.weights)^2) *
                                (outcome - est0), nrow = 1, ncol = n) %*% model.matrix.exposure
+    ## NOTE: we clearly have to use the unweighted outcome fits, so that the Lterms correspond with the one in the article
     Lterm1 <- (1/ n) * matrix(rdot1 * (1 - exposure/g.weights),
                               nrow = 1, ncol = n) %*% model.matrix.outcome.exposed
     Lterm0 <- (1/ n) * matrix(rdot0 * ((1 - exposure)/(1 - g.weights) - 1),
@@ -434,7 +439,7 @@ summary.stdGLM <- function(object, CI.type="plain", CI.level=0.95,
 print.summary.stdGLM <- function(x, ...){
   cat("\nExposure formula: ")
   print(x$fit.exposure$formula)
-  cat("Outcome link function:",  x$fit.exposure$family$link,  "\n")
+  cat("Exposure link function:",  x$fit.exposure$family$link,  "\n")
   cat("Outcome formula: ")
   print(x$fit.outcome$formula)
   cat("Outcome family:",  x$fit.outcome$family$family,  "\n")
