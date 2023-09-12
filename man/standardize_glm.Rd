@@ -8,8 +8,8 @@ standardize_glm(
   formula.outcome,
   formula.exposure = NULL,
   data,
-  family.outcome = gaussian,
-  family.exposure = binomial,
+  family.outcome = "gaussian",
+  family.exposure = "binomial",
   values,
   clusterid,
   case.control = FALSE,
@@ -44,7 +44,7 @@ at which marginal means of the outcome will be estimated.}
 
 \item{matching.variable}{The matching variable extracted from the data set.}
 
-\item{p.poulation}{Specifies the incidence in the population when \code{case.control=TRUE}.}
+\item{p.population}{Specifies the incidence in the population when \code{case.control=TRUE}.}
 }
 \value{
 An object of class stdGLM. This is basically a list with components estimates and covariance estimates.
@@ -64,19 +64,25 @@ and the outer expectation is over the marginal distribution of \eqn{Z}.
 \examples{
 
 # basic example
+# needs to correctly specify the outcome model and no unmeasered confounders
+# (+ standard causal assunmptions)
 set.seed(6)
 n <- 100
 Z <- rnorm(n)
 X <- rnorm(n, mean=Z)
 Y <- rbinom(n, 1, prob=(1+exp(X+Z))^(-1))
 dd <- data.frame(Z, X, Y)
-x <- standardize_glm(formula.outcome=Y~X*Z,family.outcome="binomial", data=dd, values = list(X = 0:1))
+x <- standardize_glm(formula.outcome=Y~X*Z,
+                     family.outcome="binomial",
+                     data=dd,
+                     values = list(X = 0:1))
 x
 # different transformations of causal effects
 summary(x,reference = "0",contrast="difference")
 summary(x,reference = "0",contrast="ratio")
 
 # example from Sjolander (2016) with case-control data
+# here the matching variable needs to be passed as an argument
 library(AF)
 data("singapore")
 Mi <- singapore$Age
@@ -91,12 +97,15 @@ standardize_glm(formula.outcome = Oesophagealcancer~(Everhotbev+Age+ Dial+Samsu+
                p.population = 19.3/100000)
 
 # doubly robust estimator
+# needs to correctly specify either the outcome model or the exposure model
+# and no unmeasered confounders
+# NOTE: only works with binary exposures
 library(AF)
 data<- AF::clslowbwt
 x<-standardize_glm(formula.outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),
                    formula.exposure = smoker ~ race * age * lwt + I(age^2) + I(lwt^2),
-                   family.outcome = gaussian,
-                   family.exposure = binomial,
+                   family.outcome = "gaussian",
+                   family.exposure = "binomial",
                    data = data,
                    values = list(smoker = c(0,1)))
 summary(x,contrast="difference",reference = 0)
@@ -109,7 +118,9 @@ X1 <- rnorm(n, mean=Z)
 X2 <- rnorm(n)
 Y <- rbinom(n, 1, prob=(1+exp(X1+X2+Z))^(-1))
 dd <- data.frame(Z, X1,X2, Y)
-x<-standardize_glm(formula.outcome =Y~X1+X2+Z,family.outcome ="binomial", data=dd, values = list(X1 = 0:1, X2= 0:1))
+x<-standardize_glm(formula.outcome =Y~X1+X2+Z,
+                   family.outcome ="binomial",
+                   data=dd, values = list(X1 = 0:1, X2= 0:1))
 summary(x,reference = "0, 0",contrast="difference")
 summary(x,reference = "0, 0",contrast="ratio")
 
@@ -120,7 +131,10 @@ Z <- rnorm(n)
 X <- rnorm(n, mean=Z)
 Y <- rnorm(n, mean=X+Z+0.1*X^2)
 dd <- data.frame(Z, X, Y)
-x <- standardize_glm(formula.outcome=Y~X*Z,family.outcome=gaussian, data=dd, values = list(X = seq(-1,1,0.1)))
+x <- standardize_glm(formula.outcome=Y~X*Z,
+                     family.outcome="gaussian",
+                     data=dd,
+                     values = list(X = seq(-1,1,0.1)))
 
 # plot standardized mean as a function of x
 plot(x)

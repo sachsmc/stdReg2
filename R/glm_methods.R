@@ -9,7 +9,7 @@
 #'               at which marginal means of the outcome will be estimated.
 #' @param clusterid An optional string containing the name of a cluster identification variable when data are clustered.
 #' @param case.control \code{logical}. Whether the data comes from a case-control study.
-#' @param p.poulation Specifies the incidence in the population when \code{case.control=TRUE}.
+#' @param p.population Specifies the incidence in the population when \code{case.control=TRUE}.
 #' @param matched.density.cases A function of the matching variable. The probability (or density) of the matched variable among the cases.
 #' @param matched.density.controls A function of the matching variable. The probability (or density) of the matched variable among the controls.
 #' @param matching.variable The matching variable extracted from the data set.
@@ -27,14 +27,19 @@
 #' @references Gabriel E.E., Sachs, M.C., Martinussen T., Waernbaum I., Goetghebeur E., Vansteelandt S., Sjolander A. (????), Inverse probability of treatment weighting with generalized linear outcome models for doubly robust estimation. ????
 #' @examples
 #'
-#' # basic example (needs to correctly specify the outcome model and there to be no unmeasered confounders)
+#' # basic example
+#' # needs to correctly specify the outcome model and no unmeasered confounders
+#' # (+ standard causal assunmptions)
 #' set.seed(6)
 #' n <- 100
 #' Z <- rnorm(n)
 #' X <- rnorm(n, mean=Z)
 #' Y <- rbinom(n, 1, prob=(1+exp(X+Z))^(-1))
 #' dd <- data.frame(Z, X, Y)
-#' x <- standardize_glm(formula.outcome=Y~X*Z,family.outcome="binomial", data=dd, values = list(X = 0:1))
+#' x <- standardize_glm(formula.outcome=Y~X*Z,
+#'                      family.outcome="binomial",
+#'                      data=dd,
+#'                      values = list(X = 0:1))
 #' x
 #' # different transformations of causal effects
 #' summary(x,reference = "0",contrast="difference")
@@ -55,15 +60,16 @@
 #'                matched.density.controls = function(x) dnorm(x, m-d,s), matching.variable = Mi,
 #'                p.population = 19.3/100000)
 #'
-#' # doubly robust estimator (needs to correctly specify either the outcome model or the exposure model
-#' # and there to be no unmeasered confounders)
+#' # doubly robust estimator
+#' # needs to correctly specify either the outcome model or the exposure model
+#' # and no unmeasered confounders
 #' # NOTE: only works with binary exposures
 #' library(AF)
 #' data<- AF::clslowbwt
 #' x<-standardize_glm(formula.outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),
 #'                    formula.exposure = smoker ~ race * age * lwt + I(age^2) + I(lwt^2),
-#'                    family.outcome = gaussian,
-#'                    family.exposure = binomial,
+#'                    family.outcome = "gaussian",
+#'                    family.exposure = "binomial",
 #'                    data = data,
 #'                    values = list(smoker = c(0,1)))
 #' summary(x,contrast="difference",reference = 0)
@@ -76,7 +82,9 @@
 #' X2 <- rnorm(n)
 #' Y <- rbinom(n, 1, prob=(1+exp(X1+X2+Z))^(-1))
 #' dd <- data.frame(Z, X1,X2, Y)
-#' x<-standardize_glm(formula.outcome =Y~X1+X2+Z,family.outcome ="binomial", data=dd, values = list(X1 = 0:1, X2= 0:1))
+#' x<-standardize_glm(formula.outcome =Y~X1+X2+Z,
+#'                    family.outcome ="binomial",
+#'                    data=dd, values = list(X1 = 0:1, X2= 0:1))
 #' summary(x,reference = "0, 0",contrast="difference")
 #' summary(x,reference = "0, 0",contrast="ratio")
 #'
@@ -87,20 +95,22 @@
 #' X <- rnorm(n, mean=Z)
 #' Y <- rnorm(n, mean=X+Z+0.1*X^2)
 #' dd <- data.frame(Z, X, Y)
-#' x <- standardize_glm(formula.outcome=Y~X*Z,family.outcome=gaussian, data=dd, values = list(X = seq(-1,1,0.1)))
+#' x <- standardize_glm(formula.outcome=Y~X*Z,
+#'                      family.outcome="gaussian",
+#'                      data=dd,
+#'                      values = list(X = seq(-1,1,0.1)))
 #'
 #' # plot standardized mean as a function of x
 #' plot(x)
 #' # plot standardized mean - standardized mean at x = 0 as a function of x
 #' plot(x,reference = 0)
 #'
-#' @importFrom stats glm
 #' @export standardize_glm
 standardize_glm <- function(formula.outcome,
                             formula.exposure = NULL,
                             data,
-                            family.outcome = gaussian,
-                            family.exposure = binomial,
+                            family.outcome = "gaussian",
+                            family.exposure = "binomial",
                             values, clusterid,
                             case.control=FALSE,
                             matched.density.cases,
@@ -144,12 +154,14 @@ standardize_glm <- function(formula.outcome,
       stop("there has to be only one exposure with the doubly robust estimator")
     }
     ## Check that exposure is binary
-    if (!(identical(family.exposure,binomial)) || !is.binary(exposure) || nrow(valuesout) != 2){
+    if (inherits(family.exposure,"function") && !(identical(family.exposure,binomial))
+        || (inherits(family.exposure,"characters") && family.exposure!="binomial")
+        || !is.binary(exposure) || nrow(valuesout) != 2){
       stop("the exposure has to be binary (0/1)")
     }
 
     fit.exposure <- tryCatch({
-      stats::glm(formula=formula.exposure,data=data,family=family.exposure)
+      glm(formula=formula.exposure,data=data,family=family.exposure)
     },
     error = function(cond) {
       return(cond)
@@ -182,7 +194,7 @@ standardize_glm <- function(formula.outcome,
   data$weights <- weights
   ## try fitting a glm model
   fit.outcome <- tryCatch({
-    stats::glm(formula=formula.outcome,data=data,family=family.outcome, weights=weights)
+    glm(formula=formula.outcome,data=data,family=family.outcome, weights=weights)
   },
   error = function(cond) {
     return(cond)
@@ -329,6 +341,7 @@ standardize_glm <- function(formula.outcome,
   structure(list(estimates = valuesout, covariance = variance, fit.outcome=fit.outcome, fit.exposure=fit.exposure, exposure.names = exposure.names),
             class = "stdGLM")
 }
+
 #' @title Summarizes GLM regression standardization fit
 #' @param object An object of class \code{"stdGLM"}
 #' @param CI.type A string, indicating the type of confidence intervals. Either "plain", which
@@ -344,6 +357,7 @@ standardize_glm <- function(formula.outcome,
 #' level specified by the \code{reference} argument.
 #' If not \code{NULL}, a doubly robust estimator of the standardized estimator is used.
 #' @param reference If \code{contrast} is specified, the desired reference level.
+#' @param \dots Unused.
 #' @description
 #' This is a \code{summary} method for class \code{"stdGLM"}.
 #' @examples
@@ -352,7 +366,7 @@ standardize_glm <- function(formula.outcome,
 #' @export summary.stdGLM
 #' @export
 summary.stdGLM <- function(object, CI.type="plain", CI.level=0.95,
-                           transform=NULL, contrast=NULL, reference=NULL, ...){
+                           transform=NULL, contrast=NULL, reference=NULL,...){
   est.old.table <- object$estimates
   est <- est.old.table$estimates
   V <- as.matrix(object$covariance)
@@ -432,7 +446,7 @@ summary.stdGLM <- function(object, CI.type="plain", CI.level=0.95,
 
 #' @title Prints summary of GLM regression standardization fit
 #' @param x an object of class \code{"summary.stdGLM"}.
-#' @param ... unused
+#' @param \dots unused
 #' @rdname print
 #' @export print.summary.stdGLM
 #' @export
@@ -478,6 +492,7 @@ print.stdGLM <- function(x, ...){
 #' level specified by the \code{reference} argument.
 #' If not \code{NULL}, a doubly robust estimator of the standardized estimator is used.
 #' @param reference If \code{contrast} is specified, the desired reference level.
+#' @param \dots Unused.
 #' @examples
 #' # see standardize_glm
 #'
@@ -485,7 +500,7 @@ print.stdGLM <- function(x, ...){
 #' @export plot.stdGLM
 #' @export
 plot.stdGLM <- function(x, CI.type="plain", CI.level=0.95,
-                        transform=NULL, contrast=NULL, reference=NULL, ...){
+                        transform=NULL, contrast=NULL, reference=NULL,...){
   object <- x
   x <- object$estimates[,x$exposure.names]
 

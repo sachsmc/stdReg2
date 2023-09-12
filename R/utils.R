@@ -48,6 +48,7 @@ sandwich <- function(fit, data, weights, t, fit.detail){
     #---bread for regression coefficients---
 
     #vcov(fit) is weighted
+    Icoef <- -solve(vcov(fit))/n
 
     if(missing(t)){
 
@@ -190,8 +191,6 @@ sandwich <- function(fit, data, weights, t, fit.detail){
 
 }
 
-##' @importFrom data.table ".N"
-##' @importFrom data.table ".SD"
 aggr <- function(x, clusters){
   temp <- data.table(x)
   temp <- as.matrix(temp[, j=lapply(.SD, sum), by=clusters])[, -1]
