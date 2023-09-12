@@ -104,16 +104,16 @@ This is a \code{summary} method for class \code{"stdParfrailty"}.
 }
 \examples{
 
-##See documentation for stdCoxph
+## See documentation for stdCoxph
 
 
-##See documentation for stdGee
+## See documentation for stdGee
 
 # see standardize_glm
-##See documentation for parfrailty
+## See documentation for parfrailty
 
 
-##See documentation for stdParfrailty
+## See documentation for stdParfrailty
 
 }
 \seealso{

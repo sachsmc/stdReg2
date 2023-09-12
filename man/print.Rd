@@ -50,17 +50,17 @@ This is a \code{print} method for class \code{"summary.stdParfrailty"}.
 \examples{
 
 
-##See documentation for stdCoxph
+## See documentation for stdCoxph
 
 
-##See documentation for stdGee
+## See documentation for stdGee
 
 
-##See documentation for frailty
+## See documentation for frailty
 
 
 
-##See documentation for stdParfrailty
+## See documentation for stdParfrailty
 
 }
 \seealso{

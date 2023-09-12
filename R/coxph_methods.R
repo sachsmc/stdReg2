@@ -108,82 +108,90 @@
 #' set.seed(7)
 #' n <- 300
 #' Z <- rnorm(n)
-#' X <- rnorm(n, mean=Z)
-#' T <- rexp(n, rate=exp(X+Z+X*Z)) #survival time
-#' C <- rexp(n, rate=exp(X+Z+X*Z)) #censoring time
-#' U <- pmin(T, C) #time at risk
-#' D <- as.numeric(T < C) #event indicator
+#' X <- rnorm(n, mean = Z)
+#' T <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
+#' C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
+#' U <- pmin(T, C) # time at risk
+#' D <- as.numeric(T < C) # event indicator
 #' dd <- data.frame(Z, X, U, D)
-#' fit <- coxph(formula=Surv(U, D)~X+Z+X*Z, data=dd, method="breslow")
-#' fit.std <- stdCoxph(fit=fit, data=dd, X="X", x=seq(-1,1,0.5), t=1:5)
-#' print(summary(fit.std, t=3))
+#' fit <- coxph(formula = Surv(U, D) ~ X + Z + X * Z, data = dd, method = "breslow")
+#' fit.std <- stdCoxph(fit = fit, data = dd, X = "X", x = seq(-1, 1, 0.5), t = 1:5)
+#' print(summary(fit.std, t = 3))
 #' plot(fit.std)
 #'
 #' @export stdCoxph
-stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew){
+stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
   call <- match.call()
 
   #---PREPARATION---
-  if(!fit$method=="breslow")
-    stop("Only breslow method for handling ties is allowed.", call.=FALSE)
-  specials <- pmatch(c("strata(","cluster(","tt("), attr(terms(fit$formula),
-                                                         "variables"))
-  if(any(!is.na(specials)))
+  if (!fit$method == "breslow") {
+    stop("Only breslow method for handling ties is allowed.", call. = FALSE)
+  }
+  specials <- pmatch(c("strata(", "cluster(", "tt("), attr(
+    terms(fit$formula),
+    "variables"
+  ))
+  if (any(!is.na(specials))) {
     stop("No special terms are allowed in the formula")
+  }
 
   formula <- fit$formula
   npar <- length(fit$coef)
-  fit.detail <- coxph.detail(object=fit)
+  fit.detail <- coxph.detail(object = fit)
 
-  #Delete rows that did not contribute to the model fit,
-  #e.g. missing data or not in subset for fit.
-  #Need to have object=fit in model.matrix, since neither object=formula nor
-  #object=terms(fit) will remove rows not in subset.
-  m <- model.matrix(object=fit)
+  # Delete rows that did not contribute to the model fit,
+  # e.g. missing data or not in subset for fit.
+  # Need to have object=fit in model.matrix, since neither object=formula nor
+  # object=terms(fit) will remove rows not in subset.
+  m <- model.matrix(object = fit)
   data <- data[match(rownames(m), rownames(data)), ]
   n <- nrow(data)
 
-  #Make new subset if supplied.
+  # Make new subset if supplied.
   subsetnew <-
-    if(missing(subsetnew))
+    if (missing(subsetnew)) {
       rep(1, n)
-  else
-    as.numeric(eval(substitute(subsetnew), data, parent.frame()))
+    } else {
+      as.numeric(eval(substitute(subsetnew), data, parent.frame()))
+    }
   input <- as.list(environment())
 
-  if(is.null(fit$weights))
+  if (is.null(fit$weights)) {
     weights <- rep(1, nrow(data))
-  else
+  } else {
     weights <- fit$weights
-
-  #Can write code more generally with
-  #if(missing(clusters)) clusters <- 1:nrow(data)
-  #but a problem when constructing meat in sandwich formula:
-  #must always aggregate, which is a bit slow, even though much faster
-  #when using data.table than the aggregate function.
-  if(!missing(clusterid))
-    ncluster <- length(unique(data[, clusterid]))
-
-  #Assign values to x and reference if not supplied.
-  #Make sure x is a factor if data[, X] is a factor
-  #with the same levels as data[, X].
-  if(missing(x)){
-    if(is.factor(data[, X]))
-      x <- as.factor(levels(data[, X]))
-    if(is.numeric(data[, X]))
-      if(is.binary(data[, X]))
-        x <- c(0, 1)
-    else
-      x <- round(mean(data[, X], na.rm=TRUE), 2)
   }
-  else{
-    if(is.factor(x)){
+
+  # Can write code more generally with
+  # if(missing(clusters)) clusters <- 1:nrow(data)
+  # but a problem when constructing meat in sandwich formula:
+  # must always aggregate, which is a bit slow, even though much faster
+  # when using data.table than the aggregate function.
+  if (!missing(clusterid)) {
+    ncluster <- length(unique(data[, clusterid]))
+  }
+
+  # Assign values to x and reference if not supplied.
+  # Make sure x is a factor if data[, X] is a factor
+  # with the same levels as data[, X].
+  if (missing(x)) {
+    if (is.factor(data[, X])) {
+      x <- as.factor(levels(data[, X]))
+    }
+    if (is.numeric(data[, X])) {
+      if (is.binary(data[, X])) {
+        x <- c(0, 1)
+      } else {
+        x <- round(mean(data[, X], na.rm = TRUE), 2)
+      }
+    }
+  } else {
+    if (is.factor(x)) {
       temp <- x
       levels(x) <- levels(data[, X])
       x[1:length(x)] <- temp
-    }
-    else{
-      if(is.factor(data[, X])){
+    } else {
+      if (is.factor(data[, X])) {
         x <- factor(x)
         temp <- x
         levels(x) <- levels(data[, X])
@@ -194,85 +202,91 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew){
   input$x <- x
   nX <- length(x)
 
-  #Assign value to t if missing.
-  if(missing(t))
+  # Assign value to t if missing.
+  if (missing(t)) {
     t <- fit.detail$time
+  }
   input$t <- t
   nt <- length(t)
 
-  if(sum(fit.detail$time<=min(t))==0)
-    stop("No events before first value in t", call.=FALSE)
+  if (sum(fit.detail$time <= min(t)) == 0) {
+    stop("No events before first value in t", call. = FALSE)
+  }
 
-  est <- matrix(nrow=nt, ncol=nX)
-  vcov <- vector(mode="list", length=nt)
-  H <- Hfun(fit=fit, data=data, fit.detail=fit.detail)
-  sandwich.fit <- sandwich(fit=fit, data=data, weights=weights, t=t,
-                           fit.detail=fit.detail)
+  est <- matrix(nrow = nt, ncol = nX)
+  vcov <- vector(mode = "list", length = nt)
+  H <- Hfun(fit = fit, data = data, fit.detail = fit.detail)
+  sandwich.fit <- sandwich(
+    fit = fit, data = data, weights = weights, t = t,
+    fit.detail = fit.detail
+  )
 
   #---LOOP OVER nt
 
-  for(j in 1:nt){
-
-    if(t[j]==0){
+  for (j in 1:nt) {
+    if (t[j] == 0) {
       est[j, ] <- 1
-      vcov[[j]] <- matrix(0, nrow=nX, ncol=nX)
-    }
-    else{
-
+      vcov[[j]] <- matrix(0, nrow = nX, ncol = nX)
+    } else {
       #---ESTIMATES OF SURVIVAL PROBABILITIES AT VALUES SPECIFIED BY x ---
 
-      si <- matrix(nrow=n, ncol=nX)
-      PredX <- matrix(nrow=n, ncol=nX)
-      tempmat <- matrix(nrow=nX, ncol=npar)
-      for(i in 1:nX){
+      si <- matrix(nrow = n, ncol = nX)
+      PredX <- matrix(nrow = n, ncol = nX)
+      tempmat <- matrix(nrow = nX, ncol = npar)
+      for (i in 1:nX) {
         data.x <- data
-        if(!is.na(x[i]))
+        if (!is.na(x[i])) {
           data.x[, X] <- x[i]
-        predX <- predict(object=fit, newdata=data.x, type="risk")
-        si[, i] <- exp(-H(t[j])*predX)
+        }
+        predX <- predict(object = fit, newdata = data.x, type = "risk")
+        si[, i] <- exp(-H(t[j]) * predX)
         PredX[, i] <- predX
-        #Need terms(fit) here. If formula contains splines,
-        #then fit or formula will not work when no variation in the exposure,
-        #since model.matrix need to retrieve Boundary.knots from terms(fit).
-        #Also need to center, since everything else is centered.
-        #Note: need to center at factual X, not counterfactual x,
-        #since baseline is computed at mean of factual X.
-        m.x <- model.matrix(object=terms(fit), data=data.x)[, -1, drop=FALSE]
-        m <- model.matrix(object=terms(fit), data=data)[, -1, drop=FALSE]
-        m <- matrix(colMeans(m), nrow=nrow(m), ncol=ncol(m), byrow=TRUE)
-        m.x <- m.x-m
-        tempmat[i, ] <- colMeans(m.x*predX*si[, i]*subsetnew*weights)
+        # Need terms(fit) here. If formula contains splines,
+        # then fit or formula will not work when no variation in the exposure,
+        # since model.matrix need to retrieve Boundary.knots from terms(fit).
+        # Also need to center, since everything else is centered.
+        # Note: need to center at factual X, not counterfactual x,
+        # since baseline is computed at mean of factual X.
+        m.x <- model.matrix(object = terms(fit), data = data.x)[, -1, drop = FALSE]
+        m <- model.matrix(object = terms(fit), data = data)[, -1, drop = FALSE]
+        m <- matrix(colMeans(m), nrow = nrow(m), ncol = ncol(m), byrow = TRUE)
+        m.x <- m.x - m
+        tempmat[i, ] <- colMeans(m.x * predX * si[, i] * subsetnew * weights)
       }
-      est[j, ] <- colSums(subsetnew*weights*si, na.rm=TRUE)/
-        sum(subsetnew*weights)
+      est[j, ] <- colSums(subsetnew * weights * si, na.rm = TRUE) /
+        sum(subsetnew * weights)
 
       #---VARIANCE OF SURVIVAL PROBABILITIES AT VALUES SPECIFIED BY x, ---
 
-      sres <- subsetnew*weights*(si-matrix(rep(est[j, ], each=n), nrow=n, ncol=nX))
-      ores <- sandwich.fit$U[, c(1:npar, npar+j)]
+      sres <- subsetnew * weights * (si - matrix(rep(est[j, ], each = n), nrow = n, ncol = nX))
+      ores <- sandwich.fit$U[, c(1:npar, npar + j)]
       res <- cbind(sres, ores)
-      if(!missing(clusterid))
-        res <- aggr(x=res, clusters=data[, clusterid])
-      J <- var(res, na.rm=TRUE)
-      SI <- cbind(-diag(nX)*mean(subsetnew*weights), -tempmat*H(t[j]),
-                  -colMeans(PredX*si*subsetnew*weights))
-      #This is why the user cannot use term cluster; then -solve(vcov(object=fit))/n
-      #will not be the bread in the sandwich.
-      oI <- cbind(matrix(0, nrow=npar+1, ncol=nX),
-                  sandwich.fit$I[c(1:npar, npar+j), c(1:npar, npar+j)])
+      if (!missing(clusterid)) {
+        res <- aggr(x = res, clusters = data[, clusterid])
+      }
+      J <- var(res, na.rm = TRUE)
+      SI <- cbind(
+        -diag(nX) * mean(subsetnew * weights), -tempmat * H(t[j]),
+        -colMeans(PredX * si * subsetnew * weights)
+      )
+      # This is why the user cannot use term cluster; then -solve(vcov(object=fit))/n
+      # will not be the bread in the sandwich.
+      oI <- cbind(
+        matrix(0, nrow = npar + 1, ncol = nX),
+        sandwich.fit$I[c(1:npar, npar + j), c(1:npar, npar + j)]
+      )
       I <- rbind(SI, oI)
 
-      if(missing(clusterid))
-        V <- (solve(I)%*%J%*%t(solve(I))/n)[1:nX, 1:nX]
-      else
-        V <- (solve(I)%*%J%*%t(solve(I))*ncluster/n^2)[1:nX, 1:nX]
+      if (missing(clusterid)) {
+        V <- (solve(I) %*% J %*% t(solve(I)) / n)[1:nX, 1:nX]
+      } else {
+        V <- (solve(I) %*% J %*% t(solve(I)) * ncluster / n^2)[1:nX, 1:nX]
+      }
       vcov[[j]] <- V
-
     }
-
   }
 
-  out <- list(call=call, input=input, est=est, vcov=vcov)
+  out <- list(call = call, input = input, est = est, vcov = vcov)
 
   #---OUTPUT---
 
@@ -309,88 +323,99 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew){
 #' @seealso \code{\link{stdCoxph}}
 #' @examples
 #'
-#' ##See documentation for stdCoxph
+#' ## See documentation for stdCoxph
 #'
 #' @rdname summary
 #' @export summary.stdCoxph
 #' @export
-summary.stdCoxph <- function(object, t, CI.type="plain", CI.level=0.95,
-                             transform=NULL, contrast=NULL, reference=NULL, ...){
-
+summary.stdCoxph <- function(object, t, CI.type = "plain", CI.level = 0.95,
+                             transform = NULL, contrast = NULL, reference = NULL, ...) {
   est.all <- object$est
   V.all <- object$vcov
   nX <- length(object$input$x)
-  if(missing(t))
+  if (missing(t)) {
     t <- object$input$t
+  }
   nt <- length(t)
 
-  est.table <- vector(mode="list", length=nt)
-  for(j in 1:nt){
-
-    if(min(abs(t[j]-object$input$t)) > sqrt(.Machine$double.eps))
+  est.table <- vector(mode = "list", length = nt)
+  for (j in 1:nt) {
+    if (min(abs(t[j] - object$input$t)) > sqrt(.Machine$double.eps)) {
       stop("The standardized survival function is not estimated at t",
-           call.=FALSE)
-    else
-      k <- which.min(abs(t[j]-object$input$t))
+        call. = FALSE
+      )
+    } else {
+      k <- which.min(abs(t[j] - object$input$t))
+    }
 
     est <- est.all[k, ]
     V <- as.matrix(V.all[[k]])
 
-    if(!is.null(transform)){
-      if(transform=="log"){
-        dtransform.dm <- diag(1/est, nrow=nX, ncol=nX)
+    if (!is.null(transform)) {
+      if (transform == "log") {
+        dtransform.dm <- diag(1 / est, nrow = nX, ncol = nX)
         est <- log(est)
       }
-      if(transform=="logit"){
-        dtransform.dm <- diag(1/(est*(1-est)), nrow=nX, ncol=nX)
+      if (transform == "logit") {
+        dtransform.dm <- diag(1 / (est * (1 - est)), nrow = nX, ncol = nX)
         est <- logit(est)
       }
-      if(transform=="odds"){
-        dtransform.dm <- diag(1/(1-est)^2, nrow=nX, ncol=nX)
+      if (transform == "odds") {
+        dtransform.dm <- diag(1 / (1 - est)^2, nrow = nX, ncol = nX)
         est <- odds(est)
       }
-      V <- t(dtransform.dm)%*%V%*%dtransform.dm
+      V <- t(dtransform.dm) %*% V %*% dtransform.dm
     }
 
-    if(!is.null(contrast)){
-      if(is.null(reference))
+    if (!is.null(contrast)) {
+      if (is.null(reference)) {
         stop("When specifying contrast, reference must be specified as well")
+      }
       referencepos <- match(reference, object$input$x)
-      if(is.na(referencepos))
+      if (is.na(referencepos)) {
         stop("reference must be a value in x")
-      if(contrast=="difference"){
+      }
+      if (contrast == "difference") {
         dcontrast.dtransform <- diag(nX)
         dcontrast.dtransform[referencepos, ] <- -1
         dcontrast.dtransform[referencepos, referencepos] <- 0
-        est <- est-est[referencepos]
+        est <- est - est[referencepos]
       }
-      if(contrast=="ratio"){
-        dcontrast.dtransform <- diag(1/est[referencepos], nrow=nX, ncol=nX)
-        dcontrast.dtransform[referencepos, ] <- -est/est[referencepos]^2
+      if (contrast == "ratio") {
+        dcontrast.dtransform <- diag(1 / est[referencepos], nrow = nX, ncol = nX)
+        dcontrast.dtransform[referencepos, ] <- -est / est[referencepos]^2
         dcontrast.dtransform[referencepos, referencepos] <- 1
-        est <- est/est[referencepos]
+        est <- est / est[referencepos]
       }
-      V <- t(dcontrast.dtransform)%*%V%*%dcontrast.dtransform
+      V <- t(dcontrast.dtransform) %*% V %*% dcontrast.dtransform
       V[referencepos, ] <- 0
       V[, referencepos] <- 0
     }
 
     var <- diag(V)
-    se <-  sqrt(var)
-    conf.int <- CI(est=est, var=var, CI.type=CI.type, CI.level=CI.level)
+    se <- sqrt(var)
+    conf.int <- CI(est = est, var = var, CI.type = CI.type, CI.level = CI.level)
 
-    temp <- as.matrix(cbind(est, se, conf.int), nrow=length(est), ncol=4)
-    dimnames(temp) <- list(object$input$x,
-                           c("Estimate", "Std. Error", paste("lower",CI.level),
-                             paste("upper", CI.level)))
+    temp <- as.matrix(cbind(est, se, conf.int), nrow = length(est), ncol = 4)
+    dimnames(temp) <- list(
+      object$input$x,
+      c(
+        "Estimate", "Std. Error", paste("lower", CI.level),
+        paste("upper", CI.level)
+      )
+    )
     est.table[[j]] <- temp
-
   }
-  if(is.factor(reference))
+  if (is.factor(reference)) {
     reference <- as.character(reference)
-  out <- c(object,
-           list(est.table=est.table, tsum=t, transform=transform, contrast=contrast,
-                reference=reference))
+  }
+  out <- c(
+    object,
+    list(
+      est.table = est.table, tsum = t, transform = transform, contrast = contrast,
+      reference = reference
+    )
+  )
   class(out) <- "summary.stdCoxph"
   return(out)
 }
@@ -398,7 +423,7 @@ summary.stdCoxph <- function(object, t, CI.type="plain", CI.level=0.95,
 #' @rdname print
 #' @export print.stdCoxph
 #' @export
-print.stdCoxph <- function(x, ...){
+print.stdCoxph <- function(x, ...) {
   print(summary(x))
 }
 
@@ -413,27 +438,28 @@ print.stdCoxph <- function(x, ...){
 #' @examples
 #'
 #'
-#' ##See documentation for stdCoxph
+#' ## See documentation for stdCoxph
 #'
 #' @rdname print
 #' @export print.summary.stdCoxph
 #' @export
-print.summary.stdCoxph <- function(x, ...){
+print.summary.stdCoxph <- function(x, ...) {
   nt <- length(x$tsum)
-  for(j in 1:nt){
+  for (j in 1:nt) {
     cat("\nFormula: ")
-    print(x$input$fit$formula, showEnv=FALSE)
+    print(x$input$fit$formula, showEnv = FALSE)
     cat("Exposure: ", x$input$X, "\n")
 
-    if(!is.null(x$transform))
-      cat("Transform: ", x$transform,  "\n")
-    if(!is.null(x$contrast)){
-      cat("Reference level: ", x$input$X, "=", x$reference,  "\n")
-      cat("Contrast: ", x$contrast,  "\n")
+    if (!is.null(x$transform)) {
+      cat("Transform: ", x$transform, "\n")
+    }
+    if (!is.null(x$contrast)) {
+      cat("Reference level: ", x$input$X, "=", x$reference, "\n")
+      cat("Contrast: ", x$contrast, "\n")
     }
     cat("Survival functions evaluated at t =", x$tsum[j], "\n")
     cat("\n")
-    print(x$est.table[[j]], digits=3)
+    print(x$est.table[[j]], digits = 3)
     cat("\n")
   }
 }
@@ -467,14 +493,13 @@ print.summary.stdCoxph <- function(x, ...){
 #' @seealso \code{\link{stdCoxph}}
 #' @examples
 #'
-#' ##See documentation for stdCoxph
+#' ## See documentation for stdCoxph
 #'
 #' @rdname plot
 #' @export plot.stdCoxph
 #' @export
-plot.stdCoxph <- function(x, plot.CI=TRUE, CI.type="plain", CI.level=0.95,
-                          transform=NULL, contrast=NULL, reference=NULL, legendpos="bottomleft", ...){
-
+plot.stdCoxph <- function(x, plot.CI = TRUE, CI.type = "plain", CI.level = 0.95,
+                          transform = NULL, contrast = NULL, reference = NULL, legendpos = "bottomleft", ...) {
   object <- x
   x <- object$input$x
 
@@ -482,53 +507,76 @@ plot.stdCoxph <- function(x, plot.CI=TRUE, CI.type="plain", CI.level=0.95,
 
   xlab <- "t"
 
-  if(is.factor(reference))
+  if (is.factor(reference)) {
     reference <- as.character(reference)
-
-  if(is.null(contrast)){
-    if(is.null(transform))
-      ylab <- expression(S(t))
-    else{
-      if(transform=="log")
-        ylab <- expression(paste(log, "{", S(t), "}", sep=""))
-      if(transform=="logit")
-        ylab <- expression(paste(logit, "{", S(t), "}", sep=""))
-      if(transform=="odds")
-        ylab <- expression(paste(S(t), "/{", 1-S(t), "}", sep=""))
-    }
   }
-  else{
-    if(contrast=="difference"){
-      if(is.null(transform))
-        ylab <- c(bquote(paste(S(t), "-", S[.(reference)](t))), expression())
-      else{
-        if(transform=="log")
-          ylab <- c(bquote(paste(log, "{", S(t), "}-", log, "{",
-                                 S[.(reference)](t), "}", sep="")), expression())
-        if(transform=="logit")
-          ylab <- c(bquote(paste(logit, "{", S(t), "}-", logit,
-                                 "{", S[.(reference)](t), "}", sep="")), expression())
-        if(transform=="odds")
-          ylab <- c(bquote(paste(S(t), "/{", 1-S(t), "}-",
-                                 S[.(reference)](t), "/{", 1-S[.(reference)](t),
-                                 "}", sep="")), expression())
+
+  if (is.null(contrast)) {
+    if (is.null(transform)) {
+      ylab <- expression(S(t))
+    } else {
+      if (transform == "log") {
+        ylab <- expression(paste(log, "{", S(t), "}", sep = ""))
+      }
+      if (transform == "logit") {
+        ylab <- expression(paste(logit, "{", S(t), "}", sep = ""))
+      }
+      if (transform == "odds") {
+        ylab <- expression(paste(S(t), "/{", 1 - S(t), "}", sep = ""))
       }
     }
-    if(contrast=="ratio"){
-      if(is.null(transform))
-        ylab <- c(bquote(paste(S(t), " / ", S[.(reference)](t), sep="")),
-                  expression())
-      else{
-        if(transform=="log")
+  } else {
+    if (contrast == "difference") {
+      if (is.null(transform)) {
+        ylab <- c(bquote(paste(S(t), "-", S[.(reference)](t))), expression())
+      } else {
+        if (transform == "log") {
+          ylab <- c(bquote(paste(log, "{", S(t), "}-", log, "{",
+            S[.(reference)](t), "}",
+            sep = ""
+          )), expression())
+        }
+        if (transform == "logit") {
+          ylab <- c(bquote(paste(logit, "{", S(t), "}-", logit,
+            "{", S[.(reference)](t), "}",
+            sep = ""
+          )), expression())
+        }
+        if (transform == "odds") {
+          ylab <- c(bquote(paste(S(t), "/{", 1 - S(t), "}-",
+            S[.(reference)](t), "/{", 1 - S[.(reference)](t),
+            "}",
+            sep = ""
+          )), expression())
+        }
+      }
+    }
+    if (contrast == "ratio") {
+      if (is.null(transform)) {
+        ylab <- c(
+          bquote(paste(S(t), " / ", S[.(reference)](t), sep = "")),
+          expression()
+        )
+      } else {
+        if (transform == "log") {
           ylab <- c(bquote(paste(log, "{", S(t), "} / ", log,
-                                 "{", S[.(reference)](t), "}", sep="")), expression())
-        if(transform=="logit")
+            "{", S[.(reference)](t), "}",
+            sep = ""
+          )), expression())
+        }
+        if (transform == "logit") {
           ylab <- c(bquote(paste(logit, "{", S(t), "} / ", logit,
-                                 "{", S[.(reference)](t), "}", sep="")), expression())
-        if(transform=="odds")
-          ylab <- c(bquote(paste("[", S(t), "/{", 1-S(t), "}] / [",
-                                 S[.(reference)](t), "/{", 1-S[.(reference)](t),
-                                 "}]", sep="")), expression())
+            "{", S[.(reference)](t), "}",
+            sep = ""
+          )), expression())
+        }
+        if (transform == "odds") {
+          ylab <- c(bquote(paste("[", S(t), "/{", 1 - S(t), "}] / [",
+            S[.(reference)](t), "/{", 1 - S[.(reference)](t),
+            "}]",
+            sep = ""
+          )), expression())
+        }
       }
     }
   }
@@ -537,36 +585,43 @@ plot.stdCoxph <- function(x, plot.CI=TRUE, CI.type="plain", CI.level=0.95,
   nt <- length(t)
   nX <- length(x)
 
-  sum.obj <- summary(object=object, CI.type=CI.type, CI.level=CI.level,
-                     transform=transform, contrast=contrast, reference=reference)
-  temp <- Reduce(f=rbind, x=sum.obj$est.table)
-  est <- matrix(temp[, 1], nrow=nt, ncol=nX, byrow=TRUE)
-  lower <- matrix(temp[, 3], nrow=nt, ncol=nX, byrow=TRUE)
-  upper <- matrix(temp[, 4], nrow=nt, ncol=nX, byrow=TRUE)
+  sum.obj <- summary(
+    object = object, CI.type = CI.type, CI.level = CI.level,
+    transform = transform, contrast = contrast, reference = reference
+  )
+  temp <- Reduce(f = rbind, x = sum.obj$est.table)
+  est <- matrix(temp[, 1], nrow = nt, ncol = nX, byrow = TRUE)
+  lower <- matrix(temp[, 3], nrow = nt, ncol = nX, byrow = TRUE)
+  upper <- matrix(temp[, 4], nrow = nt, ncol = nX, byrow = TRUE)
 
-  if(plot.CI)
+  if (plot.CI) {
     ylim <- c(min(lower), max(upper))
-  else
+  } else {
     ylim <- c(min(est), max(est))
-  args <- list(x=object$input$t, y=rep(0, length(t)), xlab=xlab, ylab=ylab,
-               ylim=ylim, type="n")
+  }
+  args <- list(
+    x = object$input$t, y = rep(0, length(t)), xlab = xlab, ylab = ylab,
+    ylim = ylim, type = "n"
+  )
   args[names(dots)] <- dots
-  do.call("plot", args=args)
+  do.call("plot", args = args)
   legend <- NULL
-  for(i in 1:nX){
-    lines(t, est[, i], col=i)
-    if(plot.CI){
-      lines(t, upper[, i], lty="dashed", col=i)
-      lines(t, lower[, i], lty="dashed", col=i)
+  for (i in 1:nX) {
+    lines(t, est[, i], col = i)
+    if (plot.CI) {
+      lines(t, upper[, i], lty = "dashed", col = i)
+      lines(t, lower[, i], lty = "dashed", col = i)
     }
     temp <- as.character(x[i])
     legend <- c(legend, paste(object$input$X, "=", object$input$x[i]))
   }
-  if(is.na(match("ylim",names(args))))
+  if (is.na(match("ylim", names(args)))) {
     yl <- ylim[2]
-  else
+  } else {
     yl <- args$ylim[2]
-  legend(x=legendpos, legend=legend, lty=rep(1, length(x)), col=1:length(x),
-         bty="n")
-
+  }
+  legend(
+    x = legendpos, legend = legend, lty = rep(1, length(x)), col = 1:length(x),
+    bty = "n"
+  )
 }

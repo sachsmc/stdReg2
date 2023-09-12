@@ -89,72 +89,78 @@
 #' set.seed(4)
 #' n <- 300
 #' ni <- 2
-#' id <- rep(1:n, each=ni)
-#' ai <- rep(rnorm(n), each=ni)
-#' Z <- rnorm(n*ni)
-#' X <- rnorm(n*ni, mean=ai+Z)
-#' Y <- rnorm(n*ni, mean=ai+X+Z+0.1*X^2)
+#' id <- rep(1:n, each = ni)
+#' ai <- rep(rnorm(n), each = ni)
+#' Z <- rnorm(n * ni)
+#' X <- rnorm(n * ni, mean = ai + Z)
+#' Y <- rnorm(n * ni, mean = ai + X + Z + 0.1 * X^2)
 #' dd <- data.frame(id, Z, X, Y)
-#' fit <- gee(formula=Y~X+Z+I(X^2), data=dd, clusterid="id", link="identity",
-#'   cond=TRUE)
-#' fit.std <- stdGee(fit=fit, data=dd, X="X", x=seq(-3,3,0.5), clusterid="id")
-#' print(summary(fit.std, contrast="difference", reference=2))
+#' fit <- gee(
+#'   formula = Y ~ X + Z + I(X^2), data = dd, clusterid = "id", link = "identity",
+#'   cond = TRUE
+#' )
+#' fit.std <- stdGee(fit = fit, data = dd, X = "X", x = seq(-3, 3, 0.5), clusterid = "id")
+#' print(summary(fit.std, contrast = "difference", reference = 2))
 #' plot(fit.std)
 #'
 #' @export stdGee
-stdGee <- function(fit, data, X, x, clusterid, subsetnew){
+stdGee <- function(fit, data, X, x, clusterid, subsetnew) {
   call <- match.call()
 
   #---CHECKS---
 
-  if(fit$cond==FALSE)
+  if (fit$cond == FALSE) {
     stop("stdGee is only implemented for gee object with cond=TRUE. For cond=FALSE, use stdGlm.")
+  }
   link <- summary(fit)$link
-  if(link!="identity" & link!="log")
+  if (link != "identity" & link != "log") {
     stop("stdGee is only implemented for gee object with identity link or log link.")
+  }
 
   #---PREPARATION---
 
   formula <- fit$formula
-  weights <- rep(1, nrow(fit$x)) #gee does not allow for weights
+  weights <- rep(1, nrow(fit$x)) # gee does not allow for weights
   npar <- length(fit$coef)
 
-  #Delete rows that did not contribute to the model fit,
-  #e.g. missing data or not in subset for fit.
+  # Delete rows that did not contribute to the model fit,
+  # e.g. missing data or not in subset for fit.
   m <- fit$x
   data <- data[match(rownames(m), rownames(data)), ]
   n <- nrow(data)
 
-  #Make new subset if supplied.
+  # Make new subset if supplied.
   subsetnew <-
-    if(missing(subsetnew))
+    if (missing(subsetnew)) {
       rep(1, n)
-  else
-    as.numeric(eval(substitute(subsetnew), data, parent.frame()))
+    } else {
+      as.numeric(eval(substitute(subsetnew), data, parent.frame()))
+    }
   input <- as.list(environment())
 
   ncluster <- length(unique(data[, clusterid]))
 
-  #Assign values to x and reference if not supplied.
-  #Make sure x is a factor if data[, X] is a factor
-  #with the same levels as data[, X].
-  if(missing(x)){
-    if(is.factor(data[, X]))
+  # Assign values to x and reference if not supplied.
+  # Make sure x is a factor if data[, X] is a factor
+  # with the same levels as data[, X].
+  if (missing(x)) {
+    if (is.factor(data[, X])) {
       x <- as.factor(levels(data[, X]))
-    if(is.numeric(data[, X]))
-      if(is.binary(data[, X]))
+    }
+    if (is.numeric(data[, X])) {
+      if (is.binary(data[, X])) {
         x <- c(0, 1)
-    else
-      x <- round(mean(data[, X], na.rm=TRUE), 2)
-  }
-  else{
-    if(is.factor(x)){
+      } else {
+        x <- round(mean(data[, X], na.rm = TRUE), 2)
+      }
+    }
+  } else {
+    if (is.factor(x)) {
       temp <- x
       levels(x) <- levels(data[, X])
       x[1:length(x)] <- temp
-    }
-    else{
-      if(is.factor(data[, X])){
+    } else {
+      if (is.factor(data[, X])) {
         x <- factor(x)
         temp <- x
         levels(x) <- levels(data[, X])
@@ -165,88 +171,90 @@ stdGee <- function(fit, data, X, x, clusterid, subsetnew){
   input$x <- x
   nX <- length(x)
 
-  #Check if model.matrix works with object=formula. If formula contains splines,
-  #then neither object=formula nor object=fit will not work when no variation
-  #in exposure, since model.matrix needs to retrieve Boundary.knots
-  #from terms(fit). Then fit glm so can use model.matrix with object=terms(fit.glm).
+  # Check if model.matrix works with object=formula. If formula contains splines,
+  # then neither object=formula nor object=fit will not work when no variation
+  # in exposure, since model.matrix needs to retrieve Boundary.knots
+  # from terms(fit). Then fit glm so can use model.matrix with object=terms(fit.glm).
   data.x <- data
   data.x[, X] <- x[min(which(!is.na(x)))]
-  m.x <- try(expr=model.matrix(object=formula, data=data.x), silent=TRUE)
+  m.x <- try(expr = model.matrix(object = formula, data = data.x), silent = TRUE)
   contains.splines <- FALSE
-  if(!is.matrix(m.x)){
+  if (!is.matrix(m.x)) {
     contains.splines <- TRUE
     environment(formula) <- new.env()
-    fit.glm <- glm(formula=formula, data=data)
+    fit.glm <- glm(formula = formula, data = data)
   }
 
   #---ESTIMATES OF INTERCEPTS---
 
-  h <- as.vector(fit$x%*%matrix(fit$coef, nrow=npar, ncol=1))
+  h <- as.vector(fit$x %*% matrix(fit$coef, nrow = npar, ncol = 1))
   dh.dbeta <- fit$x
-  if(link=="identity"){
-    r <- fit$y-h
-    a <- ave(x=r, data[, clusterid], FUN=mean)
+  if (link == "identity") {
+    r <- fit$y - h
+    a <- ave(x = r, data[, clusterid], FUN = mean)
   }
-  if(link=="log"){
-    r <- fit$y*exp(-h)
-    a <- log(ave(x=r, data[, clusterid], FUN=mean))
+  if (link == "log") {
+    r <- fit$y * exp(-h)
+    a <- log(ave(x = r, data[, clusterid], FUN = mean))
   }
 
   #---ESTIMATES OF MEANS AT VALUES SPECIFIED BY x ---
 
-  pred <- matrix(nrow=n, ncol=nX)
-  SI.beta <- matrix(nrow=nX, ncol=npar)
-  for(i in 1:nX){
+  pred <- matrix(nrow = n, ncol = nX)
+  SI.beta <- matrix(nrow = nX, ncol = npar)
+  for (i in 1:nX) {
     data.x <- data
-    if(!is.na(x[i]))
+    if (!is.na(x[i])) {
       data.x[, X] <- x[i]
-    if(contains.splines){
-      m.x <- model.matrix(object=terms(fit.glm), data=data.x)[, -1, drop=FALSE]
     }
-    else{
-      m.x <- model.matrix(object=formula, data=data.x)[, -1, drop=FALSE]
+    if (contains.splines) {
+      m.x <- model.matrix(object = terms(fit.glm), data = data.x)[, -1, drop = FALSE]
+    } else {
+      m.x <- model.matrix(object = formula, data = data.x)[, -1, drop = FALSE]
     }
-    h.x <- as.vector(m.x%*%matrix(fit$coef, nrow=npar, ncol=1))
+    h.x <- as.vector(m.x %*% matrix(fit$coef, nrow = npar, ncol = 1))
     dh.x.dbeta <- m.x
-    eta <- a+h.x
-    if(link=="identity"){
+    eta <- a + h.x
+    if (link == "identity") {
       mu <- eta
       dmu.deta <- rep(1, n)
-      da.dbeta <- -apply(X=dh.dbeta, MARGIN=2, FUN=ave, data[, clusterid])
+      da.dbeta <- -apply(X = dh.dbeta, MARGIN = 2, FUN = ave, data[, clusterid])
     }
-    if(link=="log"){
+    if (link == "log") {
       mu <- exp(eta)
       dmu.deta <- mu
-      da.dbeta <- -apply(X=r*dh.dbeta, MARGIN=2, FUN=ave, data[, clusterid])/
+      da.dbeta <- -apply(X = r * dh.dbeta, MARGIN = 2, FUN = ave, data[, clusterid]) /
         exp(a)
     }
     pred[, i] <- mu
-    deta.dbeta <- da.dbeta+dh.x.dbeta
-    #When link=="log", exp(a) will be 0 if y=0 for all subjects in the cluster.
-    #This causes da.dbeta and deta.dbeta to be NA, but they should be 0.
+    deta.dbeta <- da.dbeta + dh.x.dbeta
+    # When link=="log", exp(a) will be 0 if y=0 for all subjects in the cluster.
+    # This causes da.dbeta and deta.dbeta to be NA, but they should be 0.
     deta.dbeta[is.na(deta.dbeta)] <- 0
-    dmu.dbeta <- dmu.deta*deta.dbeta
-    SI.beta[i, ] <- colMeans(subsetnew*weights*dmu.dbeta)
+    dmu.dbeta <- dmu.deta * deta.dbeta
+    SI.beta[i, ] <- colMeans(subsetnew * weights * dmu.dbeta)
   }
-  est <- colSums(subsetnew*weights*pred, na.rm=TRUE)/
-    sum(subsetnew*weights)
+  est <- colSums(subsetnew * weights * pred, na.rm = TRUE) /
+    sum(subsetnew * weights)
 
   #---VARIANCE OF MEANS AT VALUES SPECIFIED BY x---
 
-  ores <- weights*fit$x*fit$res
-  mres <- subsetnew*weights*(pred-matrix(rep(est, each=n), nrow=n, ncol=nX))
+  ores <- weights * fit$x * fit$res
+  mres <- subsetnew * weights * (pred - matrix(rep(est, each = n), nrow = n, ncol = nX))
   res <- cbind(mres, ores)
-  res <- aggr(x=res, clusters=data[, clusterid])
-  J <- var(res, na.rm=TRUE)
+  res <- aggr(x = res, clusters = data[, clusterid])
+  J <- var(res, na.rm = TRUE)
 
-  SI <- cbind(-diag(nX)*mean(subsetnew*weights), SI.beta)
-  oI <- cbind(matrix(0, nrow=npar, ncol=nX),
-              -t(fit$x)%*%(weights*fit$d.res)/n)
+  SI <- cbind(-diag(nX) * mean(subsetnew * weights), SI.beta)
+  oI <- cbind(
+    matrix(0, nrow = npar, ncol = nX),
+    -t(fit$x) %*% (weights * fit$d.res) / n
+  )
   I <- rbind(SI, oI)
-  V <- (solve(I)%*%J%*%t(solve(I))*ncluster/n^2)[1:nX, 1:nX]
+  V <- (solve(I) %*% J %*% t(solve(I)) * ncluster / n^2)[1:nX, 1:nX]
   vcov <- V
 
-  out <- list(call=call, input=input, est=est, vcov=vcov)
+  out <- list(call = call, input = input, est = est, vcov = vcov)
 
   #---OUTPUT---
 
@@ -280,69 +288,77 @@ stdGee <- function(fit, data, X, x, clusterid, subsetnew){
 #' @seealso \code{\link{stdGee}}
 #' @examples
 #'
-#' ##See documentation for stdGee
+#' ## See documentation for stdGee
 #'
 #' @rdname summary
 #' @export summary.stdGee
 #' @export
-summary.stdGee <- function(object, CI.type="plain", CI.level=0.95,
-                           transform=NULL, contrast=NULL, reference=NULL, ...){
-
+summary.stdGee <- function(object, CI.type = "plain", CI.level = 0.95,
+                           transform = NULL, contrast = NULL, reference = NULL, ...) {
   est <- object$est
   V <- as.matrix(object$vcov)
   nX <- length(object$input$x)
 
-  if(!is.null(transform)){
-    if(transform=="log"){
-      dtransform.dm <- diag(1/est, nrow=nX, ncol=nX)
+  if (!is.null(transform)) {
+    if (transform == "log") {
+      dtransform.dm <- diag(1 / est, nrow = nX, ncol = nX)
       est <- log(est)
     }
-    if(transform=="logit"){
-      dtransform.dm <- diag(1/(est*(1-est)), nrow=nX, ncol=nX)
+    if (transform == "logit") {
+      dtransform.dm <- diag(1 / (est * (1 - est)), nrow = nX, ncol = nX)
       est <- logit(est)
     }
-    if(transform=="odds"){
-      dtransform.dm <- diag(1/(1-est)^2, nrow=nX, ncol=nX)
+    if (transform == "odds") {
+      dtransform.dm <- diag(1 / (1 - est)^2, nrow = nX, ncol = nX)
       est <- odds(est)
     }
-    V <- t(dtransform.dm)%*%V%*%dtransform.dm
+    V <- t(dtransform.dm) %*% V %*% dtransform.dm
   }
 
-  if(!is.null(contrast)){
-    if(is.null(reference))
+  if (!is.null(contrast)) {
+    if (is.null(reference)) {
       stop("When specifying contrast, reference must be specified as well")
+    }
     referencepos <- match(reference, object$input$x)
-    if(is.na(referencepos))
+    if (is.na(referencepos)) {
       stop("reference must be a value in x")
-    if(contrast=="difference"){
+    }
+    if (contrast == "difference") {
       dcontrast.dtransform <- diag(nX)
       dcontrast.dtransform[referencepos, ] <- -1
       dcontrast.dtransform[referencepos, referencepos] <- 0
-      est <- est-est[referencepos]
+      est <- est - est[referencepos]
     }
-    if(contrast=="ratio"){
-      dcontrast.dtransform <- diag(1/est[referencepos], nrow=nX, ncol=nX)
-      dcontrast.dtransform[referencepos, ] <- -est/est[referencepos]^2
+    if (contrast == "ratio") {
+      dcontrast.dtransform <- diag(1 / est[referencepos], nrow = nX, ncol = nX)
+      dcontrast.dtransform[referencepos, ] <- -est / est[referencepos]^2
       dcontrast.dtransform[referencepos, referencepos] <- 1
-      est <- est/est[referencepos]
+      est <- est / est[referencepos]
     }
-    V <- t(dcontrast.dtransform)%*%V%*%dcontrast.dtransform
+    V <- t(dcontrast.dtransform) %*% V %*% dcontrast.dtransform
     V[referencepos, ] <- 0
     V[, referencepos] <- 0
   }
 
   var <- diag(V)
-  se <-  sqrt(var)
-  conf.int <- CI(est=est, var=var, CI.type=CI.type, CI.level=CI.level)
+  se <- sqrt(var)
+  conf.int <- CI(est = est, var = var, CI.type = CI.type, CI.level = CI.level)
 
-  if(is.factor(reference))
+  if (is.factor(reference)) {
     reference <- as.character(reference)
-  est.table <- as.matrix(cbind(est, se, conf.int), nrow=length(est), ncol=4)
-  dimnames(est.table) <- list(object$input$x,
-                              c("Estimate", "Std. Error", paste("lower",CI.level),
-                                paste("upper",CI.level)))
-  out <- c(object, list(est.table=est.table,transform=transform,
-                        contrast=contrast,reference=reference))
+  }
+  est.table <- as.matrix(cbind(est, se, conf.int), nrow = length(est), ncol = 4)
+  dimnames(est.table) <- list(
+    object$input$x,
+    c(
+      "Estimate", "Std. Error", paste("lower", CI.level),
+      paste("upper", CI.level)
+    )
+  )
+  out <- c(object, list(
+    est.table = est.table, transform = transform,
+    contrast = contrast, reference = reference
+  ))
 
   class(out) <- "summary.stdGee"
   return(out)
@@ -351,7 +367,7 @@ summary.stdGee <- function(object, CI.type="plain", CI.level=0.95,
 #' @rdname print
 #' @export print.stdGee
 #' @export
-print.stdGee <- function(x, ...){
+print.stdGee <- function(x, ...) {
   print(summary(x))
 }
 
@@ -365,24 +381,25 @@ print.stdGee <- function(x, ...){
 #' @seealso \code{\link{stdGee}}
 #' @examples
 #'
-#' ##See documentation for stdGee
+#' ## See documentation for stdGee
 #'
 #' @rdname print
 #' @export print.summary.stdGee
 #' @export
-print.summary.stdGee <- function(x, ...){
+print.summary.stdGee <- function(x, ...) {
   cat("\nFormula: ")
   print(x$input$fit$formula)
-  cat("Link function:",  summary(x$input$fit)$link,  "\n")
-  cat("Exposure: ", x$input$X,  "\n")
-  if(!is.null(x$transform))
-    cat("Transform: ", x$transform,  "\n")
-  if(!is.null(x$contrast)){
-    cat("Reference level: ", x$input$X, "=", x$reference,  "\n")
-    cat("Contrast: ", x$contrast,  "\n")
+  cat("Link function:", summary(x$input$fit)$link, "\n")
+  cat("Exposure: ", x$input$X, "\n")
+  if (!is.null(x$transform)) {
+    cat("Transform: ", x$transform, "\n")
+  }
+  if (!is.null(x$contrast)) {
+    cat("Reference level: ", x$input$X, "=", x$reference, "\n")
+    cat("Contrast: ", x$contrast, "\n")
   }
   cat("\n")
-  print(x$est.table, digits=3)
+  print(x$est.table, digits = 3)
 }
 
 #' @title Plots GEE regression standardization fit
@@ -411,14 +428,13 @@ print.summary.stdGee <- function(x, ...){
 #' @seealso \code{\link{stdGee}}
 #' @examples
 #'
-#' ##See documentation for stdGee
+#' ## See documentation for stdGee
 #'
 #' @rdname plot
 #' @export plot.stdGee
 #' @export
-plot.stdGee <- function(x, CI.type="plain", CI.level=0.95,
-                        transform=NULL, contrast=NULL, reference=NULL, ...){
-
+plot.stdGee <- function(x, CI.type = "plain", CI.level = 0.95,
+                        transform = NULL, contrast = NULL, reference = NULL, ...) {
   object <- x
   x <- object$input$x
 
@@ -426,82 +442,110 @@ plot.stdGee <- function(x, CI.type="plain", CI.level=0.95,
 
   xlab <- object$input$X
 
-  if(is.factor(reference))
+  if (is.factor(reference)) {
     reference <- as.character(reference)
+  }
 
-  if(is.null(contrast)){
-    if(is.null(transform))
+  if (is.null(contrast)) {
+    if (is.null(transform)) {
       ylab <- expression(mu)
-    else{
-      if(transform=="log")
+    } else {
+      if (transform == "log") {
         ylab <- expression(paste("log(", mu, ")"))
-      if(transform=="logit")
+      }
+      if (transform == "logit") {
         ylab <- expression(paste("logit(", mu, ")"))
-      if(transform=="odds")
+      }
+      if (transform == "odds") {
         ylab <- expression(paste(mu, "/(1-", mu, ")"))
-    }
-  }
-  else{
-    if(contrast=="difference"){
-      if(is.null(transform))
-        ylab <- c(bquote(paste(mu, "-", mu[.(reference)])), expression())
-      else{
-        if(transform=="log")
-          ylab <- c(bquote(paste(log, "(", mu, ")-", log, "(",
-                                 mu[.(reference)], ")", sep="")), expression())
-        if(transform=="logit")
-          ylab <- c(bquote(paste(logit, "(", mu, ")-", logit,
-                                 "(", mu[.(reference)], ")", sep="")), expression())
-        if(transform=="odds")
-          ylab <- c(bquote(paste(mu, "/(", 1-mu, ")-",
-                                 mu[.(reference)], "/(", 1-mu[.(reference)], ")", sep="")),
-                    expression())
       }
     }
-    if(contrast=="ratio"){
-      if(is.null(transform))
+  } else {
+    if (contrast == "difference") {
+      if (is.null(transform)) {
+        ylab <- c(bquote(paste(mu, "-", mu[.(reference)])), expression())
+      } else {
+        if (transform == "log") {
+          ylab <- c(bquote(paste(log, "(", mu, ")-", log, "(",
+            mu[.(reference)], ")",
+            sep = ""
+          )), expression())
+        }
+        if (transform == "logit") {
+          ylab <- c(bquote(paste(logit, "(", mu, ")-", logit,
+            "(", mu[.(reference)], ")",
+            sep = ""
+          )), expression())
+        }
+        if (transform == "odds") {
+          ylab <- c(
+            bquote(paste(mu, "/(", 1 - mu, ")-",
+              mu[.(reference)], "/(", 1 - mu[.(reference)], ")",
+              sep = ""
+            )),
+            expression()
+          )
+        }
+      }
+    }
+    if (contrast == "ratio") {
+      if (is.null(transform)) {
         ylab <- c(bquote(paste(mu, "/", mu[.(reference)])), expression())
-      else{
-        if(transform=="log")
+      } else {
+        if (transform == "log") {
           ylab <- c(bquote(paste(log, "(", mu, ")/", log, "(",
-                                 mu[.(reference)], ")", sep="")), expression())
-        if(transform=="logit")
+            mu[.(reference)], ")",
+            sep = ""
+          )), expression())
+        }
+        if (transform == "logit") {
           ylab <- c(bquote(paste(logit, "(", mu, ")/", logit,
-                                 "(", mu[.(reference)], ")", sep="")), expression())
-        if(transform=="odds")
-          ylab <- c(bquote(paste(mu, "/(", 1-mu, ")/",
-                                 mu[.(reference)], "/(", 1-mu[.(reference)],
-                                 ")", sep="")), expression())
+            "(", mu[.(reference)], ")",
+            sep = ""
+          )), expression())
+        }
+        if (transform == "odds") {
+          ylab <- c(bquote(paste(mu, "/(", 1 - mu, ")/",
+            mu[.(reference)], "/(", 1 - mu[.(reference)],
+            ")",
+            sep = ""
+          )), expression())
+        }
       }
     }
   }
 
-  sum.obj <- summary(object=object, CI.type=CI.type, CI.level=CI.level,
-                     transform=transform, contrast=contrast, reference=reference)
+  sum.obj <- summary(
+    object = object, CI.type = CI.type, CI.level = CI.level,
+    transform = transform, contrast = contrast, reference = reference
+  )
   est <- sum.obj$est.table[, 1]
   lower <- sum.obj$est.table[, 3]
   upper <- sum.obj$est.table[, 4]
 
-  ylim <- c(min(c(lower,upper)), max(c(lower,upper)))
+  ylim <- c(min(c(lower, upper)), max(c(lower, upper)))
 
-  if(is.numeric(x) & length(x)>1){
-    args <- list(x=x, y=x, xlab=xlab, ylab=ylab, ylim=ylim, type="n")
+  if (is.numeric(x) & length(x) > 1) {
+    args <- list(x = x, y = x, xlab = xlab, ylab = ylab, ylim = ylim, type = "n")
     args[names(dots)] <- dots
-    do.call("plot", args=args)
+    do.call("plot", args = args)
     lines(x, est)
-    lines(x, upper, lty=3)
-    lines(x, lower, lty=3)
+    lines(x, upper, lty = 3)
+    lines(x, lower, lty = 3)
   }
-  if(is.factor(x) | is.binary(x) | (is.numeric(x) & length(x)==1)){
-    args <- list(x=1:length(x), y=1:length(x), xlab=xlab, ylab=ylab,
-                 xlim=c(0, length(x)+1), ylim=ylim, type="n", xaxt="n")
+  if (is.factor(x) | is.binary(x) | (is.numeric(x) & length(x) == 1)) {
+    args <- list(
+      x = 1:length(x), y = 1:length(x), xlab = xlab, ylab = ylab,
+      xlim = c(0, length(x) + 1), ylim = ylim, type = "n", xaxt = "n"
+    )
     args[names(dots)] <- dots
-    do.call("plot", args=args)
+    do.call("plot", args = args)
     points(1:length(x), est)
-    points(1:length(x), upper, pch=0)
-    points(1:length(x), lower, pch=0)
-    for(i in 1:length(x))
-      lines(x=c(i, i), y=c(lower[i], upper[i]), lty="dashed")
-    mtext(text=x, side=1, at=1:length(x))
+    points(1:length(x), upper, pch = 0)
+    points(1:length(x), lower, pch = 0)
+    for (i in 1:length(x)) {
+      lines(x = c(i, i), y = c(lower[i], upper[i]), lty = "dashed")
+    }
+    mtext(text = x, side = 1, at = 1:length(x))
   }
 }
