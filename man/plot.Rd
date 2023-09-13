@@ -32,8 +32,8 @@
 
 \method{plot}{stdGLM}(
   x,
-  CI.type = "plain",
-  CI.level = 0.95,
+  ci_type = "plain",
+  ci_level = 0.95,
   transform = NULL,
   contrast = NULL,
   reference = NULL,
@@ -82,6 +82,11 @@ constructed, where \eqn{x_0} is a reference level specified by the
 \item{legendpos}{position of the legend; see help for \code{legend}.}
 
 \item{\dots}{further arguments passed on to plot.default.}
+
+\item{ci_type}{A string, indicating the type of confidence intervals. Either "plain", which
+gives untransformed intervals, or "log", which gives log-transformed intervals.}
+
+\item{ci_level}{Coverage probability of confidence intervals.}
 }
 \description{
 This is a \code{plot} method for class \code{"stdCoxph"}.

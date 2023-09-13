@@ -5,60 +5,68 @@
 \title{Get regression standardized estimates from a glm}
 \usage{
 standardize_glm(
-  formula.outcome,
-  formula.exposure = NULL,
+  formula_outcome,
   data,
-  family.outcome = "gaussian",
-  family.exposure = "binomial",
   values,
   clusterid,
-  case.control = FALSE,
-  matched.density.cases,
-  matched.density.controls,
-  matching.variable,
-  p.population
+  matched_density_cases,
+  matched_density_controls,
+  matching_variable,
+  p_population,
+  case_control = FALSE,
+  family_outcome = "gaussian",
+  family_exposure = "binomial",
+  formula_exposure = NULL
 )
 }
 \arguments{
-\item{formula.outcome}{The formula which is used to fit the glm model for the outcome.}
-
-\item{formula.exposure}{The formula which is used to fit the glm model for the exposure.
-If not \code{NULL}, a doubly robust estimator of the standardized estimator is used.}
+\item{formula_outcome}{The formula which is used to fit the glm model for the outcome.}
 
 \item{data}{The data.}
-
-\item{family.outcome}{The family argument which is used to fit the glm model for the outcome.}
-
-\item{family.exposure}{The family argument which is used to fit the glm model for the exposure.}
 
 \item{values}{A named list or data.frame specifying the variables and values
 at which marginal means of the outcome will be estimated.}
 
-\item{clusterid}{An optional string containing the name of a cluster identification variable when data are clustered.}
+\item{clusterid}{An optional string containing the name of a cluster identification variable
+when data are clustered.}
 
-\item{case.control}{\code{logical}. Whether the data comes from a case-control study.}
+\item{matched_density_cases}{A function of the matching variable.
+The probability (or density) of the matched variable among the cases.}
 
-\item{matched.density.cases}{A function of the matching variable. The probability (or density) of the matched variable among the cases.}
+\item{matched_density_controls}{A function of the matching variable.
+The probability (or density) of the matched variable among the controls.}
 
-\item{matched.density.controls}{A function of the matching variable. The probability (or density) of the matched variable among the controls.}
+\item{matching_variable}{The matching variable extracted from the data set.}
 
-\item{matching.variable}{The matching variable extracted from the data set.}
+\item{p_population}{Specifies the incidence in the population when \code{case_control=TRUE}.}
 
-\item{p.population}{Specifies the incidence in the population when \code{case.control=TRUE}.}
+\item{case_control}{Whether the data comes from a case-control study.}
+
+\item{family_outcome}{The family argument which is used to fit the glm model for the outcome.}
+
+\item{family_exposure}{The family argument which is used to fit the glm model for the exposure.}
+
+\item{formula_exposure}{The formula which is used to fit the glm model for the exposure.
+If not \code{NULL},
+a doubly robust estimator of the standardized estimator is used.}
 }
 \value{
-An object of class stdGLM. This is basically a list with components estimates and covariance estimates.
+An object of class stdGLM.
+This is basically a list with components estimates and covariance estimates.
 }
 \description{
 Get regression standardized estimates from a glm
 }
 \details{
-\code{standardize_glm} performs regression standardization in generalized linear models,
+\code{standardize_glm} performs regression standardization
+in generalized linear models,
 at specified values of the exposure, over the sample covariate distribution.
 Let \eqn{Y}, \eqn{X}, and \eqn{Z} be the outcome, the exposure, and a
-vector of covariates, respectively. \code{standardize_glm} uses a fitted generalized linear
+vector of covariates, respectively.
+\code{standardize_glm} uses a fitted generalized linear
 model to estimate the standardized
-mean \eqn{\theta(x)=E\{E(Y|X=x,Z)\}}, where \eqn{x} is a specific value of \eqn{X},
+mean \eqn{\theta(x)=E\{E(Y|X=x,Z)\}},
+where \eqn{x} is a specific value of \eqn{X},
 and the outer expectation is over the marginal distribution of \eqn{Z}.
 }
 \examples{
@@ -73,8 +81,8 @@ X <- rnorm(n, mean = Z)
 Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
 dd <- data.frame(Z, X, Y)
 x <- standardize_glm(
-  formula.outcome = Y ~ X * Z,
-  family.outcome = "binomial",
+  formula_outcome = Y ~ X * Z,
+  family_outcome = "binomial",
   data = dd,
   values = list(X = 0:1)
 )
@@ -92,25 +100,27 @@ m <- mean(Mi)
 s <- sd(Mi)
 d <- 5
 standardize_glm(
-  formula.outcome = Oesophagealcancer ~ (Everhotbev + Age + Dial + Samsu + Cigs)^2,
-  family.outcome = binomial, data = singapore,
-  values = list(Everhotbev = 0:1), clusterid = "Set", case.control = TRUE,
-  matched.density.cases = function(x) dnorm(x, m, s),
-  matched.density.controls = function(x) dnorm(x, m - d, s), matching.variable = Mi,
-  p.population = 19.3 / 100000
+  formula_outcome = Oesophagealcancer ~ (Everhotbev + Age + Dial + Samsu + Cigs)^2,
+  family_outcome = binomial, data = singapore,
+  values = list(Everhotbev = 0:1), clusterid = "Set",
+  case_control = TRUE,
+  matched_density_cases = function(x) dnorm(x, m, s),
+  matched_density_controls = function(x) dnorm(x, m - d, s),
+  matching_variable = Mi,
+  p_population = 19.3 / 100000
 )
 
 # doubly robust estimator
 # needs to correctly specify either the outcome model or the exposure model
-# and no unmeasered confounders
+# for confounding
 # NOTE: only works with binary exposures
 library(AF)
 data <- AF::clslowbwt
 x <- standardize_glm(
-  formula.outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),
-  formula.exposure = smoker ~ race * age * lwt + I(age^2) + I(lwt^2),
-  family.outcome = "gaussian",
-  family.exposure = "binomial",
+  formula_outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),
+  formula_exposure = smoker ~ race * age * lwt + I(age^2) + I(lwt^2),
+  family_outcome = "gaussian",
+  family_exposure = "binomial",
   data = data,
   values = list(smoker = c(0, 1))
 )
@@ -125,8 +135,8 @@ X2 <- rnorm(n)
 Y <- rbinom(n, 1, prob = (1 + exp(X1 + X2 + Z))^(-1))
 dd <- data.frame(Z, X1, X2, Y)
 x <- standardize_glm(
-  formula.outcome = Y ~ X1 + X2 + Z,
-  family.outcome = "binomial",
+  formula_outcome = Y ~ X1 + X2 + Z,
+  family_outcome = "binomial",
   data = dd, values = list(X1 = 0:1, X2 = 0:1)
 )
 summary(x, reference = "0, 0", contrast = "difference")
@@ -140,8 +150,8 @@ X <- rnorm(n, mean = Z)
 Y <- rnorm(n, mean = X + Z + 0.1 * X^2)
 dd <- data.frame(Z, X, Y)
 x <- standardize_glm(
-  formula.outcome = Y ~ X * Z,
-  family.outcome = "gaussian",
+  formula_outcome = Y ~ X * Z,
+  family_outcome = "gaussian",
   data = dd,
   values = list(X = seq(-1, 1, 0.1))
 )
@@ -149,15 +159,41 @@ x <- standardize_glm(
 # plot standardized mean as a function of x
 plot(x)
 # plot standardized mean - standardized mean at x = 0 as a function of x
-plot(x, reference = 0)
+plot(x, contrast = "difference", reference = 0)
+
+# example with transformations
+set.seed(67)
+n <- 300
+Z <- rnorm(n)
+X <- rnorm(n, mean=Z)
+Y <- rbinom(n, 1, prob=(1+exp(X+Z))^(-1))
+dd <- data.frame(Z, X, Y)
+x <- standardize_glm(
+  formula_outcome = Y ~ X + Z,
+  family_outcome = "binomial",
+  data = dd,
+  values = list(X = seq(-3,3,0.5))
+)
+summary(x, contrast = "difference", reference = 0, transform="odds")
+plot(x, contrast = "difference", reference = 0, transform="odds")
 
 }
 \references{
-Rothman K.J., Greenland S., Lash T.L. (2008). \emph{Modern Epidemiology}, 3rd edition. Lippincott, Williams \& Wilkins.
+Rothman K.J., Greenland S., Lash T.L. (2008).
+\emph{Modern Epidemiology}, 3rd edition.
+Lippincott, Williams \& Wilkins.
 
-Sjolander A. (2016). Regression standardization with the R-package stdReg. \emph{European Journal of Epidemiology} \bold{31}(6), 563-574.
+Sjolander A. (2016).
+Regression standardization with the R-package stdReg.
+\emph{European Journal of Epidemiology} \bold{31}(6), 563-574.
 
-Sjolander A. (2016). Estimation of causal effect measures with the R-package stdReg. \emph{European Journal of Epidemiology} \bold{33}(9), 847-858.
+Sjolander A. (2016).
+Estimation of causal effect measures with the R-package stdReg.
+\emph{European Journal of Epidemiology} \bold{33}(9), 847-858.
 
-Gabriel E.E., Sachs, M.C., Martinussen T., Waernbaum I., Goetghebeur E., Vansteelandt S., Sjolander A. (????), Inverse probability of treatment weighting with generalized linear outcome models for doubly robust estimation. ????
+Gabriel E.E., Sachs, M.C., Martinussen T., Waernbaum I.,
+Goetghebeur E., Vansteelandt S., Sjolander A. (????),
+Inverse probability of treatment weighting with
+generalized linear outcome models for doubly robust estimation.
+????
 }

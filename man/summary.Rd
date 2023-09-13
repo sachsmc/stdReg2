@@ -32,8 +32,8 @@
 
 \method{summary}{stdGLM}(
   object,
-  CI.type = "plain",
-  CI.level = 0.95,
+  ci_type = "plain",
+  ci_level = 0.95,
   transform = NULL,
   contrast = NULL,
   reference = NULL,
@@ -88,6 +88,11 @@ constructed, where \eqn{x_0} is a reference level specified by the
 \item{reference}{must be specified if \code{contrast} is specified.}
 
 \item{\dots}{not used.}
+
+\item{ci_type}{A string, indicating the type of confidence intervals. Either "plain", which
+gives untransformed intervals, or "log", which gives log-transformed intervals.}
+
+\item{ci_level}{Coverage probability of confidence intervals.}
 
 \item{digits}{the number of significant digits to use when printing..}
 }
