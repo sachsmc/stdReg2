@@ -165,17 +165,17 @@ plot(x, contrast = "difference", reference = 0)
 set.seed(67)
 n <- 300
 Z <- rnorm(n)
-X <- rnorm(n, mean=Z)
-Y <- rbinom(n, 1, prob=(1+exp(X+Z))^(-1))
+X <- rnorm(n, mean = Z)
+Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
 dd <- data.frame(Z, X, Y)
 x <- standardize_glm(
   formula_outcome = Y ~ X + Z,
   family_outcome = "binomial",
   data = dd,
-  values = list(X = seq(-3,3,0.5))
+  values = list(X = seq(-3, 3, 0.5))
 )
-summary(x, contrast = "difference", reference = 0, transform="odds")
-plot(x, contrast = "difference", reference = 0, transform="odds")
+summary(x, contrast = "difference", reference = 0, transform = "odds")
+plot(x, contrast = "difference", reference = 0, transform = "odds")
 
 }
 \references{

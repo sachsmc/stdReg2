@@ -151,17 +151,17 @@
 #' set.seed(67)
 #' n <- 300
 #' Z <- rnorm(n)
-#' X <- rnorm(n, mean=Z)
-#' Y <- rbinom(n, 1, prob=(1+exp(X+Z))^(-1))
+#' X <- rnorm(n, mean = Z)
+#' Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
 #' dd <- data.frame(Z, X, Y)
 #' x <- standardize_glm(
 #'   formula_outcome = Y ~ X + Z,
 #'   family_outcome = "binomial",
 #'   data = dd,
-#'   values = list(X = seq(-3,3,0.5))
+#'   values = list(X = seq(-3, 3, 0.5))
 #' )
-#' summary(x, contrast = "difference", reference = 0, transform="odds")
-#' plot(x, contrast = "difference", reference = 0, transform="odds")
+#' summary(x, contrast = "difference", reference = 0, transform = "odds")
+#' plot(x, contrast = "difference", reference = 0, transform = "odds")
 #'
 #' @export standardize_glm
 standardize_glm <- function(formula_outcome,
@@ -193,8 +193,9 @@ standardize_glm <- function(formula_outcome,
   fitnms <- names(data)
   mnams <- match(xnms, fitnms)
   if (anyNA(mnams)) {
-    stop("variable(s) ", toString(xnms[which(is.na(mnams))]),
-         " not found in ", deparse1(substitute(fit_outcome)), "$data"
+    stop(
+      "variable(s) ", toString(xnms[which(is.na(mnams))]),
+      " not found in ", deparse1(substitute(fit_outcome)), "$data"
     )
   }
   outcome <- data[, as.character(formula_outcome)[[2L]]]
@@ -217,7 +218,7 @@ standardize_glm <- function(formula_outcome,
     }
     ## Check that exposure is binary
     if (inherits(family_exposure, "function") &&
-        !(identical(family_exposure, binomial)) ||
+      !(identical(family_exposure, binomial)) ||
       (inherits(family_exposure, "characters") && family_exposure != "binomial") ||
       !is.binary(exposure) || nrow(valuesout) != 2L) {
       stop("the exposure has to be binary (0 or 1)")
@@ -617,17 +618,23 @@ plot.stdGLM <- function(x, ci_type = "plain", ci_level = 0.95,
         ylab <- c(bquote(paste(mu, "-", mu[.(reference)])), expression())
       } else {
         if (transform == "log") {
-          ylab <- c(bquote(paste(log, "(", mu, ")-", log, "(",
-            mu[.(reference)], ")")), expression())
+          ylab <- c(bquote(paste(
+            log, "(", mu, ")-", log, "(",
+            mu[.(reference)], ")"
+          )), expression())
         }
         if (transform == "logit") {
-          ylab <- c(bquote(paste(logit, "(", mu, ")-", logit,
-            "(", mu[.(reference)], ")")), expression())
+          ylab <- c(bquote(paste(
+            logit, "(", mu, ")-", logit,
+            "(", mu[.(reference)], ")"
+          )), expression())
         }
         if (transform == "odds") {
           ylab <- c(
-            bquote(paste(mu, "/(1-", mu, ")-",
-              mu[.(reference)], "/(1-", mu[.(reference)], ")")),
+            bquote(paste(
+              mu, "/(1-", mu, ")-",
+              mu[.(reference)], "/(1-", mu[.(reference)], ")"
+            )),
             expression()
           )
         }
@@ -638,17 +645,23 @@ plot.stdGLM <- function(x, ci_type = "plain", ci_level = 0.95,
         ylab <- c(bquote(paste(mu, "/", mu[.(reference)])), expression())
       } else {
         if (transform == "log") {
-          ylab <- c(bquote(paste(log, "(", mu, ")/", log, "(",
-            mu[.(reference)], ")")), expression())
+          ylab <- c(bquote(paste(
+            log, "(", mu, ")/", log, "(",
+            mu[.(reference)], ")"
+          )), expression())
         }
         if (transform == "logit") {
-          ylab <- c(bquote(paste(logit, "(", mu, ")/", logit,
-            "(", mu[.(reference)], ")")), expression())
+          ylab <- c(bquote(paste(
+            logit, "(", mu, ")/", logit,
+            "(", mu[.(reference)], ")"
+          )), expression())
         }
         if (transform == "odds") {
-          ylab <- c(bquote(paste(mu, "/(1-", mu, ")/",
+          ylab <- c(bquote(paste(
+            mu, "/(1-", mu, ")/",
             mu[.(reference)], "/(1-", mu[.(reference)],
-            ")")), expression())
+            ")"
+          )), expression())
         }
       }
     }
