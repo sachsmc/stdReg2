@@ -6,8 +6,7 @@
 \alias{print.summary.stdCoxph}
 \alias{print.stdGee}
 \alias{print.summary.stdGee}
-\alias{print.summary.stdGLM}
-\alias{print.stdGLM}
+\alias{print.std_glm}
 \alias{print.summary.parfrailty}
 \alias{print.stdParfrailty}
 \alias{print.summary.stdParfrailty}
@@ -21,9 +20,7 @@
 
 \method{print}{summary.stdGee}(x, ...)
 
-\method{print}{summary.stdGLM}(x, ...)
-
-\method{print}{stdGLM}(x, ...)
+\method{print}{std_glm}(x, ...)
 
 \method{print}{summary.parfrailty}(x, digits = max(3L, getOption("digits") - 3L), ...)
 

@@ -5,7 +5,7 @@
 \title{Get regression standardized estimates from a glm}
 \usage{
 standardize_glm(
-  formula_outcome,
+  formula,
   data,
   values,
   clusterid,
@@ -14,13 +14,16 @@ standardize_glm(
   matching_variable,
   p_population,
   case_control = FALSE,
-  family_outcome = "gaussian",
-  family_exposure = "binomial",
-  formula_exposure = NULL
+  ci_level = 0.95,
+  ci_type = "plain",
+  contrasts = NULL,
+  family = "gaussian",
+  references = NULL,
+  transforms = NULL
 )
 }
 \arguments{
-\item{formula_outcome}{The formula which is used to fit the glm model for the outcome.}
+\item{formula}{The formula which is used to fit the glm model for the outcome.}
 
 \item{data}{The data.}
 
@@ -42,17 +45,33 @@ The probability (or density) of the matched variable among the controls.}
 
 \item{case_control}{Whether the data comes from a case-control study.}
 
-\item{family_outcome}{The family argument which is used to fit the glm model for the outcome.}
+\item{ci_level}{Coverage probability of confidence intervals.}
 
-\item{family_exposure}{The family argument which is used to fit the glm model for the exposure.}
+\item{ci_type}{A string, indicating the type of confidence intervals. Either "plain", which
+gives untransformed intervals, or "log", which gives log-transformed intervals.}
 
-\item{formula_exposure}{The formula which is used to fit the glm model for the exposure.
-If not \code{NULL},
-a doubly robust estimator of the standardized estimator is used.}
+\item{contrasts}{A vector of contrasts in the following format:
+If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
+or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
+level specified by the \code{reference} argument. Has to be be \code{NULL} if no references are specified.}
+
+\item{family}{The family argument which is used to fit the glm model for the outcome.}
+
+\item{references}{A vector of references in the following format:
+If \code{contrasts} is not \code{NULL}, the desired reference level(s).}
+
+\item{transforms}{A vector of transforms in the following format:
+If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
+\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+\eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively. If the vector is \code{NULL},
+then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
-An object of class stdGLM.
+An object of class \code{std_glm}.
 This is basically a list with components estimates and covariance estimates.
+The output contains estimates for contrasts and confidence intervals
+for all combinations of \code{transforms}, \code{references} and \code{transforms}.
 }
 \description{
 Get regression standardized estimates from a glm
@@ -81,15 +100,15 @@ X <- rnorm(n, mean = Z)
 Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
 dd <- data.frame(Z, X, Y)
 x <- standardize_glm(
-  formula_outcome = Y ~ X * Z,
-  family_outcome = "binomial",
+  formula = Y ~ X * Z,
+  family = "binomial",
   data = dd,
-  values = list(X = 0:1)
+  values = list(X = 0:1),
+  contrasts = c("difference","ratio"),
+  reference = 0
 )
 x
 # different transformations of causal effects
-summary(x, reference = "0", contrast = "difference")
-summary(x, reference = "0", contrast = "ratio")
 
 # example from Sjolander (2016) with case-control data
 # here the matching variable needs to be passed as an argument
@@ -100,8 +119,8 @@ m <- mean(Mi)
 s <- sd(Mi)
 d <- 5
 standardize_glm(
-  formula_outcome = Oesophagealcancer ~ (Everhotbev + Age + Dial + Samsu + Cigs)^2,
-  family_outcome = binomial, data = singapore,
+  formula = Oesophagealcancer ~ (Everhotbev + Age + Dial + Samsu + Cigs)^2,
+  family = binomial, data = singapore,
   values = list(Everhotbev = 0:1), clusterid = "Set",
   case_control = TRUE,
   matched_density_cases = function(x) dnorm(x, m, s),
@@ -109,22 +128,6 @@ standardize_glm(
   matching_variable = Mi,
   p_population = 19.3 / 100000
 )
-
-# doubly robust estimator
-# needs to correctly specify either the outcome model or the exposure model
-# for confounding
-# NOTE: only works with binary exposures
-library(AF)
-data <- AF::clslowbwt
-x <- standardize_glm(
-  formula_outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),
-  formula_exposure = smoker ~ race * age * lwt + I(age^2) + I(lwt^2),
-  family_outcome = "gaussian",
-  family_exposure = "binomial",
-  data = data,
-  values = list(smoker = c(0, 1))
-)
-summary(x, contrast = "difference", reference = 0)
 
 # multiple exposures
 set.seed(7)
@@ -135,12 +138,13 @@ X2 <- rnorm(n)
 Y <- rbinom(n, 1, prob = (1 + exp(X1 + X2 + Z))^(-1))
 dd <- data.frame(Z, X1, X2, Y)
 x <- standardize_glm(
-  formula_outcome = Y ~ X1 + X2 + Z,
-  family_outcome = "binomial",
-  data = dd, values = list(X1 = 0:1, X2 = 0:1)
+  formula = Y ~ X1 + X2 + Z,
+  family = "binomial",
+  data = dd, values = list(X1 = 0:1, X2 = 0:1),
+  contrasts=c("difference","ratio"),
+  references="0, 0"
 )
-summary(x, reference = "0, 0", contrast = "difference")
-summary(x, reference = "0, 0", contrast = "ratio")
+x
 
 # continuous exposure
 set.seed(2)
@@ -150,8 +154,8 @@ X <- rnorm(n, mean = Z)
 Y <- rnorm(n, mean = X + Z + 0.1 * X^2)
 dd <- data.frame(Z, X, Y)
 x <- standardize_glm(
-  formula_outcome = Y ~ X * Z,
-  family_outcome = "gaussian",
+  formula = Y ~ X * Z,
+  family = "gaussian",
   data = dd,
   values = list(X = seq(-1, 1, 0.1))
 )
@@ -160,22 +164,6 @@ x <- standardize_glm(
 plot(x)
 # plot standardized mean - standardized mean at x = 0 as a function of x
 plot(x, contrast = "difference", reference = 0)
-
-# example with transformations
-set.seed(67)
-n <- 300
-Z <- rnorm(n)
-X <- rnorm(n, mean = Z)
-Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
-dd <- data.frame(Z, X, Y)
-x <- standardize_glm(
-  formula_outcome = Y ~ X + Z,
-  family_outcome = "binomial",
-  data = dd,
-  values = list(X = seq(-3, 3, 0.5))
-)
-summary(x, contrast = "difference", reference = 0, transform = "odds")
-plot(x, contrast = "difference", reference = 0, transform = "odds")
 
 }
 \references{
@@ -190,10 +178,4 @@ Regression standardization with the R-package stdReg.
 Sjolander A. (2016).
 Estimation of causal effect measures with the R-package stdReg.
 \emph{European Journal of Epidemiology} \bold{33}(9), 847-858.
-
-Gabriel E.E., Sachs, M.C., Martinussen T., Waernbaum I.,
-Goetghebeur E., Vansteelandt S., Sjolander A. (????),
-Inverse probability of treatment weighting with
-generalized linear outcome models for doubly robust estimation.
-????
 }

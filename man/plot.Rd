@@ -4,7 +4,7 @@
 \name{plot.stdCoxph}
 \alias{plot.stdCoxph}
 \alias{plot.stdGee}
-\alias{plot.stdGLM}
+\alias{plot.std_glm}
 \alias{plot.stdParfrailty}
 \title{Plots Cox regression standardization fit}
 \usage{
@@ -30,7 +30,7 @@
   ...
 )
 
-\method{plot}{stdGLM}(
+\method{plot}{std_glm}(
   x,
   ci_type = "plain",
   ci_level = 0.95,
@@ -93,7 +93,7 @@ This is a \code{plot} method for class \code{"stdCoxph"}.
 
 This is a \code{plot} method for class \code{"stdGee"}.
 
-This is a \code{plot} method for class \code{"stdGLM"}.
+This is a \code{plot} method for class \code{"std_glm"}.
 
 This is a \code{plot} method for class \code{"stdParfrailty"}.
 }
