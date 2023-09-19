@@ -414,7 +414,7 @@ standardize_glm_dr <- function(formula_exposure,
 
   ## IF for the parametric models
   if_exposure <- t(vcov(fit_exposure) %*% t(sandwich::estfun(fit_exposure)))
-  if_outcome <- t(vcov(fit_outcome) %*% t(sandwich::estfun(fit_outcome_unweighted)))
+  if_outcome <- t(vcov(fit_outcome_unweighted) %*% t(sandwich::estfun(fit_outcome_unweighted)))
 
   eif_terms_1 <- (exposure / g_weights * (outcome - est1) +
     (est1 - standardized_estimate_1)) / n
