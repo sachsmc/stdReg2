@@ -57,7 +57,7 @@ test_that("non-valid transformation does not work", {
     family = "gaussian",
     data = dd,
     values = list(X = seq(-1, 1, 0.1)),
-    transform="log"
+    transform = "log"
   ))
 })
 
@@ -70,7 +70,7 @@ test_that("warning occurs when reference has been specified but not contrast", {
     family_outcome = gaussian,
     family_exposure = binomial,
     data = data,
-    values = list(smoker = c(0, 1)),reference=0
+    values = list(smoker = c(0, 1)), reference = 0
   ))
 })
 
@@ -117,7 +117,7 @@ test_that("check estimates and standard errors standardize_glm (dr estimator)", 
     family_outcome = gaussian,
     family_exposure = binomial,
     data = data,
-    values = list(smoker = c(0, 1)), contrasts="difference",reference=0
+    values = list(smoker = c(0, 1)), contrasts = "difference", reference = 0
   )
   expect_equal(x$res_contrast$V2$est_table$Estimate[2], -223.6736, tolerance = 1e-5)
   expect_equal(x$res_contrast$V2$est_table$`lower 0.95`[2], -446.0778, tolerance = 1e-5)

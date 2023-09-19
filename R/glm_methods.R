@@ -22,26 +22,29 @@
 #' The probability (or density) of the matched variable among the controls.
 #' @param matching_variable
 #' The matching variable extracted from the data set.
-#' @param ci_type A string, indicating the type of confidence intervals. Either "plain", which
-#' gives untransformed intervals, or "log", which gives log-transformed intervals.
+#' @param ci_type A string, indicating the type of confidence intervals.
+#' Either "plain", which gives untransformed intervals, or "log", which gives
+#' log-transformed intervals.
 #' @param ci_level Coverage probability of confidence intervals.
 #' @param transforms A vector of transforms in the following format:
 #' If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
 #' mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
 #' \eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
-#' \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively. If the vector is \code{NULL},
-#' then \eqn{\psi(x)=\theta(x)}.
+#' \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
+#' If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.
 #' @param contrasts A vector of contrasts in the following format:
 #' If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
 #' or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
-#' level specified by the \code{reference} argument. Has to be be \code{NULL} if no references are specified.
+#' level specified by the \code{reference} argument. Has to be be \code{NULL}
+if no references are specified.
 #' @param references A vector of references in the following format:
 #' If \code{contrasts} is not \code{NULL}, the desired reference level(s).
 #' @returns
 #' An object of class \code{std_glm}.
 #' This is basically a list with components estimates and covariance estimates.
 #' The output contains estimates for contrasts and confidence intervals
-#' for all combinations of \code{transforms}, \code{references} and \code{transforms}.
+#' for all combinations of \code{transforms}, \code{references}
+# 'and \code{transforms}.
 #' @details \code{standardize_glm} performs regression standardization
 #' in generalized linear models,
 #' at specified values of the exposure, over the sample covariate distribution.
@@ -77,7 +80,7 @@
 #'   family = "binomial",
 #'   data = dd,
 #'   values = list(X = 0:1),
-#'   contrasts = c("difference","ratio"),
+#'   contrasts = c("difference", "ratio"),
 #'   reference = 0
 #' )
 #' x
@@ -114,8 +117,8 @@
 #'   formula = Y ~ X1 + X2 + Z,
 #'   family = "binomial",
 #'   data = dd, values = list(X1 = 0:1, X2 = 0:1),
-#'   contrasts=c("difference","ratio"),
-#'   references="0, 0"
+#'   contrasts = c("difference", "ratio"),
+#'   references = "0, 0"
 #' )
 #' x
 #'
@@ -164,6 +167,7 @@ standardize_glm <- function(formula,
   check_values_data(values, data)
 
   ## Set various relevant variables
+  valuesout <- outcome <- exposure_names <- NULL
   list2env(get_outcome_exposure(formula, data, values), envir = environment())
 
   if (case_control) {
@@ -180,7 +184,8 @@ standardize_glm <- function(formula,
     n0 <- n - n1
     weights <- outcome * p_population / p_star +
       (1.0 - outcome) * (1.0 - p_population) / (1.0 - p_star) *
-        matched_density_controls(matching_variable) / matched_density_cases(matching_variable)
+        matched_density_controls(matching_variable) /
+        matched_density_cases(matching_variable)
   } else {
     weights <- rep(1.0, n)
   }
@@ -227,8 +232,8 @@ standardize_glm <- function(formula,
   ## Estimate the term that "corresponds" to var{U_{v,i}(\nu)} of Equation (5)
   ee_beta <- sandwich_fit[["U"]]
   ee_means <- weights * (predmat - matrix(rep(estimates, each = n),
-                                          nrow = n,
-                                          ncol = nrow(valuesout)
+    nrow = n,
+    ncol = nrow(valuesout)
   )) ## EE corresponding to the standardized means (or rather each term in estimating equation)
   ee <- cbind(ee_means, ee_beta)
   if (missing(clusterid)) {
@@ -262,8 +267,8 @@ standardize_glm <- function(formula,
 
   upper_i_mat <- cbind(-diag(nrow(valuesout)) * mean(weights), dmu_dbeta)
   lower_i_mat <- cbind(matrix(0.0,
-                              nrow = length(fit_outcome[["coefficients"]]),
-                              ncol = nrow(valuesout)
+    nrow = length(fit_outcome[["coefficients"]]),
+    ncol = nrow(valuesout)
   ), sandwich_fit[["I"]])
   i_mat <- rbind(upper_i_mat, lower_i_mat)
 
@@ -275,17 +280,19 @@ standardize_glm <- function(formula,
   }
   fit_exposure <- NULL
 
-  format_result_standardize_glm(contrasts,
-                                references,
-                                transforms,
-                                valuesout,
-                                variance,
-                                fit_outcome,
-                                fit_exposure,
-                                exposure_names,
-                                estimates,
-                                ci_type,
-                                ci_level)
+  format_result_standardize_glm(
+    contrasts,
+    references,
+    transforms,
+    valuesout,
+    variance,
+    fit_outcome,
+    fit_exposure,
+    exposure_names,
+    estimates,
+    ci_type,
+    ci_level
+  )
 }
 
 #' @title Get regression standardized doubly-robust estimates from a glm
@@ -324,20 +331,20 @@ standardize_glm <- function(formula,
 #'   family_outcome = "gaussian",
 #'   family_exposure = "binomial",
 #'   data = data,
-#'   values = list(smoker = c(0, 1)), contrasts="difference", reference = 0
+#'   values = list(smoker = c(0, 1)), contrasts = "difference", reference = 0
 #' )
 #'
 #' set.seed(6)
 #' n <- 100
 #' Z <- rnorm(n)
-#' X <- rbinom(n, 1, prob = (1+exp(Z))^(-1))
+#' X <- rbinom(n, 1, prob = (1 + exp(Z))^(-1))
 #' Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
 #' dd <- data.frame(Z, X, Y)
 #' x <- standardize_glm_dr(
-#'   formula_outcome = Y ~ X * Z, formula_exposure = X~Z,
+#'   formula_outcome = Y ~ X * Z, formula_exposure = X ~ Z,
 #'   family_outcome = "binomial",
 #'   data = dd,
-#'   values = list(X = 0:1), references = c(0,1), contrasts = c("difference"), transforms=c("odds")
+#'   values = list(X = 0:1), references = c(0, 1), contrasts = c("difference"), transforms = c("odds")
 #' )
 #'
 #' @export standardize_glm_dr
@@ -363,6 +370,7 @@ standardize_glm_dr <- function(formula_exposure,
   check_values_data(values, data)
 
   ## Set various relevant variables
+  valuesout <- outcome <- exposure_names <- exposure <- NULL
   list2env(get_outcome_exposure(formula_outcome, data, values), envir = environment())
 
   if (length(exposure_names) > 1L) {
@@ -372,9 +380,9 @@ standardize_glm_dr <- function(formula_exposure,
 
   ## Check that exposure is binary
   if (inherits(family_exposure, "function") &&
-      !(identical(family_exposure, binomial)) ||
-      (inherits(family_exposure, "character") && family_exposure != "binomial") ||
-      !is.binary(exposure) || nrow(valuesout) != 2L) {
+    !(identical(family_exposure, binomial)) ||
+    (inherits(family_exposure, "character") && family_exposure != "binomial") ||
+    !is.binary(exposure) || nrow(valuesout) != 2L) {
     stop("the exposure has to be binary (0 or 1)")
   }
   data[["weights"]] <- rep(1, n)
@@ -409,25 +417,25 @@ standardize_glm_dr <- function(formula_exposure,
   if_outcome <- t(vcov(fit_outcome) %*% t(sandwich::estfun(fit_outcome_unweighted)))
 
   eif_terms_1 <- (exposure / g_weights * (outcome - est1) +
-                    (est1 - standardized_estimate_1)) / n
+    (est1 - standardized_estimate_1)) / n
   eif_terms_0 <- ((1.0 - exposure) / (1.0 - g_weights) * (outcome - est0) +
-                    (est0 - standardized_estimate_0)) / n
+    (est0 - standardized_estimate_0)) / n
   g_dot <- family(fit_exposure)[["mu.eta"]](predict(fit_exposure, type = "link"))
   r_dot_0 <- family(fit_outcome)[["mu.eta"]](predict(fit_outcome_unweighted, newdata = data_exposure_0, type = "link"))
   r_dot_1 <- family(fit_outcome)[["mu.eta"]](predict(fit_outcome_unweighted, newdata = data_exposure_1, type = "link"))
 
   ## NOTE: chain rule is used for gi.dot and ri.dot and signs for terms corresponding to unexposed are changed
   k_term_1 <- (-1.0 / n) * matrix(((exposure * g_dot) / g_weights^2L) *
-                                    (outcome - est1), nrow = 1L, ncol = n) %*% mme
+    (outcome - est1), nrow = 1L, ncol = n) %*% mme
   k_term_0 <- (1.0 / n) * matrix((((1.0 - exposure) * g_dot) / (1.0 - g_weights)^2L) *
-                                   (outcome - est0), nrow = 1L, ncol = n) %*% mme
+    (outcome - est0), nrow = 1L, ncol = n) %*% mme
 
   ## NOTE: we clearly have to use the unweighted outcome fits, so that the Lterms correspond with the one in the article
   l_term_1 <- (1.0 / n) * matrix(r_dot_1 * (1.0 - exposure / g_weights),
-                                 nrow = 1L, ncol = n
+    nrow = 1L, ncol = n
   ) %*% mmoe
   l_term_0 <- (1.0 / n) * matrix(r_dot_0 * ((1.0 - exposure) / (1.0 - g_weights) - 1.0),
-                                 nrow = 1L, ncol = n
+    nrow = 1L, ncol = n
   ) %*% mmou
 
   if_1 <- rowSums(cbind(eif_terms_1, (if_exposure %*% t(k_term_1)), (if_outcome %*% t(l_term_1))))
@@ -436,20 +444,22 @@ standardize_glm_dr <- function(formula_exposure,
   variance <- matrix(c(sum(if_0^2L), covar, covar, sum(if_1^2L)), nrow = 2L)
   estimates <- c(standardized_estimate_0, standardized_estimate_1)
 
-  format_result_standardize_glm(contrasts,
-                                references,
-                                transforms,
-                                valuesout,
-                                variance,
-                                fit_outcome,
-                                fit_exposure,
-                                exposure_names,
-                                estimates,
-                                ci_type,
-                                ci_level)
+  format_result_standardize_glm(
+    contrasts,
+    references,
+    transforms,
+    valuesout,
+    variance,
+    fit_outcome,
+    fit_exposure,
+    exposure_names,
+    estimates,
+    ci_type,
+    ci_level
+  )
 }
 
-check_values_data <- function(values, data){
+check_values_data <- function(values, data) {
   xnms <- names(values)
   fitnms <- names(data)
   mnams <- match(xnms, fitnms)
@@ -461,7 +471,7 @@ check_values_data <- function(values, data){
   }
 }
 
-get_outcome_exposure <- function(formula_outcome, data, values){
+get_outcome_exposure <- function(formula_outcome, data, values) {
   outcome <- data[, as.character(formula_outcome)[[2L]]]
   if (!is.data.frame(values)) {
     valuesout <- expand.grid(values)
@@ -470,19 +480,19 @@ get_outcome_exposure <- function(formula_outcome, data, values){
   }
   exposure_names <- colnames(valuesout)
   exposure <- data[, exposure_names]
-  list(outcome=outcome,exposure=exposure,exposure_names=exposure_names,valuesout=valuesout)
+  list(outcome = outcome, exposure = exposure, exposure_names = exposure_names, valuesout = valuesout)
 }
 
-fit_glm <- function(formula, family, data, response){
+fit_glm <- function(formula, family, data, response) {
+  weights <- NULL
   ## fit with quasipoisson/quasibinomial to suppress warnings
-  if (response == "outcome"){
-    if ((inherits(family, "function") && identical(family, binomial))
-        || (inherits(family, "character") && family == "binomial")){
-      family <- quasibinomial
-    }
-    else if ((inherits(family, "function") && identical(family, poisson))
-             || (inherits(family, "character") && family == "poisson")){
-      family <- quasipoisson
+  if (response == "outcome") {
+    if ((inherits(family, "function") && identical(family, stats::binomial)) ||
+      (inherits(family, "character") && family == "binomial")) {
+      family <- stats::quasibinomial
+    } else if ((inherits(family, "function") && identical(family, stats::poisson)) ||
+      (inherits(family, "character") && family == "poisson")) {
+      family <- stats::quasipoisson
     }
   }
 
@@ -496,9 +506,8 @@ fit_glm <- function(formula, family, data, response){
     }
   )
   if (inherits(fit, "simpleError")) {
-    stop("glm for ", response," failed with error: ", fit[["message"]])
-  }
-  else {
+    stop("glm for ", response, " failed with error: ", fit[["message"]])
+  } else {
     fit
   }
 }
@@ -513,7 +522,8 @@ format_result_standardize_glm <- function(contrasts,
                                           exposure_names,
                                           estimates,
                                           ci_type,
-                                          ci_level){
+                                          ci_level) {
+  contrast <- reference <- NULL
   ## Add names to asymptotic covariance matrix
   rownames(variance) <- colnames(variance) <-
     do.call("paste", c(lapply(seq_len(ncol(valuesout)), function(i) {
@@ -522,44 +532,51 @@ format_result_standardize_glm <- function(contrasts,
 
   valuesout[["se"]] <- sqrt(diag(variance))
   valuesout[["estimates"]] <- estimates
-  res <- structure(list(estimates = valuesout,
-                        covariance = variance,
-                        fit_outcome = fit_outcome,
-                        fit_exposure = fit_exposure,
-                        exposure_names = exposure_names),
-                   class = "std_glm_helper")
+  res <- structure(
+    list(
+      estimates = valuesout,
+      covariance = variance,
+      fit_outcome = fit_outcome,
+      fit_exposure = fit_exposure,
+      exposure_names = exposure_names
+    ),
+    class = "std_glm_helper"
+  )
   ## change contrasts, references and transforms to NULL in string format
-  if (is.null(contrasts) && !is.null(references) || !is.null(contrasts) && is.null(references)){
+  if (is.null(contrasts) && !is.null(references) || !is.null(contrasts) && is.null(references)) {
     warning("Reference level or contrast not specified. Defaulting to NULL. ")
   }
-  contrasts <- unique(c("NULL",contrasts))
-  references <- unique(c("NULL",references))
-  transforms <- unique(c("NULL",transforms))
-  grid <- expand.grid(contrast=contrasts,
-                      reference=references,
-                      transform = transforms)
-  grid <- subset(grid, (contrast=="NULL" & reference=="NULL")
-                 | (contrast!="NULL" & reference!="NULL"))
-  summary_fun <- function(contrast, reference, transform)
+  contrasts <- unique(c("NULL", contrasts))
+  references <- unique(c("NULL", references))
+  transforms <- unique(c("NULL", transforms))
+  grid <- expand.grid(
+    contrast = contrasts,
+    reference = references,
+    transform = transforms
+  )
+  grid <- subset(grid, (contrast == "NULL" & reference == "NULL") |
+    (contrast != "NULL" & reference != "NULL"))
+  summary_fun <- function(contrast, reference, transform) {
     summary.std_glm_helper(res,
-                           ci_type=ci_type,
-                           ci_level = ci_level,
-                           transform = transform,
-                           contrast = contrast,
-                           reference = reference)
+      ci_type = ci_type,
+      ci_level = ci_level,
+      transform = transform,
+      contrast = contrast,
+      reference = reference
+    )
+  }
   res_contrast <- as.list(as.data.frame(do.call(mapply, c("summary_fun", unname(as.list(grid))))))
-  res_fin <- list(res_contrast= res_contrast, res = res)
+  res_fin <- list(res_contrast = res_contrast, res = res)
   class(res_fin) <- "std_glm"
   res_fin
 }
 
 summary.std_glm_helper <- function(object, ci_type = "plain", ci_level = 0.95,
-                           transform = NULL, contrast = NULL, reference = NULL, ...) {
-  null_helper <- function(x){
-    if (is.null(x) || x=="NULL"){
+                                   transform = NULL, contrast = NULL, reference = NULL, ...) {
+  null_helper <- function(x) {
+    if (is.null(x) || x == "NULL") {
       NULL
-    }
-    else {
+    } else {
       x
     }
   }
@@ -573,21 +590,21 @@ summary.std_glm_helper <- function(object, ci_type = "plain", ci_level = 0.95,
   n_x_levs <- nrow(est_old_table)
   if (!is.null(transform)) {
     if (transform == "log") {
-      if (any(est <= 0)){
+      if (any(est <= 0)) {
         stop("transform='log' requires that the (standardized) estiamtes are positive.")
       }
       dtransform_dm <- diag(1.0 / est, nrow = n_x_levs, ncol = n_x_levs)
       est <- log(est)
     }
     if (transform == "logit") {
-      if (any(est <= 0 | est >= 1)){
+      if (any(est <= 0 | est >= 1)) {
         stop("transform='logit' requires that the (standardized) estimates take values in (0, 1).")
       }
       dtransform_dm <- diag(1.0 / (est * (1.0 - est)), nrow = n_x_levs, ncol = n_x_levs)
       est <- logit(est)
     }
     if (transform == "odds") {
-      if (any(est== 1)){
+      if (any(est == 1)) {
         stop("transform='odds' requires that the (standardized) estimates are not equal to 1. ")
       }
       dtransform_dm <- diag(1.0 / (1.0 - est)^2L, nrow = n_x_levs, ncol = n_x_levs)
@@ -602,8 +619,7 @@ summary.std_glm_helper <- function(object, ci_type = "plain", ci_level = 0.95,
     reference <- gsub(" ", "", reference, fixed = TRUE)
     if (length(object[["exposure_names"]]) > 1L) {
       est_old_table[["exposure"]] <- do.call(paste, c(est_old_table[, object[["exposure_names"]]], sep = ","))
-    }
-    else {
+    } else {
       est_old_table[["exposure"]] <- est_old_table[[object[["exposure_names"]]]]
     }
 
@@ -661,7 +677,7 @@ summary.std_glm_helper <- function(object, ci_type = "plain", ci_level = 0.95,
 #' @export print.std_glm
 #' @export
 print.std_glm <- function(x, ...) {
-  if (!is.null(x[["res"]][["fit_exposure"]])){
+  if (!is.null(x[["res"]][["fit_exposure"]])) {
     cat("Doubly robust estimator with: \n")
     cat("\nExposure formula: ")
     print(x[["res"]][["fit_exposure"]][["formula"]])
@@ -674,8 +690,8 @@ print.std_glm <- function(x, ...) {
   cat("Exposure: ", toString(x[["res"]][["exposure_names"]]), "\n")
   cat("\n")
   cat("Tables: \n")
-  for (l in seq_len(length(x[["res_contrast"]]))){
-    temp <- x[["res_contrast"]][[paste0("V",l)]]
+  for (l in seq_len(length(x[["res_contrast"]]))) {
+    temp <- x[["res_contrast"]][[paste0("V", l)]]
     if (!is.null(temp[["transform"]])) {
       cat("Transform: ", levels(temp[["transform"]])[[temp[["transform"]]]], "\n")
     }
@@ -712,7 +728,7 @@ print.std_glm <- function(x, ...) {
 #' @export plot.std_glm
 #' @export
 plot.std_glm <- function(x, ci_type = "plain", ci_level = 0.95,
-                        transform = NULL, contrast = NULL, reference = NULL, ...) {
+                         transform = NULL, contrast = NULL, reference = NULL, ...) {
   object <- x[["res"]]
   x <- object[["estimates"]][, object[["exposure_names"]]]
 
