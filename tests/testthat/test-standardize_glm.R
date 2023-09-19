@@ -32,16 +32,16 @@ test_that("multiple exposure gives error when using the doubly robust estimator"
 test_that("check that it fails with p_population unspecified", {
   library(AF)
   data("singapore")
-  Mi <- singapore$Age
-  m <- mean(Mi)
-  s <- sd(Mi)
+  mi <- singapore$Age
+  m <- mean(mi)
+  s <- sd(mi)
   d <- 5
   expect_error(standardize_glm(
     formula = Oesophagealcancer ~ (Everhotbev + Age + Dial + Samsu + Cigs)^2,
     family = binomial, data = singapore,
     values = list(Everhotbev = 0:1), clusterid = "Set", case_control = TRUE,
     matched_density_cases = function(x) dnorm(x, m, s),
-    matched_density_controls = function(x) dnorm(x, m - d, s), matching_variable = Mi
+    matched_density_controls = function(x) dnorm(x, m - d, s), matching_variable = mi
   ))
 })
 
@@ -92,16 +92,16 @@ test_that("check estimates and standard errors standardize_glm (simple estimator
 test_that("check estimates and standard errors standardize_glm (case-control estimator)", {
   library(AF)
   data("singapore")
-  Mi <- singapore$Age
-  m <- mean(Mi)
-  s <- sd(Mi)
+  mi <- singapore$Age
+  m <- mean(mi)
+  s <- sd(mi)
   d <- 5
   x <- suppressWarnings(standardize_glm(
     formula = Oesophagealcancer ~ (Everhotbev + Age + Dial + Samsu + Cigs)^2,
     family = binomial, data = singapore,
     values = list(Everhotbev = 0:1), clusterid = "Set", case_control = TRUE,
     matched_density_cases = function(x) dnorm(x, m, s),
-    matched_density_controls = function(x) dnorm(x, m - d, s), matching_variable = Mi,
+    matched_density_controls = function(x) dnorm(x, m - d, s), matching_variable = mi,
     p_population = 19.3 / 100000
   ))
   expect_equal(x$res_contrast$V1$estimates$estimates, c(0.000127787218723152, 0.00057018810096904), tolerance = 1e-5)

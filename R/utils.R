@@ -284,7 +284,7 @@ Hfun <- function(fit, data, fit.detail) {
 }
 
 is.binary <- function(v) {
-  if (is.numeric(v) & all(v == 0 | v == 1, na.rm = TRUE)) {
+  if (is.numeric(v) && all(v == 0 | v == 1, na.rm = TRUE)) {
     TRUE
   } else {
     FALSE

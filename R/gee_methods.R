@@ -158,7 +158,7 @@ stdGee <- function(fit, data, X, x, clusterid, subsetnew) {
     if (is.factor(x)) {
       temp <- x
       levels(x) <- levels(data[, X])
-      x[1:length(x)] <- temp
+      x[seq_len(length(x))] <- temp
     } else {
       if (is.factor(data[, X])) {
         x <- factor(x)

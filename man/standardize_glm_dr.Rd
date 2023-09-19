@@ -32,13 +32,15 @@ at which marginal means of the outcome will be estimated.}
 
 \item{ci_level}{Coverage probability of confidence intervals.}
 
-\item{ci_type}{A string, indicating the type of confidence intervals. Either "plain", which
-gives untransformed intervals, or "log", which gives log-transformed intervals.}
+\item{ci_type}{A string, indicating the type of confidence intervals.
+Either "plain", which gives untransformed intervals, or "log", which gives
+log-transformed intervals.}
 
 \item{contrasts}{A vector of contrasts in the following format:
 If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
 or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
-level specified by the \code{reference} argument. Has to be be \code{NULL} if no references are specified.}
+level specified by the \code{reference} argument. Has to be be \code{NULL}
+if no references are specified.}
 
 \item{family_outcome}{The family argument which is used to fit the glm model for the outcome.}
 
@@ -51,14 +53,14 @@ If \code{contrasts} is not \code{NULL}, the desired reference level(s).}
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
 mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
 \eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
-\eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively. If the vector is \code{NULL},
-then \eqn{\psi(x)=\theta(x)}.}
+\eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
+If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
 An object of class \code{std_glm}.
 This is basically a list with components estimates and covariance estimates.
 The output contains estimates for contrasts and confidence intervals
-for all combinations of \code{transforms}, \code{references} and \code{transforms}.
+for all combinations of \code{transforms}, \code{references}
 }
 \description{
 Get regression standardized doubly-robust estimates from a glm
@@ -84,20 +86,20 @@ x <- standardize_glm_dr(
   family_outcome = "gaussian",
   family_exposure = "binomial",
   data = data,
-  values = list(smoker = c(0, 1)), contrasts="difference", reference = 0
+  values = list(smoker = c(0, 1)), contrasts = "difference", reference = 0
 )
 
 set.seed(6)
 n <- 100
 Z <- rnorm(n)
-X <- rbinom(n, 1, prob = (1+exp(Z))^(-1))
+X <- rbinom(n, 1, prob = (1 + exp(Z))^(-1))
 Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
 dd <- data.frame(Z, X, Y)
 x <- standardize_glm_dr(
-  formula_outcome = Y ~ X * Z, formula_exposure = X~Z,
+  formula_outcome = Y ~ X * Z, formula_exposure = X ~ Z,
   family_outcome = "binomial",
   data = dd,
-  values = list(X = 0:1), references = c(0,1), contrasts = c("difference"), transforms=c("odds")
+  values = list(X = 0:1), references = c(0, 1), contrasts = c("difference"), transforms = c("odds")
 )
 
 }

@@ -4,10 +4,10 @@ test_that("check estimates and standard errors against older package (coxph)", {
   n <- 300
   Z <- rnorm(n)
   X <- rnorm(n, mean = Z)
-  T <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
+  time <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
   C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
-  U <- pmin(T, C) # time at risk
-  D <- as.numeric(T < C) # event indicator
+  U <- pmin(time, C) # time at risk
+  D <- as.numeric(time < C) # event indicator
   dd <- data.frame(Z, X, U, D)
   fit <- coxph(formula = Surv(U, D) ~ X + Z + X * Z, data = dd, method = "breslow")
   fit.std <- stdCoxph(fit = fit, data = dd, X = "X", x = seq(-1, 1, 0.5), t = 3)

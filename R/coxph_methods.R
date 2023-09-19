@@ -135,7 +135,6 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
     stop("No special terms are allowed in the formula")
   }
 
-  formula <- fit$formula
   npar <- length(fit$coef)
   fit.detail <- coxph.detail(object = fit)
 
@@ -189,13 +188,13 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
     if (is.factor(x)) {
       temp <- x
       levels(x) <- levels(data[, X])
-      x[1:length(x)] <- temp
+      x[seq_len(length(x))] <- temp
     } else {
       if (is.factor(data[, X])) {
         x <- factor(x)
         temp <- x
         levels(x) <- levels(data[, X])
-        x[1:length(x)] <- temp
+        x[seq_len(length(x))] <- temp
       }
     }
   }
@@ -204,7 +203,8 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
 
   # Assign value to t if missing.
   if (missing(t)) {
-    t <- fit.detail$time
+    stop("You have to specify the times (t) at which to estimate the standardized survival function")
+    # t <- fit.detail$time
   }
   input$t <- t
   nt <- length(t)
@@ -606,7 +606,7 @@ plot.stdCoxph <- function(x, plot.CI = TRUE, CI.type = "plain", CI.level = 0.95,
   args[names(dots)] <- dots
   do.call("plot", args = args)
   legend <- NULL
-  for (i in 1:nX) {
+  for (i in seq_len(nX)) {
     lines(t, est[, i], col = i)
     if (plot.CI) {
       lines(t, upper[, i], lty = "dashed", col = i)
@@ -614,11 +614,6 @@ plot.stdCoxph <- function(x, plot.CI = TRUE, CI.type = "plain", CI.level = 0.95,
     }
     temp <- as.character(x[i])
     legend <- c(legend, paste(object$input$X, "=", object$input$x[i]))
-  }
-  if (is.na(match("ylim", names(args)))) {
-    yl <- ylim[2]
-  } else {
-    yl <- args$ylim[2]
   }
   legend(
     x = legendpos, legend = legend, lty = rep(1, length(x)), col = 1:length(x),

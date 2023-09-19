@@ -17,6 +17,7 @@ Imports:
     data.table,
     drgee,
     numDeriv,
+    riskRegression,
     sandwich,
     survival,
 Suggests: 

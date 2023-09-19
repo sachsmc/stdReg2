@@ -72,10 +72,12 @@ simswag <- replicate(2000, {
   fit.std <- stdGlm(fit = fit, data = dd, X = "X", x = 0:1)
   cis <- list(
     summary(fit.std, contrast = "ratio", reference = 0)$est.table[2, 3:4],
-    confint(ref_grid(fit, counterfactuals = "X") |> regrid(transform = "log") |>
-      contrast("trt.vs.ctrl"), type = "response") |> (\(x){
-      c(x$asymp.LCL, x$asymp.UCL)
-    })()
+    confint(ref_grid(fit, counterfactuals = "X") |>
+      regrid(transform = "log") |>
+      contrast("trt.vs.ctrl"), type = "response") |>
+      (\(x){
+        c(x$asymp.LCL, x$asymp.UCL)
+      })()
   )
 
   sapply(cis, \(x) {

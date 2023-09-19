@@ -36,7 +36,7 @@
 #' If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
 #' or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
 #' level specified by the \code{reference} argument. Has to be be \code{NULL}
-if no references are specified.
+#' if no references are specified.
 #' @param references A vector of references in the following format:
 #' If \code{contrasts} is not \code{NULL}, the desired reference level(s).
 #' @returns

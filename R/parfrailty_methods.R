@@ -181,8 +181,8 @@ parfrailty <- function(formula, data, clusterid, init) {
     H.eta.beta <- eta * log(t / alpha) * (H * X)
     Hstar.eta.beta <- eta * log(tstar / alpha) * (Hstar * X)
     Hstar.eta.beta[tstar == 0] <- 0
-    H.beta <- cbind(H[rep(1:length(H), nbeta)] * XX, clusters)
-    Hstar.beta <- cbind(Hstar[rep(1:length(H), nbeta)] * XX, clusters)
+    H.beta <- cbind(H[rep(seq_len(length(H)), nbeta)] * XX, clusters)
+    Hstar.beta <- cbind(Hstar[rep(seq_len(length(H)), nbeta)] * XX, clusters)
 
     # aggregate over clusterid
     h.eta <- aggr(h.eta, clusters)
@@ -250,18 +250,16 @@ parfrailty <- function(formula, data, clusterid, init) {
     # derivatives of gradients wrt (logalpha, logeta, logphi) wrt beta
     H <- (t / alpha)^eta * exp(B)
     Hstar <- (tstar / alpha)^eta * exp(B)
-    XX <- c(X) * X[rep(1:nrow(X), nbeta), ]
-    nbeta_rep <- rep(1:nbeta, each = nrow(X))
+    XX <- c(X) * X[rep(seq_len(nrow(X)), nbeta), ]
+    nbeta_rep <- rep(seq_len(nbeta), each = nrow(X))
     H.beta <- as.matrix(aggr(H * X, clusters))
-    H.beta2 <- H.beta[rep(1:nrow(H.beta), nbeta), ] * c(H.beta)
+    H.beta2 <- H.beta[rep(seq_len(nrow(H.beta)), nbeta), ] * c(H.beta)
     Hstar.beta <- as.matrix(aggr(Hstar * X, clusters))
-    Hstar.beta2 <- Hstar.beta[rep(1:nrow(Hstar.beta), nbeta), ] * c(Hstar.beta)
+    Hstar.beta2 <- Hstar.beta[rep(seq_len(nrow(Hstar.beta)), nbeta), ] * c(Hstar.beta)
     Hstar.beta.beta <- data.table(nbeta_rep, clusters, Hstar * XX)
     H.beta.beta <- data.table(nbeta_rep, clusters, H * XX)
     H <- aggr(H, clusters)
     Hstar <- aggr(Hstar, clusters)
-    Hstar2 <- phi * Hstar.beta2 / (1 + phi * Hstar)^2
-    H2 <- phi * (1 + d * phi) * H.beta2 / (1 + phi * H)^2
     Hstar.beta.beta <- data.table(clusters, nbeta_rep, Hstar.beta.beta)
     Hstar.beta.beta <- as.matrix(Hstar.beta.beta[,
       j = lapply(.SD, sum),
@@ -272,8 +270,6 @@ parfrailty <- function(formula, data, clusterid, init) {
       j = lapply(.SD, sum),
       by = list(nbeta_rep, clusters)
     ])[, -1:-2, drop = FALSE]
-    Hstar1 <- Hstar.beta.beta / (1 + phi * Hstar)
-    H1 <- (1 + d * phi) * H.beta.beta / (1 + phi * H)
     H.alpha.beta <- -eta * H.beta
     Hstar.alpha.beta <- -eta * Hstar.beta
 
@@ -466,8 +462,6 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
   ## Function call
   cat("Call:", "\n")
   print.default(x$call)
-  level <- x$CI.level * 100
-  CI.text <- paste0(as.character(level), "%")
   cat("\nEstimated parameters in the Gamma-Weibull frailty model", "\n")
   cat("\n")
   table.est <- cbind(x$est, exp(x$est), x$se, x$zvalue, x$pvalue)
@@ -687,13 +681,13 @@ stdParfrailty <- function(fit, data, X, x, t, clusterid, subsetnew) {
     if (is.factor(x)) {
       temp <- x
       levels(x) <- levels(data[, X])
-      x[1:length(x)] <- temp
+      x[seq_len(length(x))] <- temp
     } else {
       if (is.factor(data[, X])) {
         x <- factor(x)
         temp <- x
         levels(x) <- levels(data[, X])
-        x[1:length(x)] <- temp
+        x[seq_len(length(x))] <- temp
       }
     }
   }
@@ -702,7 +696,8 @@ stdParfrailty <- function(fit, data, X, x, t, clusterid, subsetnew) {
 
   # assign value to t if missing
   if (missing(t)) {
-    t <- end[event == 1]
+    stop("You have to specify the times (t) at which to estimate the standardized survival function")
+    # t <- end[event == 1]
   }
   t <- sort(t)
   input$t <- t

@@ -47,13 +47,15 @@ The probability (or density) of the matched variable among the controls.}
 
 \item{ci_level}{Coverage probability of confidence intervals.}
 
-\item{ci_type}{A string, indicating the type of confidence intervals. Either "plain", which
-gives untransformed intervals, or "log", which gives log-transformed intervals.}
+\item{ci_type}{A string, indicating the type of confidence intervals.
+Either "plain", which gives untransformed intervals, or "log", which gives
+log-transformed intervals.}
 
 \item{contrasts}{A vector of contrasts in the following format:
 If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
 or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
-level specified by the \code{reference} argument. Has to be be \code{NULL} if no references are specified.}
+level specified by the \code{reference} argument. Has to be be \code{NULL}
+if no references are specified.}
 
 \item{family}{The family argument which is used to fit the glm model for the outcome.}
 
@@ -64,14 +66,14 @@ If \code{contrasts} is not \code{NULL}, the desired reference level(s).}
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
 mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
 \eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
-\eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively. If the vector is \code{NULL},
-then \eqn{\psi(x)=\theta(x)}.}
+\eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
+If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
 An object of class \code{std_glm}.
 This is basically a list with components estimates and covariance estimates.
 The output contains estimates for contrasts and confidence intervals
-for all combinations of \code{transforms}, \code{references} and \code{transforms}.
+for all combinations of \code{transforms}, \code{references}
 }
 \description{
 Get regression standardized estimates from a glm
@@ -104,7 +106,7 @@ x <- standardize_glm(
   family = "binomial",
   data = dd,
   values = list(X = 0:1),
-  contrasts = c("difference","ratio"),
+  contrasts = c("difference", "ratio"),
   reference = 0
 )
 x
@@ -141,8 +143,8 @@ x <- standardize_glm(
   formula = Y ~ X1 + X2 + Z,
   family = "binomial",
   data = dd, values = list(X1 = 0:1, X2 = 0:1),
-  contrasts=c("difference","ratio"),
-  references="0, 0"
+  contrasts = c("difference", "ratio"),
+  references = "0, 0"
 )
 x
 

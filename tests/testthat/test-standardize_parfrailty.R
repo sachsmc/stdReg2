@@ -13,21 +13,21 @@ test_that("check estimates and standard errors against older package (parfrailty
   X <- rnorm(n * m)
   # reparametrize scale as in rweibull function
   weibull.scale <- alpha / (U * exp(beta * X))^(1 / eta)
-  T <- rweibull(n * m, shape = eta, scale = weibull.scale)
+  time <- rweibull(n * m, shape = eta, scale = weibull.scale)
 
   # right censoring
   C <- runif(n * m, 0, 10)
-  D <- as.numeric(T < C)
-  T <- pmin(T, C)
+  D <- as.numeric(time < C)
+  time <- pmin(time, C)
 
   # strong left-truncation
   L <- runif(n * m, 0, 2)
-  incl <- T > L
+  incl <- time > L
   incl <- ave(x = incl, id, FUN = sum) == m
-  dd <- data.frame(L, T, D, X, id)
+  dd <- data.frame(L, time, D, X, id)
   dd <- dd[incl, ]
 
-  fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
+  fit <- parfrailty(formula = Surv(L, time, D) ~ X, data = dd, clusterid = "id")
   fit.std <- stdParfrailty(fit = fit, data = dd, X = "X", x = seq(-1, 1, 0.5), t = 3, clusterid = "id")
   x <- summary(fit.std)
 
