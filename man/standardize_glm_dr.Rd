@@ -70,7 +70,7 @@ Get regression standardized doubly-robust estimates from a glm
 in generalized linear models, see e.g., documentation for \code{standardize_glm_dr}. Specifically,
 this version uses a doubly robust estimator for standardization, meaning inference is valid
 when either the outcome regression or the exposure model is correctly specified
-and there is no unmeasered confounding.
+and there is no unmeasured confounding.
 }
 \examples{
 

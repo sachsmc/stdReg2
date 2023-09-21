@@ -311,7 +311,7 @@ standardize_glm <- function(formula,
 #' in generalized linear models, see e.g., documentation for \code{standardize_glm_dr}. Specifically,
 #' this version uses a doubly robust estimator for standardization, meaning inference is valid
 #' when either the outcome regression or the exposure model is correctly specified
-#' and there is no unmeasered confounding.
+#' and there is no unmeasured confounding.
 #' @references Gabriel E.E., Sachs, M.C., Martinussen T., Waernbaum I.,
 #' Goetghebeur E., Vansteelandt S., Sjolander A. (????),
 #' Inverse probability of treatment weighting with

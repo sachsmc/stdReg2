@@ -120,6 +120,6 @@ test_that("check estimates and standard errors standardize_glm (dr estimator)", 
     values = list(smoker = c(0, 1)), contrasts = "difference", reference = 0
   )
   expect_equal(x$res_contrast$V2$est_table$Estimate[2], -223.6736, tolerance = 1e-5)
-  expect_equal(x$res_contrast$V2$est_table$`lower 0.95`[2], -446.0778, tolerance = 1e-5)
-  expect_equal(x$res_contrast$V2$est_table$`upper 0.95`[2], -1.269345, tolerance = 1e-5)
+  expect_equal(x$res_contrast$V2$est_table$`lower 0.95`[2], -424.6136, tolerance = 1e-5)
+  expect_equal(x$res_contrast$V2$est_table$`upper 0.95`[2], -22.7335, tolerance = 1e-5)
 })

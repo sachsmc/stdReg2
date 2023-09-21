@@ -4,24 +4,59 @@
 \alias{standardize}
 \title{Get standardized estimates using the g-formula with a custom model}
 \usage{
-standardize(arguments, fitter, times = NULL, predict_fun, data, values)
+standardize(
+  arguments,
+  data,
+  fitter,
+  predict_fun,
+  values,
+  B = NULL,
+  ci_level = 0.95,
+  contrasts = NULL,
+  references = NULL,
+  seed = NULL,
+  times = NULL,
+  transforms = NULL
+)
 }
 \arguments{
 \item{arguments}{The arguments to be used in the fitter function as a \code{list}.}
 
-\item{fitter}{The function to call to fit the data.}
+\item{data}{The data.}
 
-\item{times}{For use with survival data. Set to \code{NULL} otherwise.}
+\item{fitter}{The function to call to fit the data.}
 
 \item{predict_fun}{The function used to predict the means/probabilities
 for a new data set on the response level. For survival data,
 this should be a matrix where each column is the time, and each
 row the data.}
 
-\item{data}{The data used.}
-
 \item{values}{A named list or data.frame specifying the variables and values
 at which marginal means of the outcome will be estimated.}
+
+\item{B}{Number of nonparametric bootstrap resamples. Default is \code{NULL} (no bootstrap).}
+
+\item{ci_level}{Coverage probability of confidence intervals.}
+
+\item{contrasts}{A vector of contrasts in the following format:
+If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
+or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
+level specified by the \code{reference} argument. Has to be be \code{NULL}
+if no references are specified.}
+
+\item{references}{A vector of references in the following format:
+If \code{contrasts} is not \code{NULL}, the desired reference level(s).}
+
+\item{seed}{The seed to use with the nonparametric bootstrap.}
+
+\item{times}{For use with survival data. Set to \code{NULL} otherwise.}
+
+\item{transforms}{A vector of transforms in the following format:
+If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
+\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+\eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
+If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
 An object of class \code{std_helper}.
@@ -60,11 +95,13 @@ x <- standardize(
   predict_fun = prob_predict.glm,
   fitter = "glm",
   data = dd,
-  values = list(X = seq(-1, 1, 0.1))
-)$estimates
-
+  values = list(X = seq(-1, 1, 0.1)),
+  B=100,
+  references=0,
+  contrasts="difference"
+)
 x
-
+\dontrun{
 prob_predict.coxph <- function(...) 1 - riskRegression::predictRisk(...)
 require(survival)
 set.seed(68)
@@ -87,8 +124,24 @@ x <- standardize(
   data = dd,
   times = 1:5,
   predict_fun = prob_predict.coxph,
-  values = list(X = seq(-1, 1, 0.1))
-)$estimates
+  values = list(X = seq(-1, 1, 0.1)),
+  B=100,
+  references=0,
+  contrasts="difference"
+)
 x
+}
+}
+\references{
+Rothman K.J., Greenland S., Lash T.L. (2008).
+\emph{Modern Epidemiology}, 3rd edition.
+Lippincott, Williams \& Wilkins.
 
+Sjolander A. (2016).
+Regression standardization with the R-package stdReg.
+\emph{European Journal of Epidemiology} \bold{31}(6), 563-574.
+
+Sjolander A. (2016).
+Estimation of causal effect measures with the R-package stdReg.
+\emph{European Journal of Epidemiology} \bold{33}(9), 847-858.
 }

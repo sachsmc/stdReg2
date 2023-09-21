@@ -1,4 +1,5 @@
 #' @title Get standardized estimates using the g-formula with a custom model
+#' @inherit standardize_glm
 #' @param arguments
 #' The arguments to be used in the fitter function as a \code{list}.
 #' @param fitter The function to call to fit the data.
@@ -7,11 +8,8 @@
 #' this should be a matrix where each column is the time, and each
 #' row the data.
 #' @param times For use with survival data. Set to \code{NULL} otherwise.
-#' @param data
-#' The data used.
-#' @param values
-#' A named list or data.frame specifying the variables and values
-#' at which marginal means of the outcome will be estimated.
+#' @param B Number of nonparametric bootstrap resamples. Default is \code{NULL} (no bootstrap).
+#' @param seed The seed to use with the nonparametric bootstrap.
 #' @returns
 #' An object of class \code{std_helper}.
 #' This is basically a list with components estimates and fit for the outcome model.
@@ -44,11 +42,13 @@
 #'   predict_fun = prob_predict.glm,
 #'   fitter = "glm",
 #'   data = dd,
-#'   values = list(X = seq(-1, 1, 0.1))
-#' )$estimates
-#'
+#'   values = list(X = seq(-1, 1, 0.1)),
+#'   B=100,
+#'   references=0,
+#'   contrasts="difference"
+#' )
 #' x
-#'
+#' \dontrun{
 #' prob_predict.coxph <- function(...) 1 - riskRegression::predictRisk(...)
 #' require(survival)
 #' set.seed(68)
@@ -71,17 +71,26 @@
 #'   data = dd,
 #'   times = 1:5,
 #'   predict_fun = prob_predict.coxph,
-#'   values = list(X = seq(-1, 1, 0.1))
-#' )$estimates
+#'   values = list(X = seq(-1, 1, 0.1)),
+#'   B=100,
+#'   references=0,
+#'   contrasts="difference"
+#' )
 #' x
-#'
+#' }
 #' @export standardize
 standardize <- function(arguments,
-                        fitter,
-                        times = NULL,
-                        predict_fun,
                         data,
-                        values) {
+                        fitter,
+                        predict_fun,
+                        values,
+                        B = NULL,
+                        ci_level = 0.95,
+                        contrasts = NULL,
+                        references = NULL,
+                        seed = NULL,
+                        times = NULL,
+                        transforms = NULL) {
   ## Preparation and various checks
   n <- nrow(data)
 
@@ -102,132 +111,326 @@ standardize <- function(arguments,
   exposure <- data[, exposure_names]
 
   fit_outcome <- fit_helper(arguments, fitter, data)
-  if (is.null(times)) {
-    estimates <- rep(NA, nrow(valuesout))
-  } else {
-    estimates <- matrix(NA, ncol = length(times), nrow = nrow(valuesout))
-    colnames(estimates) <- paste("t =", times)
-  }
-
-  for (i in seq_len(nrow(valuesout))) {
-    data_x <- do.call("transform", c(
-      list(data),
-      valuesout[i, , drop = FALSE]
-    ))
-
-    ## Save the predictions for data_x
+  estimate_fun <- function(valuesout,times,data, fit_outcome) {
     if (is.null(times)) {
-      estimates[i] <- mean(predict_fun(object = fit_outcome, newdata = data_x))
+      estimates <- rep(NA, nrow(valuesout))
     } else {
-      estimates[i, ] <- colMeans(predict_fun(object = fit_outcome, newdata = data_x, times = times))
+      estimates <- matrix(NA, ncol = length(times), nrow = nrow(valuesout))
+      colnames(estimates) <- paste("t =", times)
     }
+
+    for (i in seq_len(nrow(valuesout))) {
+      data_x <- do.call("transform", c(
+        list(data),
+        valuesout[i, , drop = FALSE]
+      ))
+
+      ## Save the predictions for data_x
+      if (is.null(times)) {
+        estimates[i] <- mean(predict_fun(object = fit_outcome, newdata = data_x))
+      } else {
+        estimates[i, ] <- colMeans(predict_fun(object = fit_outcome, newdata = data_x, times = times))
+      }
+    }
+    estimates
+  }
+  estimates <- estimate_fun(valuesout,times,data, fit_outcome)
+  estimates_boot <- list()
+  if (!is.null(B)){
+      if (!is.null(seed)){
+        set.seed(seed)
+      }
+      for (b in seq_len(B)){
+        data_boot <- data[sample(seq_len(n),replace=TRUE), ]
+        fit_outcome_boot <- fit_helper(arguments, fitter, data_boot)
+        estimates_boot[[b]] <- estimate_fun(valuesout,times,data_boot,fit_outcome_boot)
+      }
   }
   valuesout <- cbind(valuesout, estimates)
-  res <- structure(
-    list(
-      estimates = valuesout,
-      fit_outcome = fit_outcome
-    ),
-    class = "std_helper"
+  format_result_standardize(
+    B,
+    contrasts,
+    references,
+    transforms,
+    valuesout,
+    fit_outcome,
+    exposure_names,
+    estimates_boot,
+    estimates,
+    ci_level,
+    times
   )
-  res
 }
 
-#' @title Get the causal mean restricted survival time using the g-formula with a custom model
-#' @param time_grid The time grid to be used for numerical integration.
-#' @inherit standardize
-#' @details
-#' Let \eqn{Y}, \eqn{X}, and \eqn{Z} be the outcome, the exposure, and a
-#' vector of covariates, respectively.
-#' \code{standardize} uses a
-#' model to estimate the standardized
-#' mean \eqn{\theta(x)=\int_0^L E\{E(I(T > u)|X=x,Z)\}} du,
-#' where \eqn{x} is a specific value of \eqn{X},
-#' and the outer expectation is over the marginal distribution of \eqn{Z}, where \eqn{T}
-#' is the uncensored survival time. Here \eqn{L} is end-of-study specified as the last
-#' time point in \code{time_grid}. The integral is approximated by a \code{time_grid}.
-#' @examples
-#'
-#' library(survival)
-#' prob_predict.coxph <- function(...) 1 - riskRegression::predictRisk(...)
-#' set.seed(6)
-#' n <- 500
-#' Z <- rnorm(n)
-#' X <- rnorm(n, mean = Z)
-#' T <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
-#' C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
-#' U <- pmin(T, C) # time at risk
-#' D <- as.numeric(T < C) # event indicator
-#' dd <- data.frame(Z, X, U, D)
-#' x <- standardize_restricted_mean(
-#'   arguments = list(
-#'     formula = Surv(U, D) ~ X + Z + X * Z,
-#'     method = "breslow",
-#'     x = TRUE,
-#'     y = TRUE
-#'   ),
-#'   fitter = "coxph",
-#'   data = dd,
-#'   time_grid = seq(0, 5, 0.001)[-1],
-#'   predict_fun = prob_predict.coxph,
-#'   values = list(X = 0.5)
-#' )
-#' @export standardize_restricted_mean
-standardize_restricted_mean <- function(arguments,
-                                        fitter,
-                                        time_grid,
-                                        predict_fun,
-                                        data,
-                                        values) {
-  ## Preparation and various checks
-  n <- nrow(data)
-
-  if (!inherits(values, c("data.frame", "list"))) {
-    stop("values is not an object of class list or data.frame")
-  }
-
-  ## Check that the names of values appear in the data
-  check_values_data(values, data)
-
-  ## Set various relevant variables
-  if (!is.data.frame(values)) {
-    valuesout <- expand.grid(values)
-  } else {
-    valuesout <- values
-  }
-  exposure_names <- colnames(valuesout)
-  exposure <- data[, exposure_names]
-
-  fit_outcome <- fit_helper(arguments, fitter, data)
-  estimates <- rep(NA, nrow(valuesout))
-
-  for (i in seq_len(nrow(valuesout))) {
-    data_x <- do.call("transform", c(
-      list(data),
-      valuesout[i, , drop = FALSE]
-    ))
-    temp <- predict_fun(object = fit_outcome, newdata = data_x, times = time_grid)
-    trapezoidal_rule <- function(time_grid, y_val) {
-      sum((y_val[1:(length(time_grid) - 1)] + y_val[2:(length(time_grid))]) / 2 * diff(time_grid))
+summary_standardize <- function(object, ci_level = 0.95,
+                                   transform = NULL, contrast = NULL, reference = NULL, ...) {
+  null_helper <- function(x) {
+    if (is.null(x) || x == "NULL") {
+      NULL
+    } else {
+      x
     }
-    estimates[i] <- mean(apply(temp, 1, function(y_val) trapezoidal_rule(time_grid, y_val)))
   }
-  valuesout <- cbind(valuesout, estimates)
+  transform <- null_helper(transform)
+  contrast <- null_helper(contrast)
+  reference <- null_helper(reference)
+  B <- object[["B"]]
+  est_old_table <- object[["estimates"]]
+  n_x_levs <- nrow(est_old_table)
+  times <- object[["times"]]
+  if (!is.null(times)){
+    est <- est_old_table[,which(!(colnames(est_old_table) %in% object[["exposure_names"]]))]
+  }
+  else {
+    est <- est_old_table[["estimates"]]
+  }
+  if (!is.null(B)){
+    if (!is.null(times)){
+      estimates_boot <- array(NA,c(B,n_x_levs,length(times)))
+      for (t in seq_len(length(times))){
+        for (b in seq_len(B)){
+          estimates_boot[b,,t] <- object[["estimates_boot"]][[b]][,t]
+        }
+      }
+    }
+    else {
+      estimates_boot <- matrix(unlist(object[["estimates_boot"]]), nrow=B, ncol=n_x_levs,byrow=TRUE)
+    }
+  }
+  if (!is.null(transform)) {
+    if (transform == "log") {
+      if (any(est <= 0)) {
+        stop("transform='log' requires that the (standardized) estiamtes are positive.")
+      }
+      est <- log(est)
+      if (!is.null(B)){
+        if (any(estimates_boot <= 0)) {
+          stop("transform='log' requires that the (standardized) estiamtes are positive.")
+        }
+        estimates_boot <- log(estimates_boot)
+      }
+    }
+    if (transform == "logit") {
+      if (any(est <= 0 | est >= 1)) {
+        stop("transform='logit' requires that the (standardized) estimates take values in (0, 1).")
+      }
+      est <- logit(est)
+      if (!is.null(B)){
+        if (any(estimates_boot <= 0 | estimates_boot >= 1)) {
+          stop("transform='logit' requires that the (standardized) estimates take values in (0, 1).")
+        }
+        estimates_boot <- log(estimates_boot)
+      }
+    }
+    if (transform == "odds") {
+      if (any(est == 1)) {
+        stop("transform='odds' requires that the (standardized) estimates are not equal to 1. ")
+      }
+      est <- odds(est)
+      if (!is.null(B)){
+        if (any(estimates_boot == 1)) {
+          stop("transform='odds' requires that the (standardized) estimates are not equal to 1. ")
+        }
+        estimates_boot <- log(estimates_boot)
+      }
+    }
+  }
+  if (!is.null(contrast)) {
+    if (is.null(reference)) {
+      stop("When specifying contrast, reference must be specified as well")
+    }
+    reference <- gsub(" ", "", reference, fixed = TRUE)
+    if (length(object[["exposure_names"]]) > 1L) {
+      est_old_table[["exposure"]] <- do.call(paste, c(est_old_table[, object[["exposure_names"]]], sep = ","))
+    } else {
+      est_old_table[["exposure"]] <- est_old_table[[object[["exposure_names"]]]]
+    }
+
+    referencepos <- match(reference, est_old_table[["exposure"]])
+    if (is.na(referencepos)) {
+      stop("reference must be a value in x")
+    }
+    if (contrast == "difference") {
+      if (is.null(times)){
+        est <- est - est[referencepos]
+        if (!is.null(B)){
+          estimates_boot <- estimates_boot-estimates_boot[,referencepos]
+        }
+      }
+      else {
+        est <- sweep(est,2,t(est[referencepos,]))
+        if (!is.null(B)){
+          for(t_ind in seq_len(length(times))){
+            estimates_boot[,,t_ind] <- estimates_boot[,,t_ind]-estimates_boot[,referencepos,t_ind]
+          }
+        }
+      }
+
+
+    } else if (contrast == "ratio") {
+      if (is.null(times)){
+        est <- est / est[referencepos]
+        if (!is.null(B)){
+          estimates_boot <- estimates_boot / estimates_boot[,referencepos]
+        }
+      }
+      else {
+        est <- sweep(est,2,t(est[referencepos,]),"/")
+        if (!is.null(B)){
+          for(t_ind in seq_len(length(times))){
+            estimates_boot[,,t_ind] <- estimates_boot[,,t_ind] / estimates_boot[,referencepos,t_ind]
+          }
+        }
+      }
+    } else {
+      stop("contrast not supported.")
+    }
+  }
+  if(!is.null(B)){
+    alpha <- 1-ci_level
+    if (!is.null(times)){
+      ci <- apply(estimates_boot,c(2,3),function(x) c(stats::quantile(x,alpha/2),stats::quantile(x,1-alpha/2)))
+    }
+    else {
+      ci <- t(apply(estimates_boot,2,function(x) c(stats::quantile(x,alpha/2),stats::quantile(x,1-alpha/2))))
+    }
+  }
+
+  if (is.factor(reference)) {
+    reference <- as.character(reference)
+  }
+  if (is.null(times)){
+    if (!is.null(contrast)) {
+      est_table <- data.frame(est_old_table[["exposure"]], as.matrix(est, nrow = length(est), ncol = 1L))
+      colnames(est_table) <- c("Exposure", "Estimate")
+    } else {
+      est_table <- data.frame(est_old_table[, object[["exposure_names"]]], as.matrix(est, nrow = length(est), ncol = 1L))
+      colnames(est_table) <- c(object[["exposure_names"]], "Estimate")
+    }
+    if(!is.null(B)){
+      ci_boot_df <- data.frame(ci)
+      colnames(ci_boot_df) <- c(paste("lower", ci_level), paste("upper", ci_level))
+      est_table <- cbind(est_table,ci_boot_df)
+    }
+  }
+  else {
+    if (!is.null(contrast)){
+      if (is.null(B)){
+        est_table <- cbind(est_old_table[["exposure"]],est)
+        colnames(est_table) <- c("Exposure", paste0("estimate", " (t=", times,")"))
+      }
+      else {
+        res_table <- list()
+        for(t_ind in seq_len(length(times))){
+          temp <- cbind(est[,t_ind],t(ci[,,t_ind]))
+          colnames(temp) <- c(paste0("estimate", " (t=", times[t_ind],")"),
+                              paste0(c("lower ","upper "), ci_level, " (t=", times[t_ind],")"))
+          res_table[[t_ind]] <- temp
+        }
+        est_table <- cbind(est_old_table[["exposure"]],do.call("cbind", res_table))
+      }
+    }
+    else {
+      if (is.null(B)){
+        est_table <- est_old_table
+        colnames(est_table) <- c(object[["exposure_names"]], paste0("estimate", " (t=", times,")"))
+      }
+      else {
+        res_table <- list()
+        ind_start <- max(which(colnames(est_old_table) == object[["exposure_names"]]))
+        for(t_ind in seq_len(length(times))){
+          temp <- cbind(est_old_table[,t_ind+ind_start],t(ci[,,t_ind]))
+          colnames(temp) <- c(paste0("estimate", " (t=", times[t_ind],")"),
+                              paste0(c("lower ","upper "), ci_level, " (t=", times[t_ind],")"))
+          res_table[[t_ind]] <- temp
+        }
+        est_table <- cbind(est_old_table[, object[["exposure_names"]]],do.call("cbind", res_table))
+      }
+    }
+  }
+  out <- c(object, list(
+    est_table = est_table, transform = transform,
+    contrast = contrast, reference = reference,
+    ci_level = ci_level
+  ))
+  return(out)
+}
+
+
+format_result_standardize <- function(B,
+                                      contrasts,
+                                      references,
+                                      transforms,
+                                      valuesout,
+                                      fit_outcome,
+                                      exposure_names,
+                                      estimates_boot,
+                                      estimates,
+                                      ci_level,
+                                      times) {
+  contrast <- reference <- NULL
   res <- structure(
     list(
+      B=B,
       estimates = valuesout,
-      fit_outcome = fit_outcome
-    ),
-    class = "std_helper"
+      fit_outcome = fit_outcome,
+      estimates_boot = estimates_boot,
+      exposure_names = exposure_names,
+      times = times
+    )
   )
-  res
+  ## change contrasts, references and transforms to NULL in string format
+  if (is.null(contrasts) && !is.null(references) || !is.null(contrasts) && is.null(references)) {
+    warning("Reference level or contrast not specified. Defaulting to NULL. ")
+  }
+  contrasts <- unique(c("NULL", contrasts))
+  references <- unique(c("NULL", references))
+  transforms <- unique(c("NULL", transforms))
+  grid <- expand.grid(
+    contrast = contrasts,
+    reference = references,
+    transform = transforms
+  )
+  grid <- subset(grid, (contrast == "NULL" & reference == "NULL") |
+                   (contrast != "NULL" & reference != "NULL"))
+  summary_fun <- function(contrast, reference, transform) {
+    summary_standardize(res,
+                        ci_level = ci_level,
+                        transform = transform,
+                        contrast = contrast,
+                        reference = reference
+    )
+  }
+  res_contrast <- as.list(as.data.frame(do.call(mapply, c("summary_fun", unname(as.list(grid))))))
+  res_fin <- list(res_contrast = res_contrast, res = res)
+  class(res_fin) <- "std_helper"
+  res_fin
 }
 
 #' @rdname print
 #' @export print.std_helper
 #' @export
 print.std_helper <- function(x, ...) {
-  print(x$estimates)
+  B <- x[["res"]][["B"]]
+  if (!is.null(B)){
+    cat("Number of bootstraps: " , B, "\n")
+    cat("Confidence intervals are based on percentile bootstrap confidence intervals \n\n")
+  }
+  cat("Exposure: ", toString(x[["res"]][["exposure_names"]]), "\n")
+  cat("Tables: \n \n")
+  for (l in seq_len(length(x[["res_contrast"]]))) {
+    temp <- x[["res_contrast"]][[paste0("V", l)]]
+    if (!is.null(temp[["transform"]])) {
+      cat("Transform: ", levels(temp[["transform"]])[[temp[["transform"]]]], "\n")
+    }
+    if (!is.null(temp[["contrast"]])) {
+      cat("Reference level: ", temp[["input"]][["X"]], "=", temp[["reference"]], "\n")
+      cat("Contrast: ", levels(temp[["contrast"]])[[temp[["contrast"]]]], "\n")
+    }
+    print(temp[["est_table"]], digits = 3L)
+    cat("\n")
+  }
+
 }
 
 
