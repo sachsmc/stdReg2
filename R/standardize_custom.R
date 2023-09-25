@@ -147,14 +147,14 @@ standardize <- function(arguments,
     if (!is.null(seed)) {
       set.seed(seed)
     }
-    pb <- txtProgressBar(min = 1,
+    pb <- utils::txtProgressBar(min = 1,
                          max = B,
                          style = 3,
                          width = 50)
 
     cat("Bootstrapping... This may take some time... \n")
     for (b in seq_len(B)) {
-      setTxtProgressBar(pb, b)
+      utils::setTxtProgressBar(pb, b)
       data_boot <- data[sample(seq_len(n), replace = TRUE), ]
       fit_outcome_boot <- fit_helper(arguments, fitter, data_boot)
       estimates_boot[[b]] <- estimate_fun(valuesout, times, data_boot, fit_outcome_boot)

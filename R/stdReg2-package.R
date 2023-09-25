@@ -8,5 +8,5 @@
 #' @importFrom stats ave binomial family glm model.extract model.frame
 #' @importFrom stats model.matrix optim pnorm predict predict.glm
 #' @importFrom stats printCoefmat qnorm residuals stepfun terms var vcov
-#' @importFrom utils setTxtProgressBar
+#' @importFrom utils setTxtProgressBar txtProgressBar
 NULL
