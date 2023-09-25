@@ -48,6 +48,10 @@
 #'   contrasts = "difference"
 #' )
 #' x
+#' plot(x)
+#' plot(x, reference = 0, contrast = "difference")
+#' plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
+#'
 #' \dontrun{
 #' prob_predict.coxph <- function(...) 1 - riskRegression::predictRisk(...)
 #' require(survival)
@@ -71,12 +75,15 @@
 #'   data = dd,
 #'   times = 1:5,
 #'   predict_fun = prob_predict.coxph,
-#'   values = list(X = seq(-1, 1, 0.1)),
+#'   values = list(X = c(-1, 0, 1)),
 #'   B = 100,
 #'   references = 0,
 #'   contrasts = "difference"
 #' )
 #' x
+#' plot(x)
+#' plot(x, reference = 0, contrast = "difference")
+#' plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
 #' }
 #' @export standardize
 standardize <- function(arguments,
@@ -140,7 +147,14 @@ standardize <- function(arguments,
     if (!is.null(seed)) {
       set.seed(seed)
     }
+    pb <- txtProgressBar(min = 1,
+                         max = B,
+                         style = 3,
+                         width = 50)
+
+    cat("Bootstrapping... This may take some time... \n")
     for (b in seq_len(B)) {
+      setTxtProgressBar(pb, b)
       data_boot <- data[sample(seq_len(n), replace = TRUE), ]
       fit_outcome_boot <- fit_helper(arguments, fitter, data_boot)
       estimates_boot[[b]] <- estimate_fun(valuesout, times, data_boot, fit_outcome_boot)
@@ -399,5 +413,117 @@ fit_helper <- function(args, fitter, data) {
     stop("fitter failed with error: ", fit[["message"]])
   } else {
     fit
+  }
+}
+
+summary.plot_help <- function(object,
+                              CI.level = NULL,
+                              ci_level = NULL,
+                              transform,
+                              contrast,
+                              reference,
+                              ...) {
+  times <- object$input$t
+  reference <- ifelse(is.null(reference), "NULL", as.character(reference))
+  contrast <- ifelse(is.null(contrast), "NULL", as.character(contrast))
+  transform <- ifelse(is.null(transform), "NULL", as.character(transform))
+  level_exists <- FALSE
+  for (res_cont in object[["res_contrasts"]]) {
+    res_cont[["reference"]] <- ifelse(is.null(res_cont[["reference"]]), "NULL", as.character(res_cont[["reference"]]))
+    res_cont[["contrast"]] <- ifelse(is.null(res_cont[["contrast"]]), "NULL", as.character(res_cont[["contrast"]]))
+    res_cont[["transform"]] <- ifelse(is.null(res_cont[["transform"]]), "NULL", as.character(res_cont[["transform"]]))
+
+    if ((res_cont[["ci_level"]] == CI.level || res_cont[["ci_level"]] == ci_level) &&
+      (identical(res_cont[["transform"]], transform)) &&
+      (identical(res_cont[["contrast"]], contrast)) &&
+      (identical(res_cont[["reference"]], reference))) {
+      level_exists <- TRUE
+      xlab <- res_cont[["exposure_names"]]
+      x <- res_cont[["est_table"]][, 1]
+      break
+    }
+  }
+  if (!level_exists) {
+    stop("The reference, transform or contrast could not be located in the fitted object.")
+  }
+  res_table <- res_cont[["est_table"]]
+  if (!is.null(times)) {
+    res <- list()
+    B <- object[["input"]][["B"]]
+    for (t_ind in seq_len(length(times))) {
+      if (!is.null(B)) {
+        res[[t_ind]] <- data.frame(
+          Estimate = res_table[, 3 * t_ind - 1],
+          Std.Er = NA,
+          lower = res_table[, 3 * t_ind],
+          upper = res_table[, 3 * t_ind + 1]
+        )
+      } else {
+        res[[t_ind]] <- data.frame(
+          Estimate = res_table[, t_ind + 1],
+          Std.Er = NA,
+          lower = NA,
+          upper = NA
+        )
+      }
+    }
+    list(est.table = res)
+  } else {
+    B <- object[["B"]]
+    if (is.null(B)) {
+      list(est_table = data.frame(res_table[, 1:2], Std.Er. = NA, lower = NA, upper = NA))
+    } else {
+      list(est_table = data.frame(res_table[, 1:2], Std.Er. = NA, res_table[, 3:4]))
+    }
+  }
+}
+
+#' @rdname plot
+#' @export plot.std_helper
+#' @export
+plot.std_helper <- function(x,
+                            plot_ci = TRUE,
+                            ci_level = 0.95,
+                            transform = NULL,
+                            contrast = NULL,
+                            reference = NULL, ...) {
+  dots <- list(...)
+  times <- x[["res"]][["times"]]
+  B <- x[["res"]][["B"]]
+
+  if (length(x[["res"]][["exposure_names"]]) > 1L) {
+    stop("cannot do plot with multiple exposures")
+  }
+
+  if (!is.null(times)) {
+    obj <- list(
+      input = list(
+        x = x[["res"]][["estimates"]][, 1],
+        t = times,
+        B = B
+      ),
+      res_contrasts = x[["res_contrast"]]
+    )
+    class(obj) <- "plot_help"
+    plot.stdCoxph(
+      x = obj,
+      plot.CI = !is.null(B) && plot_ci,
+      CI.level = ci_level,
+      transform = transform,
+      reference = reference,
+      contrast = contrast
+    )
+  } else {
+    temp <- x
+    temp[["res"]][["res_contrasts"]] <- x[["res_contrast"]]
+    class(temp[["res"]]) <- "plot_help"
+    plot.std_glm(
+      x = temp,
+      plot_ci = !is.null(B) && plot_ci,
+      ci_level = ci_level,
+      transform = transform,
+      reference = reference,
+      contrast = contrast
+    )
   }
 }

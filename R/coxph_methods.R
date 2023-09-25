@@ -589,7 +589,9 @@ plot.stdCoxph <- function(x, plot.CI = TRUE, CI.type = "plain", CI.level = 0.95,
     object = object, CI.type = CI.type, CI.level = CI.level,
     transform = transform, contrast = contrast, reference = reference
   )
+
   temp <- Reduce(f = rbind, x = sum.obj$est.table)
+
   est <- matrix(temp[, 1], nrow = nt, ncol = nX, byrow = TRUE)
   lower <- matrix(temp[, 3], nrow = nt, ncol = nX, byrow = TRUE)
   upper <- matrix(temp[, 4], nrow = nt, ncol = nX, byrow = TRUE)

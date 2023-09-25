@@ -706,7 +706,8 @@ print.std_glm <- function(x, ...) {
 
 #' @title Plots GLM regression standardization fit
 #' @description This is a \code{plot} method for class \code{"std_glm"}.
-#' @param x An object of class \code{"std_glm"}
+#' @param x An object of class \code{"std_glm"}.
+#' @param plot_ci if \code{TRUE}, add the confidence intervals to the plot.
 #' @param ci_type A string, indicating the type of confidence intervals. Either "plain", which
 #' gives untransformed intervals, or "log", which gives log-transformed intervals.
 #' @param ci_level Coverage probability of confidence intervals.
@@ -727,7 +728,7 @@ print.std_glm <- function(x, ...) {
 #' @rdname plot
 #' @export plot.std_glm
 #' @export
-plot.std_glm <- function(x, ci_type = "plain", ci_level = 0.95,
+plot.std_glm <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
                          transform = NULL, contrast = NULL, reference = NULL, ...) {
   object <- x[["res"]]
   x <- object[["estimates"]][, object[["exposure_names"]]]
@@ -818,16 +819,22 @@ plot.std_glm <- function(x, ci_type = "plain", ci_level = 0.95,
     transform = transform, contrast = contrast, reference = reference
   )
   est <- sum.obj[["est_table"]][, 2L]
-  lower <- sum.obj[["est_table"]][, 4L]
-  upper <- sum.obj[["est_table"]][, 5L]
-  ylim <- c(min(c(lower, upper)), max(c(lower, upper)))
+  if (plot_ci) {
+    lower <- sum.obj[["est_table"]][, 4L]
+    upper <- sum.obj[["est_table"]][, 5L]
+    ylim <- c(min(c(lower, upper)), max(c(lower, upper)))
+  } else {
+    ylim <- c(min(est), max(est))
+  }
   if (is.numeric(x) && length(x) > 1L) {
     args <- list(x = x, y = x, xlab = xlab, ylab = ylab, ylim = ylim, type = "n")
     args[names(dots)] <- dots
     do.call("plot", args = args)
     lines(x, est)
-    lines(x, upper, lty = 3L)
-    lines(x, lower, lty = 3L)
+    if (plot_ci) {
+      lines(x, upper, lty = 3L)
+      lines(x, lower, lty = 3L)
+    }
   }
   if (is.factor(x) || is.binary(x) || (is.numeric(x) && length(x) == 1L)) {
     x_seq <- seq_len(length(x))
@@ -838,10 +845,16 @@ plot.std_glm <- function(x, ci_type = "plain", ci_level = 0.95,
     args[names(dots)] <- dots
     do.call("plot", args = args)
     points(x_seq, est)
-    points(x_seq, upper, pch = 0L)
-    points(x_seq, lower, pch = 0L)
-    for (i in x_seq) {
-      lines(x = c(i, i), y = c(lower[[i]], upper[[i]]), lty = "dashed")
+    if (plot_ci) {
+      points(x_seq, upper, pch = 0L)
+      points(x_seq, lower, pch = 0L)
+      for (i in x_seq) {
+        lines(x = c(i, i), y = c(lower[[i]], upper[[i]]), lty = "dashed")
+      }
+    } else {
+      for (i in x_seq) {
+        lines(x = c(i, i), lty = "dashed")
+      }
     }
     mtext(text = x, side = 1L, at = x_seq)
   }

@@ -96,11 +96,15 @@ x <- standardize(
   fitter = "glm",
   data = dd,
   values = list(X = seq(-1, 1, 0.1)),
-  B=100,
-  references=0,
-  contrasts="difference"
+  B = 100,
+  references = 0,
+  contrasts = "difference"
 )
 x
+plot(x)
+plot(x, reference = 0, contrast = "difference")
+plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
+
 \dontrun{
 prob_predict.coxph <- function(...) 1 - riskRegression::predictRisk(...)
 require(survival)
@@ -124,12 +128,15 @@ x <- standardize(
   data = dd,
   times = 1:5,
   predict_fun = prob_predict.coxph,
-  values = list(X = seq(-1, 1, 0.1)),
-  B=100,
-  references=0,
-  contrasts="difference"
+  values = list(X = c(-1, 0, 1)),
+  B = 100,
+  references = 0,
+  contrasts = "difference"
 )
 x
+plot(x)
+plot(x, reference = 0, contrast = "difference")
+plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
 }
 }
 \references{
