@@ -4,39 +4,26 @@
 \alias{stdCoxph}
 \title{Regression standardization in Cox proportional hazards models}
 \usage{
-stdCoxph(fit, data, X, x, t, clusterid, subsetnew)
+stdCoxph(formula, data, values, times, clusterid)
 }
 \arguments{
-\item{fit}{an object of class \code{"coxph"}, as returned by the
+\item{formula}{A formula for the
 \code{coxph} function in the \pkg{survival} package, but without special
 terms \code{strata}, \code{cluster} or \code{tt}.  Only \code{breslow}
-method for handling ties is allowed. If arguments \code{weights} and/or
-\code{subset} are used when fitting the model, then the same weights and
-subset are used in \code{stdGlm}.}
+method for handling ties is allowed.}
 
 \item{data}{a data frame containing the variables in the model. This should
 be the same data frame as was used to fit the model in \code{fit}.}
 
-\item{X}{a string containing the name of the exposure variable \eqn{X} in
-\code{data}.}
+\item{values}{A named list or data.frame specifying the variables and values
+at which marginal means of the outcome will be estimated.}
 
-\item{x}{an optional vector containing the specific values of \eqn{X} at
-which to estimate the standardized survival function. If \eqn{X} is binary
-(0/1) or a factor, then \code{x} defaults to all values of \eqn{X}. If
-\eqn{X} is numeric, then \code{x} defaults to the mean of \eqn{X}. If
-\code{x} is set to \code{NA}, then \eqn{X} is not altered. This produces an
-estimate of the marginal survival function \eqn{S(t)=E\{S(t|X,Z)\}}.}
-
-\item{t}{an optional vector containing the specific values of \eqn{T} at
+\item{times}{an optional vector containing the specific values of \eqn{T} at
 which to estimate the standardized survival function. It defaults to all the
 observed event times in \code{data}.}
 
 \item{clusterid}{an optional string containing the name of a cluster
 identification variable when data are clustered.}
-
-\item{subsetnew}{an optional logical statement specifying a subset of
-observations to be used in the standardization. This set is assumed to be a
-subset of the subset (if any) that was used to fit the regression model.}
 }
 \value{
 An object of class \code{"stdCoxph"} is a list containing
@@ -115,9 +102,11 @@ C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
 U <- pmin(T, C) # time at risk
 D <- as.numeric(T < C) # event indicator
 dd <- data.frame(Z, X, U, D)
-fit <- coxph(formula = Surv(U, D) ~ X + Z + X * Z, data = dd, method = "breslow")
-fit.std <- stdCoxph(fit = fit, data = dd, X = "X", x = seq(-1, 1, 0.5), t = 1:5)
-print(summary(fit.std, t = 3))
+fit.std <- stdCoxph(formula = Surv(U, D) ~ X + Z + X * Z,
+                    data = dd,
+                    values = list(X = seq(-1, 1, 0.5)),
+                    times = 1:5)
+print(summary(fit.std, times = 3))
 plot(fit.std)
 
 }

@@ -10,7 +10,7 @@
 \usage{
 \method{summary}{stdCoxph}(
   object,
-  t,
+  times,
   CI.type = "plain",
   CI.level = 0.95,
   transform = NULL,
@@ -39,7 +39,7 @@
 
 \method{summary}{stdParfrailty}(
   object,
-  t,
+  times,
   CI.type = "plain",
   CI.level = 0.95,
   transform = NULL,
@@ -51,7 +51,7 @@
 \arguments{
 \item{object}{an object of class \code{"stdParfrailty"}.}
 
-\item{t}{numeric, indicating the times at which to summarize. It defaults to
+\item{times}{numeric, indicating the times at which to summarize. It defaults to
 the specified value(s) of the argument \code{t} in the \code{stdCox}
 function.}
 

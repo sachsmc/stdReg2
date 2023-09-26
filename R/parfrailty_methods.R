@@ -90,8 +90,8 @@ parfrailty <- function(formula, data, clusterid, init) {
     phi <- exp(par[3])
     beta <- as.matrix(par[4:npar])
     B <- as.vector(X %*% beta)
-    h <- delta * log(eta * t^(eta - 1) / alpha^eta * exp(B))
-    H <- (t / alpha)^eta * exp(B)
+    h <- delta * log(eta * times^(eta - 1) / alpha^eta * exp(B))
+    H <- (times / alpha)^eta * exp(B)
     Hstar <- (tstar / alpha)^eta * exp(B)
     h <- aggr(h, clusters)
     H <- aggr(H, clusters)
@@ -112,11 +112,11 @@ parfrailty <- function(formula, data, clusterid, init) {
 
     # construct elements for gradient
     B <- as.vector(X %*% beta)
-    h.eta <- delta * (1 + eta * (log(t) - log(alpha)))
+    h.eta <- delta * (1 + eta * (log(times) - log(alpha)))
     h.beta <- X * delta
-    H <- (t / alpha)^eta * exp(B)
+    H <- (times / alpha)^eta * exp(B)
     Hstar <- (tstar / alpha)^eta * exp(B)
-    H.eta <- eta * log(t / alpha) * H
+    H.eta <- eta * log(times / alpha) * H
     Hstar.eta <- eta * log(tstar / alpha) * Hstar
     Hstar.eta[tstar == 0] <- 0
     H.beta <- X * H
@@ -169,16 +169,16 @@ parfrailty <- function(formula, data, clusterid, init) {
     # construct elements for hessian
     B <- as.vector(X %*% beta)
     XX <- c(X) * X[rep(1:nrow(X), nbeta), ]
-    h.eta <- delta * (1 + eta * (log(t) - log(alpha)))
-    H <- (t / alpha)^eta * exp(B)
+    h.eta <- delta * (1 + eta * (log(times) - log(alpha)))
+    H <- (times / alpha)^eta * exp(B)
     Hstar <- (tstar / alpha)^eta * exp(B)
-    H.eta <- eta * log(t / alpha) * H
+    H.eta <- eta * log(times / alpha) * H
     Hstar.eta <- eta * log(tstar / alpha) * Hstar
     Hstar.eta[tstar == 0] <- 0
-    H.eta.eta <- H.eta + eta^2 * (log(t / alpha))^2 * H
+    H.eta.eta <- H.eta + eta^2 * (log(times / alpha))^2 * H
     Hstar.eta.eta <- Hstar.eta + eta^2 * (log(tstar / alpha))^2 * Hstar
     Hstar.eta.eta[tstar == 0] <- 0
-    H.eta.beta <- eta * log(t / alpha) * (H * X)
+    H.eta.beta <- eta * log(times / alpha) * (H * X)
     Hstar.eta.beta <- eta * log(tstar / alpha) * (Hstar * X)
     Hstar.eta.beta[tstar == 0] <- 0
     H.beta <- cbind(H[rep(seq_len(length(H)), nbeta)] * XX, clusters)
@@ -248,7 +248,7 @@ parfrailty <- function(formula, data, clusterid, init) {
     )
 
     # derivatives of gradients wrt (logalpha, logeta, logphi) wrt beta
-    H <- (t / alpha)^eta * exp(B)
+    H <- (times / alpha)^eta * exp(B)
     Hstar <- (tstar / alpha)^eta * exp(B)
     XX <- c(X) * X[rep(seq_len(nrow(X)), nbeta), ]
     nbeta_rep <- rep(seq_len(nbeta), each = nrow(X))
@@ -336,12 +336,12 @@ parfrailty <- function(formula, data, clusterid, init) {
   )
   if (ncol(Y) == 2) {
     tstar <- rep(0, nrow(data.temp))
-    t <- Y[, 1]
+    times <- Y[, 1]
     delta <- Y[, 2]
   }
   if (ncol(Y) == 3) {
     tstar <- Y[, 1]
-    t <- Y[, 2]
+    times <- Y[, 2]
     delta <- Y[, 3]
   }
 
@@ -503,26 +503,7 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' \deqn{\hat{\theta}(t,x)=\sum_{i=1}^n \hat{S}(t|X=x,Z_i)/n.} The variance for
 #' \eqn{\hat{\theta}(t,x)} is obtained by the sandwich formula.
 #'
-#' @param fit an object of class \code{"parfrailty"}, as returned by the
-#' \code{parfrailty} function in the \pkg{stdReg} package.
-#' @param data a data frame containing the variables in the model. This should
-#' be the same data frame as was used to fit the model in \code{fit}.
-#' @param X a string containing the name of the exposure variable \eqn{X} in
-#' \code{data}.
-#' @param x an optional vector containing the specific values of \eqn{X} at
-#' which to estimate the standardized survival function. If \eqn{X} is binary
-#' (0/1) or a factor, then \code{x} defaults to all values of \eqn{X}. If
-#' \eqn{X} is numeric, then \code{x} defaults to the mean of \eqn{X}. If
-#' \code{x} is set to \code{NA}, then \eqn{X} is not altered. This produces an
-#' estimate of the marginal survival function \eqn{S(t)=E\{S(t|X,Z)\}}.
-#' @param t an optional vector containing the specific values of \eqn{T} at
-#' which to estimate the standardized survival function. It defaults to all the
-#' observed event times in \code{data}.
-#' @param clusterid a string containing the name of the cluster identification
-#' variable.
-#' @param subsetnew an optional logical statement specifying a subset of
-#' observations to be used in the standardization. This set is assumed to be a
-#' subset of the subset (if any) that was used to fit the regression model.
+#' @inherit stdCoxph
 #' @return An object of class \code{"stdParfrailty"} is a list containing
 #' \item{call}{ the matched call.  } \item{input}{ \code{input} is a list
 #' containing all input arguments.  } \item{est}{ a matrix with
@@ -609,25 +590,49 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' dd <- data.frame(L, T, D, X, id)
 #' dd <- dd[incl, ]
 #'
-#' fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
 #' fit.std <- stdParfrailty(
-#'   fit = fit,
+#'   formula = Surv(L, T, D) ~ X,
 #'   data = dd,
-#'   X = "X",
-#'   x = seq(-1, 1, 0.5),
-#'   t = 1:5,
+#'   values = list(X = seq(-1, 1, 0.5)),
+#'   times = 1:5,
 #'   clusterid = "id"
 #' )
-#' print(summary(fit.std, t = 3))
+#' print(summary(fit.std, times = 3))
 #' plot(fit.std)
 #'
 #' @export stdParfrailty
-stdParfrailty <- function(fit, data, X, x, t, clusterid, subsetnew) {
+stdParfrailty <- function(formula, data, values, times, clusterid) {
   call <- match.call()
 
-  #---PREPARATION---
+  if (!inherits(values, c("data.frame", "list"))) {
+    stop("values is not an object of class list or data.frame")
+  }
 
-  formula <- fit$formula
+  ## Check that the names of values appear in the data
+  check_values_data(values, data)
+
+  ## Set various relevant variables
+  if (!is.data.frame(values)) {
+    valuesout <- expand.grid(values)
+  } else {
+    valuesout <- values
+  }
+  exposure_names <- colnames(valuesout)
+  exposure <- data[, exposure_names]
+
+  fit <- tryCatch(
+    {
+      parfrailty(formula = formula, data = data, clusterid = clusterid)
+    },
+    error = function(cond) {
+      return(cond)
+    }
+  )
+  if (inherits(fit, "simpleError")) {
+    stop("parfrailty function failed with error: ", fit[["message"]])
+  }
+
+  #---PREPARATION---
   npar <- length(fit$est)
 
   # delete rows that did not contribute to the model fit,
@@ -637,13 +642,6 @@ stdParfrailty <- function(fit, data, X, x, t, clusterid, subsetnew) {
   data <- data[match(rownames(m), rownames(data)), ]
   n <- nrow(data)
 
-  # Make new subset if supplied.
-  subsetnew <-
-    if (missing(subsetnew)) {
-      rep(1, n)
-    } else {
-      as.numeric(eval(substitute(subsetnew), data, parent.frame()))
-    }
   input <- as.list(environment())
 
   # extract end variable and event variable
@@ -663,45 +661,16 @@ stdParfrailty <- function(fit, data, X, x, t, clusterid, subsetnew) {
   clusters <- data[, clusterid]
   ncluster <- length(unique(clusters))
 
-  # assign values to x and reference if not supplied
-  # make sure x is a factor if data[, X] is a factor,
-  # with the same levels as data[, X]
-  if (missing(x)) {
-    if (is.factor(data[, X])) {
-      x <- as.factor(levels(data[, X]))
-    }
-    if (is.numeric(data[, X])) {
-      if (is.binary(data[, X])) {
-        x <- c(0, 1)
-      } else {
-        x <- round(mean(data[, X], na.rm = TRUE), 2)
-      }
-    }
-  } else {
-    if (is.factor(x)) {
-      temp <- x
-      levels(x) <- levels(data[, X])
-      x[seq_len(length(x))] <- temp
-    } else {
-      if (is.factor(data[, X])) {
-        x <- factor(x)
-        temp <- x
-        levels(x) <- levels(data[, X])
-        x[seq_len(length(x))] <- temp
-      }
-    }
-  }
-  input$x <- x
-  nX <- length(x)
+  nX <- nrow(valuesout)
 
-  # assign value to t if missing
-  if (missing(t)) {
-    stop("You have to specify the times (t) at which to estimate the standardized survival function")
-    # t <- end[event == 1]
+  # assign value to times if missing
+  if (missing(times)) {
+    stop("You have to specify the times at which to estimate the standardized survival function")
+    # times <- end[event == 1]
   }
-  t <- sort(t)
-  input$t <- t
-  nt <- length(t)
+  times <- sort(times)
+  input$times <- times
+  nt <- length(times)
 
   # preparation
   est <- matrix(nrow = nt, ncol = nX)
@@ -717,11 +686,11 @@ stdParfrailty <- function(fit, data, X, x, t, clusterid, subsetnew) {
   #---LOOP OVER nt
 
   for (j in 1:nt) {
-    if (t[j] == 0) {
+    if (times[j] == 0) {
       est[j, ] <- 1
       vcov[[j]] <- matrix(0, nrow = nX, ncol = nX)
     } else {
-      H0t <- (t[j] / alpha)^eta
+      H0t <- (times[j] / alpha)^eta
 
       #---ESTIMATES OF SURVIVAL PROBABILITIES AT VALUES SPECIFIED BY x ---
 
@@ -731,28 +700,28 @@ stdParfrailty <- function(fit, data, X, x, t, clusterid, subsetnew) {
       SI.logphi <- vector(length = nX)
       SI.beta <- matrix(nrow = nX, ncol = npar - 3)
       for (i in 1:nX) {
-        data.x <- data
-        if (!is.na(x[i])) {
-          data.x[, X] <- x[i]
-        }
+        data.x <- do.call("transform", c(
+          list(data),
+          valuesout[i, , drop = FALSE]
+        ))
         m <- model.matrix(object = formula, data = data.x)[, -1, drop = FALSE]
         predX <- colSums(beta * t(m))
         temp <- 1 + phi * H0t * exp(predX)
         si[, i] <- temp^(-1 / phi)
-        SI.logalpha[i] <- mean(subsetnew * H0t * eta * exp(predX) / temp^(1 / phi + 1)) * n /
+        SI.logalpha[i] <- mean(H0t * eta * exp(predX) / temp^(1 / phi + 1)) * n /
           ncluster
-        SI.logeta[i] <- mean(subsetnew * (-H0t) * exp(predX) * log(t[j] / alpha) * eta /
+        SI.logeta[i] <- mean((-H0t) * exp(predX) * log(times[j] / alpha) * eta /
           temp^(1 / phi + 1)) * n / ncluster
-        SI.logphi[i] <- mean(subsetnew * log(temp) / (phi * temp^(1 / phi)) -
+        SI.logphi[i] <- mean(log(temp) / (phi * temp^(1 / phi)) -
           H0t * exp(predX) / temp^(1 / phi + 1)) * n / ncluster
-        SI.beta[i, ] <- colMeans(subsetnew * (-H0t) * exp(predX) * m / temp^(1 / phi + 1)) *
+        SI.beta[i, ] <- colMeans((-H0t) * exp(predX) * m / temp^(1 / phi + 1)) *
           n / ncluster
       }
-      est[j, ] <- colSums(subsetnew * si, na.rm = TRUE) / sum(subsetnew)
+      est[j, ] <- colSums(si, na.rm = TRUE) / n
 
       #---VARIANCE OF SURVIVAL PROBABILITIES AT VALUES SPECIFIED BY x ---
 
-      sres <- subsetnew * (si - matrix(rep(est[j, ], each = n), nrow = n, ncol = nX))
+      sres <- (si - matrix(rep(est[j, ], each = n), nrow = n, ncol = nX))
       sres <- aggr(sres, clusters)
       coefres <- fit$score
       res <- cbind(sres, coefres)
@@ -762,7 +731,7 @@ stdParfrailty <- function(fit, data, X, x, t, clusterid, subsetnew) {
       # Note: the term n/ncluster is because SI.logalpha, SI.logeta, SI.logphi,
       # and SI.beta are clustered, which they are not in stdCoxph
       SI <- cbind(
-        -diag(nX) * mean(subsetnew) * n / ncluster, SI.logalpha, SI.logeta,
+        -diag(nX) * n / ncluster, SI.logalpha, SI.logeta,
         SI.logphi, SI.beta
       )
 
@@ -784,7 +753,7 @@ stdParfrailty <- function(fit, data, X, x, t, clusterid, subsetnew) {
 #' @description This is a \code{summary} method for class \code{"stdParfrailty"}.
 #'
 #' @param object an object of class \code{"stdParfrailty"}.
-#' @param t numeric, indicating the times at which to summarize. It defaults to
+#' @param times numeric, indicating the times at which to summarize. It defaults to
 #' the specified value(s) of the argument \code{t} in the \code{stdCox}
 #' function.
 #' @param CI.type string, indicating the type of confidence intervals. Either

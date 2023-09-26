@@ -9,8 +9,8 @@ test_that("check estimates and standard errors against older package (coxph)", {
   U <- pmin(time, C) # time at risk
   D <- as.numeric(time < C) # event indicator
   dd <- data.frame(Z, X, U, D)
-  fit <- coxph(formula = Surv(U, D) ~ X + Z + X * Z, data = dd, method = "breslow")
-  fit.std <- stdCoxph(fit = fit, data = dd, X = "X", x = seq(-1, 1, 0.5), t = 3)
+  fit.std <- stdCoxph(formula =  Surv(U, D) ~ X + Z + X * Z,
+                      data = dd, values = list(X = seq(-1, 1, 0.5)), times = 3)
   x <- summary(fit.std)
 
   expect_equal(unname(x$est.table[[1]][, 1]), c(

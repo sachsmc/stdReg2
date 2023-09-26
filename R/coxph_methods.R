@@ -23,30 +23,20 @@
 #' is the value of \eqn{Z} for subject \eqn{i}, \eqn{i=1,...,n}.  The variance
 #' for \eqn{\hat{\theta}(t,x)} is obtained by the sandwich formula.
 #'
-#' @param fit an object of class \code{"coxph"}, as returned by the
+#' @param formula A formula for the
 #' \code{coxph} function in the \pkg{survival} package, but without special
 #' terms \code{strata}, \code{cluster} or \code{tt}.  Only \code{breslow}
-#' method for handling ties is allowed. If arguments \code{weights} and/or
-#' \code{subset} are used when fitting the model, then the same weights and
-#' subset are used in \code{stdGlm}.
+#' method for handling ties is allowed.
 #' @param data a data frame containing the variables in the model. This should
 #' be the same data frame as was used to fit the model in \code{fit}.
-#' @param X a string containing the name of the exposure variable \eqn{X} in
-#' \code{data}.
-#' @param x an optional vector containing the specific values of \eqn{X} at
-#' which to estimate the standardized survival function. If \eqn{X} is binary
-#' (0/1) or a factor, then \code{x} defaults to all values of \eqn{X}. If
-#' \eqn{X} is numeric, then \code{x} defaults to the mean of \eqn{X}. If
-#' \code{x} is set to \code{NA}, then \eqn{X} is not altered. This produces an
-#' estimate of the marginal survival function \eqn{S(t)=E\{S(t|X,Z)\}}.
-#' @param t an optional vector containing the specific values of \eqn{T} at
+#' @param values
+#' A named list or data.frame specifying the variables and values
+#' at which marginal means of the outcome will be estimated.
+#' @param times an optional vector containing the specific values of \eqn{T} at
 #' which to estimate the standardized survival function. It defaults to all the
 #' observed event times in \code{data}.
 #' @param clusterid an optional string containing the name of a cluster
 #' identification variable when data are clustered.
-#' @param subsetnew an optional logical statement specifying a subset of
-#' observations to be used in the standardization. This set is assumed to be a
-#' subset of the subset (if any) that was used to fit the regression model.
 #' @return An object of class \code{"stdCoxph"} is a list containing
 #' \item{call}{ the matched call.  } \item{input}{ \code{input} is a list
 #' containing all input arguments.  } \item{est}{ a matrix with
@@ -114,19 +104,46 @@
 #' U <- pmin(T, C) # time at risk
 #' D <- as.numeric(T < C) # event indicator
 #' dd <- data.frame(Z, X, U, D)
-#' fit <- coxph(formula = Surv(U, D) ~ X + Z + X * Z, data = dd, method = "breslow")
-#' fit.std <- stdCoxph(fit = fit, data = dd, X = "X", x = seq(-1, 1, 0.5), t = 1:5)
-#' print(summary(fit.std, t = 3))
+#' fit.std <- stdCoxph(formula = Surv(U, D) ~ X + Z + X * Z,
+#'                     data = dd,
+#'                     values = list(X = seq(-1, 1, 0.5)),
+#'                     times = 1:5)
+#' print(summary(fit.std, times = 3))
 #' plot(fit.std)
 #'
 #' @export stdCoxph
-stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
+stdCoxph <- function(formula, data, values, times, clusterid) {
   call <- match.call()
 
-  #---PREPARATION---
-  if (!fit$method == "breslow") {
-    stop("Only breslow method for handling ties is allowed.", call. = FALSE)
+  if (!inherits(values, c("data.frame", "list"))) {
+    stop("values is not an object of class list or data.frame")
   }
+
+  ## Check that the names of values appear in the data
+  check_values_data(values, data)
+
+  ## Set various relevant variables
+  if (!is.data.frame(values)) {
+    valuesout <- expand.grid(values)
+  } else {
+    valuesout <- values
+  }
+  exposure_names <- colnames(valuesout)
+  exposure <- data[, exposure_names]
+
+  fit <- tryCatch(
+    {
+      survival::coxph(formula = formula, data = data, method = "breslow", x = TRUE, y = TRUE)
+    },
+    error = function(cond) {
+      return(cond)
+    }
+  )
+  if (inherits(fit, "simpleError")) {
+    stop("fitter failed with error: ", fit[["message"]])
+  }
+
+  #---PREPARATION---
   specials <- pmatch(c("strata(", "cluster(", "tt("), attr(
     terms(fit$formula),
     "variables"
@@ -146,13 +163,6 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
   data <- data[match(rownames(m), rownames(data)), ]
   n <- nrow(data)
 
-  # Make new subset if supplied.
-  subsetnew <-
-    if (missing(subsetnew)) {
-      rep(1, n)
-    } else {
-      as.numeric(eval(substitute(subsetnew), data, parent.frame()))
-    }
   input <- as.list(environment())
 
   if (is.null(fit$weights)) {
@@ -170,61 +180,32 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
     ncluster <- length(unique(data[, clusterid]))
   }
 
-  # Assign values to x and reference if not supplied.
-  # Make sure x is a factor if data[, X] is a factor
-  # with the same levels as data[, X].
-  if (missing(x)) {
-    if (is.factor(data[, X])) {
-      x <- as.factor(levels(data[, X]))
-    }
-    if (is.numeric(data[, X])) {
-      if (is.binary(data[, X])) {
-        x <- c(0, 1)
-      } else {
-        x <- round(mean(data[, X], na.rm = TRUE), 2)
-      }
-    }
-  } else {
-    if (is.factor(x)) {
-      temp <- x
-      levels(x) <- levels(data[, X])
-      x[seq_len(length(x))] <- temp
-    } else {
-      if (is.factor(data[, X])) {
-        x <- factor(x)
-        temp <- x
-        levels(x) <- levels(data[, X])
-        x[seq_len(length(x))] <- temp
-      }
-    }
-  }
-  input$x <- x
-  nX <- length(x)
+  nX <- nrow(valuesout)
 
-  # Assign value to t if missing.
-  if (missing(t)) {
+  # Assign value to times if missing.
+  if (missing(times)) {
     stop("You have to specify the times (t) at which to estimate the standardized survival function")
     # t <- fit.detail$time
   }
-  input$t <- t
-  nt <- length(t)
+  input$times <- times
+  nt <- length(times)
 
-  if (sum(fit.detail$time <= min(t)) == 0) {
-    stop("No events before first value in t", call. = FALSE)
+  if (sum(fit.detail$time <= min(times)) == 0) {
+    stop("No events before first value in times", call. = FALSE)
   }
 
   est <- matrix(nrow = nt, ncol = nX)
   vcov <- vector(mode = "list", length = nt)
   H <- Hfun(fit = fit, data = data, fit.detail = fit.detail)
   sandwich.fit <- sandwich(
-    fit = fit, data = data, weights = weights, t = t,
+    fit = fit, data = data, weights = weights, t = times,
     fit.detail = fit.detail
   )
 
   #---LOOP OVER nt
 
   for (j in 1:nt) {
-    if (t[j] == 0) {
+    if (times[j] == 0) {
       est[j, ] <- 1
       vcov[[j]] <- matrix(0, nrow = nX, ncol = nX)
     } else {
@@ -234,12 +215,12 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
       PredX <- matrix(nrow = n, ncol = nX)
       tempmat <- matrix(nrow = nX, ncol = npar)
       for (i in 1:nX) {
-        data.x <- data
-        if (!is.na(x[i])) {
-          data.x[, X] <- x[i]
-        }
+        data.x <- do.call("transform", c(
+          list(data),
+          valuesout[i, , drop = FALSE]
+        ))
         predX <- predict(object = fit, newdata = data.x, type = "risk")
-        si[, i] <- exp(-H(t[j]) * predX)
+        si[, i] <- exp(-H(times[j]) * predX)
         PredX[, i] <- predX
         # Need terms(fit) here. If formula contains splines,
         # then fit or formula will not work when no variation in the exposure,
@@ -251,14 +232,14 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
         m <- model.matrix(object = terms(fit), data = data)[, -1, drop = FALSE]
         m <- matrix(colMeans(m), nrow = nrow(m), ncol = ncol(m), byrow = TRUE)
         m.x <- m.x - m
-        tempmat[i, ] <- colMeans(m.x * predX * si[, i] * subsetnew * weights)
+        tempmat[i, ] <- colMeans(m.x * predX * si[, i] * weights)
       }
-      est[j, ] <- colSums(subsetnew * weights * si, na.rm = TRUE) /
-        sum(subsetnew * weights)
+      est[j, ] <- colSums(weights * si, na.rm = TRUE) /
+        sum(weights)
 
       #---VARIANCE OF SURVIVAL PROBABILITIES AT VALUES SPECIFIED BY x, ---
 
-      sres <- subsetnew * weights * (si - matrix(rep(est[j, ], each = n), nrow = n, ncol = nX))
+      sres <- weights * (si - matrix(rep(est[j, ], each = n), nrow = n, ncol = nX))
       ores <- sandwich.fit$U[, c(1:npar, npar + j)]
       res <- cbind(sres, ores)
       if (!missing(clusterid)) {
@@ -266,8 +247,8 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
       }
       J <- var(res, na.rm = TRUE)
       SI <- cbind(
-        -diag(nX) * mean(subsetnew * weights), -tempmat * H(t[j]),
-        -colMeans(PredX * si * subsetnew * weights)
+        -diag(nX) * mean(weights), -tempmat * H(times[j]),
+        -colMeans(PredX * si * weights)
       )
       # This is why the user cannot use term cluster; then -solve(vcov(object=fit))/n
       # will not be the bread in the sandwich.
@@ -299,7 +280,7 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
 #' @description This is a \code{summary} method for class \code{"stdCoxph"}.
 #'
 #' @param object an object of class \code{"stdCoxph"}.
-#' @param t numeric, indicating the times at which to summarize. It defaults to
+#' @param times numeric, indicating the times at which to summarize. It defaults to
 #' the specified value(s) of the argument \code{t} in the \code{stdCox}
 #' function.
 #' @param CI.type string, indicating the type of confidence intervals. Either
@@ -328,24 +309,24 @@ stdCoxph <- function(fit, data, X, x, t, clusterid, subsetnew) {
 #' @rdname summary
 #' @export summary.stdCoxph
 #' @export
-summary.stdCoxph <- function(object, t, CI.type = "plain", CI.level = 0.95,
+summary.stdCoxph <- function(object, times, CI.type = "plain", CI.level = 0.95,
                              transform = NULL, contrast = NULL, reference = NULL, ...) {
   est.all <- object$est
   V.all <- object$vcov
   nX <- length(object$input$x)
-  if (missing(t)) {
-    t <- object$input$t
+  if (missing(times)) {
+    times <- object$input$times
   }
-  nt <- length(t)
+  nt <- length(times)
 
   est.table <- vector(mode = "list", length = nt)
   for (j in 1:nt) {
-    if (min(abs(t[j] - object$input$t)) > sqrt(.Machine$double.eps)) {
-      stop("The standardized survival function is not estimated at t",
+    if (min(abs(times[j] - object$input$times)) > sqrt(.Machine$double.eps)) {
+      stop("The standardized survival function is not estimated at times",
         call. = FALSE
       )
     } else {
-      k <- which.min(abs(t[j] - object$input$t))
+      k <- which.min(abs(times[j] - object$input$times))
     }
 
     est <- est.all[k, ]
@@ -412,7 +393,7 @@ summary.stdCoxph <- function(object, t, CI.type = "plain", CI.level = 0.95,
   out <- c(
     object,
     list(
-      est.table = est.table, tsum = t, transform = transform, contrast = contrast,
+      est.table = est.table, tsum = times, transform = transform, contrast = contrast,
       reference = reference
     )
   )
@@ -501,7 +482,12 @@ print.summary.stdCoxph <- function(x, ...) {
 plot.stdCoxph <- function(x, plot.CI = TRUE, CI.type = "plain", CI.level = 0.95,
                           transform = NULL, contrast = NULL, reference = NULL, legendpos = "bottomleft", ...) {
   object <- x
-  x <- object$input$x
+  if (ncol(object$input$valuesout) != 1){
+    stop("multiple exposures")
+  }
+  else {
+    x <- object$input$valuesout[, 1]
+  }
 
   dots <- list(...)
 

@@ -4,7 +4,7 @@ Goals: create a unified interface for regression standardization to obtain estim
 
 1. Should be easy to use for applied practitioners, i.e., as easy as running glm or coxph. 
 2. We want to implement modern, theoretically grounded, doubly-robust estimators, and their associated variance estimators. ✓
-3. We want it to be extensible for statistical researchers, i.e., possible to implement new estimators and get other models used within the interface. 
+3. We want it to be extensible for statistical researchers, i.e., possible to implement new estimators and get other models used within the interface. ✓
 4. Robust and clear documentation with lots of examples and explanation of the necessary assumptions. 
 5. Test stability of package with simulations. 
 

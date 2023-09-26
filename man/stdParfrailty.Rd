@@ -4,35 +4,26 @@
 \alias{stdParfrailty}
 \title{Regression standardization in shared frailty gamma-Weibull models}
 \usage{
-stdParfrailty(fit, data, X, x, t, clusterid, subsetnew)
+stdParfrailty(formula, data, values, times, clusterid)
 }
 \arguments{
-\item{fit}{an object of class \code{"parfrailty"}, as returned by the
-\code{parfrailty} function in the \pkg{stdReg} package.}
+\item{formula}{A formula for the
+\code{coxph} function in the \pkg{survival} package, but without special
+terms \code{strata}, \code{cluster} or \code{tt}.  Only \code{breslow}
+method for handling ties is allowed.}
 
 \item{data}{a data frame containing the variables in the model. This should
 be the same data frame as was used to fit the model in \code{fit}.}
 
-\item{X}{a string containing the name of the exposure variable \eqn{X} in
-\code{data}.}
+\item{values}{A named list or data.frame specifying the variables and values
+at which marginal means of the outcome will be estimated.}
 
-\item{x}{an optional vector containing the specific values of \eqn{X} at
-which to estimate the standardized survival function. If \eqn{X} is binary
-(0/1) or a factor, then \code{x} defaults to all values of \eqn{X}. If
-\eqn{X} is numeric, then \code{x} defaults to the mean of \eqn{X}. If
-\code{x} is set to \code{NA}, then \eqn{X} is not altered. This produces an
-estimate of the marginal survival function \eqn{S(t)=E\{S(t|X,Z)\}}.}
-
-\item{t}{an optional vector containing the specific values of \eqn{T} at
+\item{times}{an optional vector containing the specific values of \eqn{T} at
 which to estimate the standardized survival function. It defaults to all the
 observed event times in \code{data}.}
 
-\item{clusterid}{a string containing the name of the cluster identification
-variable.}
-
-\item{subsetnew}{an optional logical statement specifying a subset of
-observations to be used in the standardization. This set is assumed to be a
-subset of the subset (if any) that was used to fit the regression model.}
+\item{clusterid}{an optional string containing the name of a cluster
+identification variable when data are clustered.}
 }
 \value{
 An object of class \code{"stdParfrailty"} is a list containing
@@ -134,16 +125,14 @@ incl <- ave(x = incl, id, FUN = sum) == m
 dd <- data.frame(L, T, D, X, id)
 dd <- dd[incl, ]
 
-fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
 fit.std <- stdParfrailty(
-  fit = fit,
+  formula = Surv(L, T, D) ~ X,
   data = dd,
-  X = "X",
-  x = seq(-1, 1, 0.5),
-  t = 1:5,
+  values = list(X = seq(-1, 1, 0.5)),
+  times = 1:5,
   clusterid = "id"
 )
-print(summary(fit.std, t = 3))
+print(summary(fit.std, times = 3))
 plot(fit.std)
 
 }
