@@ -147,10 +147,12 @@ standardize <- function(arguments,
     if (!is.null(seed)) {
       set.seed(seed)
     }
-    pb <- utils::txtProgressBar(min = 1,
-                         max = B,
-                         style = 3,
-                         width = 50)
+    pb <- utils::txtProgressBar(
+      min = 1,
+      max = B,
+      style = 3,
+      width = 50
+    )
 
     cat("Bootstrapping... This may take some time... \n")
     for (b in seq_len(B)) {
@@ -295,11 +297,8 @@ summary_standardize <- function(object, ci_level = 0.95,
       res_table <- list()
       for (t_ind in seq_len(length(times))) {
         temp <- cbind(est[, t_ind], t(ci[, , t_ind]))
-        colnames(temp) <- c(
-          paste0("estimate", " (t=", times[t_ind], ")"),
-          paste0(c("lower ", "upper "), ci_level, " (t=", times[t_ind], ")")
-        )
-        res_table[[t_ind]] <- temp
+        colnames(temp) <- c("estimate", "lower", "upper")
+        res_table[[t_ind]] <- data.frame(temp)
       }
       est_table <- cbind(exposure_table, do.call("cbind", res_table))
       colnames(est_table)[1:length(exposure_name_table)] <- exposure_name_table
@@ -392,7 +391,24 @@ print.std_helper <- function(x, ...) {
       cat("Reference level: ", temp[["input"]][["X"]], "=", temp[["reference"]], "\n")
       cat("Contrast: ", levels(temp[["contrast"]])[[temp[["contrast"]]]], "\n")
     }
-    print(temp[["est_table"]], digits = 3L)
+    if (is.null(temp[["times"]])) {
+      print(temp[["est_table"]], digits = 3L)
+    } else {
+      if (!is.null(temp[["contrast"]])) {
+        len_exposure <- 1
+      } else {
+        len_exposure <- length(temp[["exposure_names"]])
+      }
+      for (ti in seq_len(length(temp[["times"]]))) {
+        cat("Time: ", temp[["times"]][ti], "\n")
+        if (is.null(temp[["B"]])) {
+          print(temp[["est_table"]][, c(seq_len(len_exposure), len_exposure + ti)])
+        } else {
+          print(temp[["est_table"]][, c(seq_len(len_exposure), len_exposure + 3 * ti - c(2, 1, 0))])
+        }
+        cat("\n")
+      }
+    }
     cat("\n")
   }
 }
