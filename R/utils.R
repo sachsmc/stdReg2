@@ -200,19 +200,19 @@ aggr <- function(x, clusters) {
 confintall <- function(object, parm, level = 0.95, fun, type = "plain", ...) {
   est <- do.call(what = fun, args = list(est = object$est))
   var <- delmet(fun = fun, est = object$est, vcov = object$vcov)
-  ci <- CI(est = est, var = var, CI.type = type, CI.level = level)
+  ci <- CI(est = est, var = var, ci_type = type, ci_level = level)
   return(ci)
 }
 
-CI <- function(est, var, CI.type = "plain", CI.level = 0.95) {
+CI <- function(est, var, ci_type = "plain", ci_level = 0.95) {
   se <- sqrt(var)
-  qqq <- abs(qnorm((1 - CI.level) / 2))
+  qqq <- abs(qnorm((1 - ci_level) / 2))
 
-  if (CI.type == "plain") {
+  if (ci_type == "plain") {
     lower <- est - qqq * se
     upper <- est + qqq * se
   }
-  if (CI.type == "log") {
+  if (ci_type == "log") {
     lower <- est * exp(-qqq * se / est)
     upper <- est * exp(qqq * se / est)
   }

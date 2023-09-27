@@ -1,15 +1,15 @@
 #' @title Regression standardization in Cox proportional hazards models
 #'
-#' @description \code{stdCoxph} performs regression standardization in Cox proportional
+#' @description \code{standardize_coxph} performs regression standardization in Cox proportional
 #' hazards models, at specified values of the exposure, over the sample
 #' covariate distribution. Let \eqn{T}, \eqn{X}, and \eqn{Z} be the survival
 #' outcome, the exposure, and a vector of covariates, respectively.
-#' \code{stdCoxph} uses a fitted Cox proportional hazards model to estimate the
+#' \code{standardize_coxph} uses a fitted Cox proportional hazards model to estimate the
 #' standardized survival function \eqn{\theta(t,x)=E\{S(t|X=x,Z)\}}, where
 #' \eqn{t} is a specific value of \eqn{T}, \eqn{x} is a specific value of
 #' \eqn{X}, and the expectation is over the marginal distribution of \eqn{Z}.
 #'
-#' @details \code{stdCoxph} assumes that a Cox proportional hazards model
+#' @details \code{standardize_coxph} assumes that a Cox proportional hazards model
 #' \deqn{\lambda(t|X,Z)=\lambda_0(t)exp\{h(X,Z;\beta)\}} has been fitted.
 #' Breslow's estimator of the cumulative baseline hazard
 #' \eqn{\Lambda_0(t)=\int_0^t\lambda_0(u)du} is used together with the partial
@@ -37,7 +37,7 @@
 #' observed event times in \code{data}.
 #' @param clusterid an optional string containing the name of a cluster
 #' identification variable when data are clustered.
-#' @return An object of class \code{"stdCoxph"} is a list containing
+#' @return An object of class \code{"std_coxph"} is a list containing
 #' \item{call}{ the matched call.  } \item{input}{ \code{input} is a list
 #' containing all input arguments.  } \item{est}{ a matrix with
 #' \code{length(t)} rows and \code{length(x)} columns, where the element on row
@@ -51,14 +51,14 @@
 #' @note Standardized survival functions are sometimes referred to as (direct)
 #' adjusted survival functions in the literature.
 #'
-#' \code{stdCoxph} does not currently handle time-varying exposures or
+#' \code{standardize_coxph} does not currently handle time-varying exposures or
 #' covariates.
 #'
-#' \code{stdCoxph} internally loops over all values in the \code{t} argument.
+#' \code{standardize_coxph} internally loops over all values in the \code{t} argument.
 #' Therefore, the function will usually be considerably faster if
 #' \code{length(t)} is small.
 #'
-#' The variance calculation performed by \code{stdCoxph} does not condition on
+#' The variance calculation performed by \code{standardize_coxph} does not condition on
 #' the observed covariates \eqn{\bar{Z}=(Z_1,...,Z_n)}. To see how this
 #' matters, note that
 #' \deqn{var\{\hat{\theta}(t,x)\}=E[var\{\hat{\theta}(t,x)|\bar{Z}\}]+var[E\{\hat{\theta}(t,x)|\bar{Z}\}].}
@@ -104,15 +104,17 @@
 #' U <- pmin(T, C) # time at risk
 #' D <- as.numeric(T < C) # event indicator
 #' dd <- data.frame(Z, X, U, D)
-#' fit.std <- stdCoxph(formula = Surv(U, D) ~ X + Z + X * Z,
-#'                     data = dd,
-#'                     values = list(X = seq(-1, 1, 0.5)),
-#'                     times = 1:5)
+#' fit.std <- standardize_coxph(
+#'   formula = Surv(U, D) ~ X + Z + X * Z,
+#'   data = dd,
+#'   values = list(X = seq(-1, 1, 0.5)),
+#'   times = 1:5
+#' )
 #' print(summary(fit.std, times = 3))
 #' plot(fit.std)
 #'
-#' @export stdCoxph
-stdCoxph <- function(formula, data, values, times, clusterid) {
+#' @export standardize_coxph
+standardize_coxph <- function(formula, data, values, times, clusterid) {
   call <- match.call()
 
   if (!inherits(values, c("data.frame", "list"))) {
@@ -271,22 +273,22 @@ stdCoxph <- function(formula, data, values, times, clusterid) {
 
   #---OUTPUT---
 
-  class(out) <- "stdCoxph"
+  class(out) <- "std_coxph"
   return(out)
 }
 
 #' @title Summarizes Cox regression standardization fit
 #'
-#' @description This is a \code{summary} method for class \code{"stdCoxph"}.
+#' @description This is a \code{summary} method for class \code{"std_coxph"}.
 #'
-#' @param object an object of class \code{"stdCoxph"}.
+#' @param object an object of class \code{"std_coxph"}.
 #' @param times numeric, indicating the times at which to summarize. It defaults to
 #' the specified value(s) of the argument \code{t} in the \code{stdCox}
 #' function.
-#' @param CI.type string, indicating the type of confidence intervals. Either
+#' @param ci_type string, indicating the type of confidence intervals. Either
 #' "plain", which gives untransformed intervals, or "log", which gives
 #' log-transformed intervals.
-#' @param CI.level desired coverage probability of confidence intervals, on
+#' @param ci_level desired coverage probability of confidence intervals, on
 #' decimal form.
 #' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
 #' \code{"odds"}, the standardized survival function \eqn{\theta(t,x)} is
@@ -301,16 +303,16 @@ stdCoxph <- function(formula, data, values, times, clusterid) {
 #' @param reference must be specified if \code{contrast} is specified.
 #' @param \dots not used.
 #' @author Arvid Sjolander
-#' @seealso \code{\link{stdCoxph}}
+#' @seealso \code{\link{standardize_coxph}}
 #' @examples
 #'
-#' ## See documentation for stdCoxph
+#' ## See documentation for standardize_coxph
 #'
 #' @rdname summary
-#' @export summary.stdCoxph
+#' @export summary.std_coxph
 #' @export
-summary.stdCoxph <- function(object, times, CI.type = "plain", CI.level = 0.95,
-                             transform = NULL, contrast = NULL, reference = NULL, ...) {
+summary.std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
+                              transform = NULL, contrast = NULL, reference = NULL, ...) {
   est.all <- object$est
   V.all <- object$vcov
   nX <- length(object$input$x)
@@ -375,14 +377,14 @@ summary.stdCoxph <- function(object, times, CI.type = "plain", CI.level = 0.95,
 
     var <- diag(V)
     se <- sqrt(var)
-    conf.int <- CI(est = est, var = var, CI.type = CI.type, CI.level = CI.level)
+    conf.int <- CI(est = est, var = var, ci_type = ci_type, ci_level = ci_level)
 
     temp <- as.matrix(cbind(est, se, conf.int), nrow = length(est), ncol = 4)
     dimnames(temp) <- list(
       object$input$x,
       c(
-        "Estimate", "Std. Error", paste("lower", CI.level),
-        paste("upper", CI.level)
+        "Estimate", "Std. Error", paste("lower", ci_level),
+        paste("upper", ci_level)
       )
     )
     est.table[[j]] <- temp
@@ -397,34 +399,34 @@ summary.stdCoxph <- function(object, times, CI.type = "plain", CI.level = 0.95,
       reference = reference
     )
   )
-  class(out) <- "summary.stdCoxph"
+  class(out) <- "summary_std_coxph"
   return(out)
 }
 
 #' @rdname print
-#' @export print.stdCoxph
+#' @export print.std_coxph
 #' @export
-print.stdCoxph <- function(x, ...) {
+print.std_coxph <- function(x, ...) {
   print(summary(x))
 }
 
 #' @title Prints summary of Cox regression standardization fit
 #'
-#' @description This is a \code{print} method for class \code{"summary.stdCoxph"}.
+#' @description This is a \code{print} method for class \code{"summary.std_coxph"}.
 #'
-#' @param x an object of class \code{"summary.stdCoxph"}.
+#' @param x an object of class \code{"summary.std_coxph"}.
 #' @param \dots not used.
 #' @author Arvid Sjolander
-#' @seealso \code{\link{stdCoxph}}
+#' @seealso \code{\link{standardize_coxph}}
 #' @examples
 #'
 #'
-#' ## See documentation for stdCoxph
+#' ## See documentation for standardize_coxph
 #'
 #' @rdname print
-#' @export print.summary.stdCoxph
+#' @export print.summary_std_coxph
 #' @export
-print.summary.stdCoxph <- function(x, ...) {
+print.summary_std_coxph <- function(x, ...) {
   nt <- length(x$tsum)
   for (j in 1:nt) {
     cat("\nFormula: ")
@@ -447,15 +449,15 @@ print.summary.stdCoxph <- function(x, ...) {
 
 #' @title Plots Cox regression standardization fit
 #'
-#' @description This is a \code{plot} method for class \code{"stdCoxph"}.
+#' @description This is a \code{plot} method for class \code{"std_coxph"}.
 #'
-#' @param x an object of class \code{"stdCoxph"}.
-#' @param plot.CI logical, indicating whether confidence intervals should be
+#' @param x an object of class \code{"std_coxph"}.
+#' @param plot_ci logical, indicating whether confidence intervals should be
 #' added to the plot.
-#' @param CI.type string, indicating the type of confidence intervals. Either
+#' @param ci_type string, indicating the type of confidence intervals. Either
 #' "plain", which gives untransformed intervals, or "log", which gives
 #' log-transformed intervals.
-#' @param CI.level desired coverage probability of confidence intervals, on
+#' @param ci_level desired coverage probability of confidence intervals, on
 #' decimal form.
 #' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
 #' \code{"odds"}, the standardized survival function \eqn{\theta(t,x)} is
@@ -471,21 +473,20 @@ print.summary.stdCoxph <- function(x, ...) {
 #' @param legendpos position of the legend; see help for \code{legend}.
 #' @param \dots further arguments passed on to plot.default.
 #' @author Arvid Sjolander
-#' @seealso \code{\link{stdCoxph}}
+#' @seealso \code{\link{standardize_coxph}}
 #' @examples
 #'
-#' ## See documentation for stdCoxph
+#' ## See documentation for standardize_coxph
 #'
 #' @rdname plot
-#' @export plot.stdCoxph
+#' @export plot.std_coxph
 #' @export
-plot.stdCoxph <- function(x, plot.CI = TRUE, CI.type = "plain", CI.level = 0.95,
-                          transform = NULL, contrast = NULL, reference = NULL, legendpos = "bottomleft", ...) {
+plot.std_coxph <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
+                           transform = NULL, contrast = NULL, reference = NULL, legendpos = "bottomleft", ...) {
   object <- x
-  if (ncol(object$input$valuesout) != 1){
+  if (ncol(object$input$valuesout) != 1) {
     stop("multiple exposures")
-  }
-  else {
+  } else {
     x <- object$input$valuesout[, 1]
   }
 
@@ -572,7 +573,7 @@ plot.stdCoxph <- function(x, plot.CI = TRUE, CI.type = "plain", CI.level = 0.95,
   nX <- length(x)
 
   sum.obj <- summary(
-    object = object, CI.type = CI.type, CI.level = CI.level,
+    object = object, ci_type = ci_type, ci_level = ci_level,
     transform = transform, contrast = contrast, reference = reference
   )
 
@@ -582,7 +583,7 @@ plot.stdCoxph <- function(x, plot.CI = TRUE, CI.type = "plain", CI.level = 0.95,
   lower <- matrix(temp[, 3], nrow = nt, ncol = nX, byrow = TRUE)
   upper <- matrix(temp[, 4], nrow = nt, ncol = nX, byrow = TRUE)
 
-  if (plot.CI) {
+  if (plot_ci) {
     ylim <- c(min(lower), max(upper))
   } else {
     ylim <- c(min(est), max(est))
@@ -596,7 +597,7 @@ plot.stdCoxph <- function(x, plot.CI = TRUE, CI.type = "plain", CI.level = 0.95,
   legend <- NULL
   for (i in seq_len(nX)) {
     lines(t, est[, i], col = i)
-    if (plot.CI) {
+    if (plot_ci) {
       lines(t, upper[, i], lty = "dashed", col = i)
       lines(t, lower[, i], lty = "dashed", col = i)
     }

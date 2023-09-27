@@ -30,8 +30,7 @@ test_that("multiple exposure gives error when using the doubly robust estimator"
 })
 
 test_that("check that it fails with p_population unspecified", {
-  library(AF)
-  data("singapore")
+  singapore <- AF::singapore
   mi <- singapore$Age
   m <- mean(mi)
   s <- sd(mi)
@@ -62,7 +61,6 @@ test_that("non-valid transformation does not work", {
 })
 
 test_that("warning occurs when reference has been specified but not contrast", {
-  library(AF)
   data <- AF::clslowbwt
   expect_warning(standardize_glm_dr(
     formula_outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),
@@ -90,8 +88,7 @@ test_that("check estimates and standard errors standardize_glm (simple estimator
 })
 
 test_that("check estimates and standard errors standardize_glm (case-control estimator)", {
-  library(AF)
-  data("singapore")
+  singapore <- AF::singapore
   mi <- singapore$Age
   m <- mean(mi)
   s <- sd(mi)
@@ -109,7 +106,6 @@ test_that("check estimates and standard errors standardize_glm (case-control est
 })
 
 test_that("check estimates and standard errors standardize_glm (dr estimator)", {
-  library(AF)
   data <- AF::clslowbwt
   x <- standardize_glm_dr(
     formula_outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),

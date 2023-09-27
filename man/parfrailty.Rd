@@ -26,7 +26,7 @@ cluster-specific contributions to the ML score equations.  }
 }
 \description{
 \code{parfrailty} fits shared frailty gamma-Weibull models. It is
-specifically designed to work with the function \code{stdParfrailty}, which
+specifically designed to work with the function \code{standardize_parfrailty}, which
 performs regression standardization in shared frailty gamma-Weibull models.
 }
 \details{

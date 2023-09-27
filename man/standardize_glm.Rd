@@ -114,8 +114,7 @@ x
 
 # example from Sjolander (2016) with case-control data
 # here the matching variable needs to be passed as an argument
-library(AF)
-data("singapore")
+singapore <- AF::singapore
 Mi <- singapore$Age
 m <- mean(Mi)
 s <- sd(Mi)

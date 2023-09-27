@@ -88,8 +88,7 @@
 #'
 #' # example from Sjolander (2016) with case-control data
 #' # here the matching variable needs to be passed as an argument
-#' library(AF)
-#' data("singapore")
+#' singapore <- AF::singapore
 #' Mi <- singapore$Age
 #' m <- mean(Mi)
 #' s <- sd(Mi)
@@ -323,7 +322,6 @@ standardize_glm <- function(formula,
 #' # needs to correctly specify either the outcome model or the exposure model
 #' # for confounding
 #' # NOTE: only works with binary exposures
-#' library(AF)
 #' data <- AF::clslowbwt
 #' x <- standardize_glm_dr(
 #'   formula_outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),
@@ -647,7 +645,7 @@ summary.std_glm_helper <- function(object, ci_type = "plain", ci_level = 0.95,
 
   var <- diag(v_mat)
   se <- sqrt(var)
-  conf_int <- CI(est = est, var = var, CI.type = ci_type, CI.level = ci_level)
+  conf_int <- CI(est = est, var = var, ci_type = ci_type, ci_level = ci_level)
 
   if (is.factor(reference)) {
     reference <- as.character(reference)

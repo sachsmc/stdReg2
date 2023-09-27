@@ -1,17 +1,17 @@
 #' @title Regression standardization in conditional generalized estimating equations
 #'
-#' @description \code{stdGee} performs regression standardization in linear and log-linear
+#' @description \code{standardize_gee} performs regression standardization in linear and log-linear
 #' fixed effects models, at specified values of the exposure, over the sample
 #' covariate distribution. Let \eqn{Y}, \eqn{X}, and \eqn{Z} be the outcome,
 #' the exposure, and a vector of covariates, respectively. It is assumed that
-#' data are clustered with a cluster indicator \eqn{i}. \code{stdGee} uses
+#' data are clustered with a cluster indicator \eqn{i}. \code{standardize_gee} uses
 #' fitted fixed effects model, with cluster-specific intercept \eqn{a_i} (see
 #' \code{details}), to estimate the standardized mean
 #' \eqn{\theta(x)=E\{E(Y|i,X=x,Z)\}}, where \eqn{x} is a specific value of
 #' \eqn{X}, and the outer expectation is over the marginal distribution of
 #' \eqn{(a_i,Z)}.
 #'
-#' @details \code{stdGee} assumes that a fixed effects model
+#' @details \code{standardize_gee} assumes that a fixed effects model
 #' \deqn{\eta\{E(Y|i,X,Z)\}=a_i+h(X,Z;\beta)} has been fitted. The link
 #' function \eqn{\eta} is assumed to be the identity link or the log link. The
 #' conditional generalized estimating equation (CGGE) estimate of \eqn{\beta}
@@ -30,27 +30,10 @@
 #' \sum_{j=1}^{n_i} \hat{E}(Y|i,X=x,Z_i)/N,} where \eqn{N=\sum_{i=1}^n n_i}.
 #' The variance for \eqn{\hat{\theta}(x)} is obtained by the sandwich formula.
 #'
-#' @param fit an object of class \code{"gee"}, with argument \code{cond =
-#' TRUE}, as returned by the \code{gee} function in the \pkg{drgee} package. If
-#' arguments \code{weights} and/or \code{subset} are used when fitting the
-#' model, then the same weights and subset are used in \code{stdGee}.
-#' @param data a data frame containing the variables in the model. This should
-#' be the same data frame as was used to fit the model in \code{fit}.
-#' @param X a string containing the name of the exposure variable \eqn{X} in
-#' \code{data}.
-#' @param x an optional vector containing the specific values of \eqn{X} at
-#' which to estimate the standardized mean. If \eqn{X} is binary (0/1) or a
-#' factor, then \code{x} defaults to all values of \eqn{X}. If \eqn{X} is
-#' numeric, then \code{x} defaults to the mean of \eqn{X}. If \code{x} is set
-#' to \code{NA}, then \eqn{X} is not altered. This produces an estimate of the
-#' marginal mean \eqn{E(Y)=E\{E(Y|X,Z)\}}.
-#' @param clusterid an mandatory string containing the name of a cluster
-#' identification variable. Must be identical to the clusterid variable used in
-#' the gee call.
-#' @param subsetnew an optional logical statement specifying a subset of
-#' observations to be used in the standardization. This set is assumed to be a
-#' subset of the subset (if any) that was used to fit the regression model.
-#' @return An object of class \code{"stdGee"} is a list containing \item{call}{
+#' @param formula A formula to be used with \code{"gee"} in the \pkg{drgee} package.
+#' @param link The link function to be used with \code{"gee"}.
+#' @inherit standardize_glm
+#' @return An object of class \code{"std_gee"} is a list containing \item{call}{
 #' the matched call.  } \item{input}{ \code{input} is a list containing all
 #' input arguments.  } \item{est}{ a vector with length equal to
 #' \code{length(x)}, where element \code{j} is equal to
@@ -58,7 +41,7 @@
 #' \code{length(x)} rows, where the element on row \code{i} and column \code{j}
 #' is the (estimated) covariance of \eqn{\hat{\theta}}(\code{x[i]}) and
 #' \eqn{\hat{\theta}}(\code{x[j]}).  }
-#' @note The variance calculation performed by \code{stdGee} does not condition
+#' @note The variance calculation performed by \code{standardize_gee} does not condition
 #' on the observed covariates \eqn{\bar{Z}=(Z_{11},...,Z_{nn_i})}. To see how
 #' this matters, note that
 #' \deqn{var\{\hat{\theta}(x)\}=E[var\{\hat{\theta}(x)|\bar{Z}\}]+var[E\{\hat{\theta}(x)|\bar{Z}\}].}
@@ -95,26 +78,58 @@
 #' X <- rnorm(n * ni, mean = ai + Z)
 #' Y <- rnorm(n * ni, mean = ai + X + Z + 0.1 * X^2)
 #' dd <- data.frame(id, Z, X, Y)
-#' fit <- gee(
-#'   formula = Y ~ X + Z + I(X^2), data = dd, clusterid = "id", link = "identity",
-#'   cond = TRUE
+#' fit.std <- standardize_gee(
+#'   formula = Y ~ X + Z + I(X^2),
+#'   link = "identity",
+#'   data = dd,
+#'   values = list(X = seq(-3, 3, 0.5)),
+#'   clusterid = "id"
 #' )
-#' fit.std <- stdGee(fit = fit, data = dd, X = "X", x = seq(-3, 3, 0.5), clusterid = "id")
 #' print(summary(fit.std, contrast = "difference", reference = 2))
 #' plot(fit.std)
 #'
-#' @export stdGee
-stdGee <- function(fit, data, X, x, clusterid, subsetnew) {
+#' @export standardize_gee
+standardize_gee <- function(formula, link = "identity", data, values, clusterid) {
   call <- match.call()
+
+  if (!inherits(values, c("data.frame", "list"))) {
+    stop("values is not an object of class list or data.frame")
+  }
+
+  n <- nrow(data)
+
+  ## Check that the names of values appear in the data
+  check_values_data(values, data)
+
+  ## Set various relevant variables
+  if (!is.data.frame(values)) {
+    valuesout <- expand.grid(values)
+  } else {
+    valuesout <- values
+  }
+  exposure_names <- colnames(valuesout)
+  exposure <- data[, exposure_names]
+
+  fit <- tryCatch(
+    {
+      drgee::gee(formula = formula, data = data, cond = TRUE, clusterid = clusterid, link = link)
+    },
+    error = function(cond) {
+      return(cond)
+    }
+  )
+  if (inherits(fit, "simpleError")) {
+    stop("gee failed with error: ", fit[["message"]])
+  }
 
   #---CHECKS---
 
   if (fit$cond == FALSE) {
-    stop("stdGee is only implemented for gee object with cond=TRUE. For cond=FALSE, use stdGlm.")
+    stop("standardize_gee is only implemented for gee object with cond=TRUE. For cond=FALSE, use stdGlm.")
   }
   link <- summary(fit)$link
   if (link != "identity" & link != "log") {
-    stop("stdGee is only implemented for gee object with identity link or log link.")
+    stop("standardize_gee is only implemented for gee object with identity link or log link.")
   }
 
   #---PREPARATION---
@@ -129,54 +144,18 @@ stdGee <- function(fit, data, X, x, clusterid, subsetnew) {
   data <- data[match(rownames(m), rownames(data)), ]
   n <- nrow(data)
 
-  # Make new subset if supplied.
-  subsetnew <-
-    if (missing(subsetnew)) {
-      rep(1, n)
-    } else {
-      as.numeric(eval(substitute(subsetnew), data, parent.frame()))
-    }
   input <- as.list(environment())
 
   ncluster <- length(unique(data[, clusterid]))
 
-  # Assign values to x and reference if not supplied.
-  # Make sure x is a factor if data[, X] is a factor
-  # with the same levels as data[, X].
-  if (missing(x)) {
-    if (is.factor(data[, X])) {
-      x <- as.factor(levels(data[, X]))
-    }
-    if (is.numeric(data[, X])) {
-      if (is.binary(data[, X])) {
-        x <- c(0, 1)
-      } else {
-        x <- round(mean(data[, X], na.rm = TRUE), 2)
-      }
-    }
-  } else {
-    if (is.factor(x)) {
-      temp <- x
-      levels(x) <- levels(data[, X])
-      x[seq_len(length(x))] <- temp
-    } else {
-      if (is.factor(data[, X])) {
-        x <- factor(x)
-        temp <- x
-        levels(x) <- levels(data[, X])
-        x[1:length(x)] <- temp
-      }
-    }
-  }
-  input$x <- x
-  nX <- length(x)
+  nX <- nrow(valuesout)
 
   # Check if model.matrix works with object=formula. If formula contains splines,
   # then neither object=formula nor object=fit will not work when no variation
   # in exposure, since model.matrix needs to retrieve Boundary.knots
   # from terms(fit). Then fit glm so can use model.matrix with object=terms(fit.glm).
   data.x <- data
-  data.x[, X] <- x[min(which(!is.na(x)))]
+  data.x[, exposure_names] <- exposure[min(which(!is.na(exposure)))]
   m.x <- try(expr = model.matrix(object = formula, data = data.x), silent = TRUE)
   contains.splines <- FALSE
   if (!is.matrix(m.x)) {
@@ -203,10 +182,10 @@ stdGee <- function(fit, data, X, x, clusterid, subsetnew) {
   pred <- matrix(nrow = n, ncol = nX)
   SI.beta <- matrix(nrow = nX, ncol = npar)
   for (i in 1:nX) {
-    data.x <- data
-    if (!is.na(x[i])) {
-      data.x[, X] <- x[i]
-    }
+    data.x <- do.call("transform", c(
+      list(data),
+      valuesout[i, , drop = FALSE]
+    ))
     if (contains.splines) {
       m.x <- model.matrix(object = terms(fit.glm), data = data.x)[, -1, drop = FALSE]
     } else {
@@ -232,20 +211,20 @@ stdGee <- function(fit, data, X, x, clusterid, subsetnew) {
     # This causes da.dbeta and deta.dbeta to be NA, but they should be 0.
     deta.dbeta[is.na(deta.dbeta)] <- 0
     dmu.dbeta <- dmu.deta * deta.dbeta
-    SI.beta[i, ] <- colMeans(subsetnew * weights * dmu.dbeta)
+    SI.beta[i, ] <- colMeans(weights * dmu.dbeta)
   }
-  est <- colSums(subsetnew * weights * pred, na.rm = TRUE) /
-    sum(subsetnew * weights)
+  est <- colSums(weights * pred, na.rm = TRUE) /
+    sum(weights)
 
   #---VARIANCE OF MEANS AT VALUES SPECIFIED BY x---
 
   ores <- weights * fit$x * fit$res
-  mres <- subsetnew * weights * (pred - matrix(rep(est, each = n), nrow = n, ncol = nX))
+  mres <- weights * (pred - matrix(rep(est, each = n), nrow = n, ncol = nX))
   res <- cbind(mres, ores)
   res <- aggr(x = res, clusters = data[, clusterid])
   J <- var(res, na.rm = TRUE)
 
-  SI <- cbind(-diag(nX) * mean(subsetnew * weights), SI.beta)
+  SI <- cbind(-diag(nX) * mean(weights), SI.beta)
   oI <- cbind(
     matrix(0, nrow = npar, ncol = nX),
     -t(fit$x) %*% (weights * fit$d.res) / n
@@ -258,19 +237,19 @@ stdGee <- function(fit, data, X, x, clusterid, subsetnew) {
 
   #---OUTPUT---
 
-  class(out) <- "stdGee"
+  class(out) <- "std_gee"
   return(out)
 }
 
 #' @title Summarizes GEE regression standardization fit
 #'
-#' @description This is a \code{summary} method for class \code{"stdGee"}.
+#' @description This is a \code{summary} method for class \code{"std_gee"}.
 #'
-#' @param object an object of class \code{"stdGee"}.
-#' @param CI.type string, indicating the type of confidence intervals. Either
+#' @param object an object of class \code{"std_gee"}.
+#' @param ci_type string, indicating the type of confidence intervals. Either
 #' "plain", which gives untransformed intervals, or "log", which gives
 #' log-transformed intervals.
-#' @param CI.level desired coverage probability of confidence intervals, on
+#' @param ci_level desired coverage probability of confidence intervals, on
 #' decimal form.
 #' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
 #' \code{"odds"}, the standardized mean \eqn{\theta(x)} is transformed into
@@ -285,19 +264,19 @@ stdGee <- function(fit, data, X, x, clusterid, subsetnew) {
 #' @param reference must be specified if \code{contrast} is specified.
 #' @param \dots not used.
 #' @author Arvid Sjolander
-#' @seealso \code{\link{stdGee}}
+#' @seealso \code{\link{standardize_gee}}
 #' @examples
 #'
-#' ## See documentation for stdGee
+#' ## See documentation for standardize_gee
 #'
 #' @rdname summary
-#' @export summary.stdGee
+#' @export summary.std_gee
 #' @export
-summary.stdGee <- function(object, CI.type = "plain", CI.level = 0.95,
-                           transform = NULL, contrast = NULL, reference = NULL, ...) {
+summary.std_gee <- function(object, ci_type = "plain", ci_level = 0.95,
+                            transform = NULL, contrast = NULL, reference = NULL, ...) {
   est <- object$est
   V <- as.matrix(object$vcov)
-  nX <- length(object$input$x)
+  nX <- length(est)
 
   if (!is.null(transform)) {
     if (transform == "log") {
@@ -319,7 +298,7 @@ summary.stdGee <- function(object, CI.type = "plain", CI.level = 0.95,
     if (is.null(reference)) {
       stop("When specifying contrast, reference must be specified as well")
     }
-    referencepos <- match(reference, object$input$x)
+    referencepos <- match(reference, object$input$valuesout[, 1])
     if (is.na(referencepos)) {
       stop("reference must be a value in x")
     }
@@ -342,17 +321,17 @@ summary.stdGee <- function(object, CI.type = "plain", CI.level = 0.95,
 
   var <- diag(V)
   se <- sqrt(var)
-  conf.int <- CI(est = est, var = var, CI.type = CI.type, CI.level = CI.level)
+  conf.int <- CI(est = est, var = var, ci_type = ci_type, ci_level = ci_level)
 
   if (is.factor(reference)) {
     reference <- as.character(reference)
   }
   est.table <- as.matrix(cbind(est, se, conf.int), nrow = length(est), ncol = 4)
   dimnames(est.table) <- list(
-    object$input$x,
+    object$input$valuesout[, 1],
     c(
-      "Estimate", "Std. Error", paste("lower", CI.level),
-      paste("upper", CI.level)
+      "Estimate", "Std. Error", paste("lower", ci_level),
+      paste("upper", ci_level)
     )
   )
   out <- c(object, list(
@@ -360,42 +339,42 @@ summary.stdGee <- function(object, CI.type = "plain", CI.level = 0.95,
     contrast = contrast, reference = reference
   ))
 
-  class(out) <- "summary.stdGee"
+  class(out) <- "summary_std_gee"
   return(out)
 }
 
 #' @rdname print
-#' @export print.stdGee
+#' @export print.std_gee
 #' @export
-print.stdGee <- function(x, ...) {
+print.std_gee <- function(x, ...) {
   print(summary(x))
 }
 
 #' @title Prints summary of GEE regression standardization fit
 #'
-#' @description This is a \code{print} method for class \code{"summary.stdGee"}.
+#' @description This is a \code{print} method for class \code{"summary_std_gee"}.
 #'
-#' @param x an object of class \code{"summary.stdGee"}.
+#' @param x an object of class \code{"summary_std_gee"}.
 #' @param \dots not used.
 #' @author Arvid Sjolander
-#' @seealso \code{\link{stdGee}}
+#' @seealso \code{\link{standardize_gee}}
 #' @examples
 #'
-#' ## See documentation for stdGee
+#' ## See documentation for standardize_gee
 #'
 #' @rdname print
-#' @export print.summary.stdGee
+#' @export print.summary_std_gee
 #' @export
-print.summary.stdGee <- function(x, ...) {
+print.summary_std_gee <- function(x, ...) {
   cat("\nFormula: ")
   print(x$input$fit$formula)
   cat("Link function:", summary(x$input$fit)$link, "\n")
-  cat("Exposure: ", x$input$X, "\n")
+  cat("Exposure: ", x$input$exposure_names, "\n")
   if (!is.null(x$transform)) {
     cat("Transform: ", x$transform, "\n")
   }
   if (!is.null(x$contrast)) {
-    cat("Reference level: ", x$input$X, "=", x$reference, "\n")
+    cat("Reference level: ", x$input$exposure_names, "=", x$reference, "\n")
     cat("Contrast: ", x$contrast, "\n")
   }
   cat("\n")
@@ -404,13 +383,13 @@ print.summary.stdGee <- function(x, ...) {
 
 #' @title Plots GEE regression standardization fit
 #'
-#' @description This is a \code{plot} method for class \code{"stdGee"}.
+#' @description This is a \code{plot} method for class \code{"std_gee"}.
 #'
-#' @param x an object of class \code{"stdGee"}.
-#' @param CI.type string, indicating the type of confidence intervals. Either
+#' @param x an object of class \code{"std_gee"}.
+#' @param ci_type string, indicating the type of confidence intervals. Either
 #' "plain", which gives untransformed intervals, or "log", which gives
 #' log-transformed intervals.
-#' @param CI.level desired coverage probability of confidence intervals, on
+#' @param ci_level desired coverage probability of confidence intervals, on
 #' decimal form.
 #' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
 #' \code{"odds"}, the standardized mean \eqn{\theta(x)} is transformed into
@@ -425,22 +404,22 @@ print.summary.stdGee <- function(x, ...) {
 #' @param reference must be specified if \code{contrast} is specified.
 #' @param \dots further arguments passed on to plot.default.
 #' @author Arvid Sjolander
-#' @seealso \code{\link{stdGee}}
+#' @seealso \code{\link{standardize_gee}}
 #' @examples
 #'
-#' ## See documentation for stdGee
+#' ## See documentation for standardize_gee
 #'
 #' @rdname plot
-#' @export plot.stdGee
+#' @export plot.std_gee
 #' @export
-plot.stdGee <- function(x, CI.type = "plain", CI.level = 0.95,
-                        transform = NULL, contrast = NULL, reference = NULL, ...) {
+plot.std_gee <- function(x, ci_type = "plain", ci_level = 0.95,
+                         transform = NULL, contrast = NULL, reference = NULL, ...) {
   object <- x
-  x <- object$input$x
+  x <- object$input$valuesout[, 1]
 
   dots <- list(...)
 
-  xlab <- object$input$X
+  xlab <- object$input$exposure_names
 
   if (is.factor(reference)) {
     reference <- as.character(reference)
@@ -516,7 +495,7 @@ plot.stdGee <- function(x, CI.type = "plain", CI.level = 0.95,
   }
 
   sum.obj <- summary(
-    object = object, CI.type = CI.type, CI.level = CI.level,
+    object = object, ci_type = ci_type, ci_level = ci_level,
     transform = transform, contrast = contrast, reference = reference
   )
   est <- sum.obj$est.table[, 1]

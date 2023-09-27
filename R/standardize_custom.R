@@ -449,7 +449,7 @@ summary.plot_help <- function(object,
     res_cont[["contrast"]] <- ifelse(is.null(res_cont[["contrast"]]), "NULL", as.character(res_cont[["contrast"]]))
     res_cont[["transform"]] <- ifelse(is.null(res_cont[["transform"]]), "NULL", as.character(res_cont[["transform"]]))
 
-    if ((res_cont[["ci_level"]] == CI.level || res_cont[["ci_level"]] == ci_level) &&
+    if ((res_cont[["ci_level"]] == ci_level || res_cont[["ci_level"]] == ci_level) &&
       (identical(res_cont[["transform"]], transform)) &&
       (identical(res_cont[["contrast"]], contrast)) &&
       (identical(res_cont[["reference"]], reference))) {
@@ -521,10 +521,10 @@ plot.std_helper <- function(x,
       res_contrasts = x[["res_contrast"]]
     )
     class(obj) <- "plot_help"
-    plot.stdCoxph(
+    plot.std_coxph(
       x = obj,
-      plot.CI = !is.null(B) && plot_ci,
-      CI.level = ci_level,
+      plot_ci = !is.null(B) && plot_ci,
+      ci_level = ci_level,
       transform = transform,
       reference = reference,
       contrast = contrast

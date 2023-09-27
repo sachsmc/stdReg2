@@ -10,11 +10,13 @@ test_that("check estimates and standard errors against older package (gee)", {
   X <- rnorm(n * ni, mean = ai + Z)
   Y <- rnorm(n * ni, mean = ai + X + Z + 0.1 * X^2)
   dd <- data.frame(id, Z, X, Y)
-  fit <- gee(
-    formula = Y ~ X + Z + I(X^2), data = dd, clusterid = "id", link = "identity",
-    cond = TRUE
+  fit.std <- standardize_gee(
+    formula = Y ~ X + Z + I(X^2),
+    link = "identity",
+    data = dd,
+    values = list(X = seq(-3, 3, 0.5)),
+    clusterid = "id"
   )
-  fit.std <- stdGee(fit = fit, data = dd, X = "X", x = seq(-3, 3, 0.5), clusterid = "id")
   x <- summary(fit.std)
   expect_equal(unname(x$est.table[, 1]), c(
     -2.31169220309552, -2.02480660497755, -1.69617517072297, -1.32579790033181,

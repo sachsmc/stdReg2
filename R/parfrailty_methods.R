@@ -1,7 +1,7 @@
 #' @title Fits shared frailty gamma-Weibull models
 #'
 #' @description \code{parfrailty} fits shared frailty gamma-Weibull models. It is
-#' specifically designed to work with the function \code{stdParfrailty}, which
+#' specifically designed to work with the function \code{standardize_parfrailty}, which
 #' performs regression standardization in shared frailty gamma-Weibull models.
 #'
 #' @details \code{parfrailty} fits the shared frailty gamma-Weibull model
@@ -396,10 +396,10 @@ parfrailty <- function(formula, data, clusterid, init) {
 #' @description This is a \code{summary} method for class \code{"parfrailty"}.
 #'
 #' @param object an object of class \code{"parfrailty"}.
-#' @param CI.type string, indicating the type of confidence intervals. Either
+#' @param ci_type string, indicating the type of confidence intervals. Either
 #' "plain", which gives untransformed intervals, or "log", which gives
 #' log-transformed intervals.
-#' @param CI.level desired coverage probability of confidence intervals, in
+#' @param ci_level desired coverage probability of confidence intervals, in
 #' decimal form.
 #' @param digits the number of significant digits to use when printing..
 #' @param \dots not used.
@@ -411,10 +411,10 @@ parfrailty <- function(formula, data, clusterid, init) {
 #' @rdname summary
 #' @export summary.parfrailty
 #' @export
-summary.parfrailty <- function(object, CI.type = "plain", CI.level = 0.95,
+summary.parfrailty <- function(object, ci_type = "plain", ci_level = 0.95,
                                digits = max(3L, getOption("digits") - 3L), ...) {
-  if (missing(CI.level)) CI.level <- 0.95
-  if (missing(CI.type)) CI.type <- "plain"
+  if (missing(ci_level)) ci_level <- 0.95
+  if (missing(ci_type)) ci_type <- "plain"
 
   ### Inference
   var <- diag(object$vcov)
@@ -423,7 +423,7 @@ summary.parfrailty <- function(object, CI.type = "plain", CI.level = 0.95,
   pvalue <- 2 * pnorm(-abs(zvalue))
   confidence.interval <- CI(
     est = object$est, var = var,
-    CI.type = CI.type, CI.level = CI.level
+    ci_type = ci_type, ci_level = ci_level
   )
   colnames(confidence.interval) <- c("Lower limit", "Upper limit")
 
@@ -432,7 +432,7 @@ summary.parfrailty <- function(object, CI.type = "plain", CI.level = 0.95,
     pvalue = pvalue, score = object$score, X = object$X, vcov = object$vcov,
     call = object$call, formula = object$formula, modelmatrix = object$X,
     data = object$data, clusterid = object$clusterid,
-    ncluster = object$ncluster, n = object$n, CI.type = CI.type, CI.level = CI.level,
+    ncluster = object$ncluster, n = object$n, ci_type = ci_type, ci_level = ci_level,
     confidence.interval = confidence.interval
   )
 
@@ -477,17 +477,17 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 
 #' @title Regression standardization in shared frailty gamma-Weibull models
 #'
-#' @description \code{stdParfrailty} performs regression standardization in shared frailty
+#' @description \code{standardize_parfrailty} performs regression standardization in shared frailty
 #' gamma-Weibull models, at specified values of the exposure, over the sample
 #' covariate distribution. Let \eqn{T}, \eqn{X}, and \eqn{Z} be the survival
 #' outcome, the exposure, and a vector of covariates, respectively.
-#' \code{stdParfrailty} uses a fitted Cox proportional hazards model to
+#' \code{standardize_parfrailty} uses a fitted Cox proportional hazards model to
 #' estimate the standardized survival function
 #' \eqn{\theta(t,x)=E\{S(t|X=x,Z)\}}, where \eqn{t} is a specific value of
 #' \eqn{T}, \eqn{x} is a specific value of \eqn{X}, and the expectation is over
 #' the marginal distribution of \eqn{Z}.
 #'
-#' @details \code{stdParfrailty} assumes that a shared frailty gamma-Weibull model
+#' @details \code{standardize_parfrailty} assumes that a shared frailty gamma-Weibull model
 #' \deqn{\lambda(t_{ij}|X_{ij},Z_{ij})=\lambda(t_{ij};\alpha,\eta)U_iexp\{h(X_{ij},Z_{ij};\beta)\}}
 #' has been fitted, with parametrization as descibed in the help section for
 #' \code{parfrailty}. Integrating out the gamma frailty gives the survival
@@ -503,8 +503,8 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' \deqn{\hat{\theta}(t,x)=\sum_{i=1}^n \hat{S}(t|X=x,Z_i)/n.} The variance for
 #' \eqn{\hat{\theta}(t,x)} is obtained by the sandwich formula.
 #'
-#' @inherit stdCoxph
-#' @return An object of class \code{"stdParfrailty"} is a list containing
+#' @inherit standardize_coxph
+#' @return An object of class \code{"std_parfrailty"} is a list containing
 #' \item{call}{ the matched call.  } \item{input}{ \code{input} is a list
 #' containing all input arguments.  } \item{est}{ a matrix with
 #' \code{length(t)} rows and \code{length(x)} columns, where the element on row
@@ -518,14 +518,14 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' @note Standardized survival functions are sometimes referred to as (direct)
 #' adjusted survival functions in the literature.
 #'
-#' \code{stdParfrailty} does not currently handle time-varying exposures or
+#' \code{standardize_parfrailty} does not currently handle time-varying exposures or
 #' covariates.
 #'
-#' \code{stdParfrailty} internally loops over all values in the \code{t}
+#' \code{standardize_parfrailty} internally loops over all values in the \code{t}
 #' argument. Therefore, the function will usually be considerably faster if
 #' \code{length(t)} is small.
 #'
-#' The variance calculation performed by \code{stdParfrailty} does not
+#' The variance calculation performed by \code{standardize_parfrailty} does not
 #' condition on the observed covariates \eqn{\bar{Z}=(Z_1,...,Z_n)}. To see how
 #' this matters, note that
 #' \deqn{var\{\hat{\theta}(t,x)\}=E[var\{\hat{\theta}(t,x)|\bar{Z}\}]+var[E\{\hat{\theta}(t,x)|\bar{Z}\}].}
@@ -590,7 +590,7 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' dd <- data.frame(L, T, D, X, id)
 #' dd <- dd[incl, ]
 #'
-#' fit.std <- stdParfrailty(
+#' fit.std <- standardize_parfrailty(
 #'   formula = Surv(L, T, D) ~ X,
 #'   data = dd,
 #'   values = list(X = seq(-1, 1, 0.5)),
@@ -600,8 +600,8 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' print(summary(fit.std, times = 3))
 #' plot(fit.std)
 #'
-#' @export stdParfrailty
-stdParfrailty <- function(formula, data, values, times, clusterid) {
+#' @export standardize_parfrailty
+standardize_parfrailty <- function(formula, data, values, times, clusterid) {
   call <- match.call()
 
   if (!inherits(values, c("data.frame", "list"))) {
@@ -744,22 +744,22 @@ stdParfrailty <- function(formula, data, values, times, clusterid) {
   out <- list(call = call, input = input, est = est, vcov = vcov)
   #---OUTPUT---
 
-  class(out) <- "stdParfrailty"
+  class(out) <- "std_parfrailty"
   return(out)
 }
 
 #' @title Summarizes Frailty standardization fit
 #'
-#' @description This is a \code{summary} method for class \code{"stdParfrailty"}.
+#' @description This is a \code{summary} method for class \code{"std_parfrailty"}.
 #'
-#' @param object an object of class \code{"stdParfrailty"}.
+#' @param object an object of class \code{"std_parfrailty"}.
 #' @param times numeric, indicating the times at which to summarize. It defaults to
 #' the specified value(s) of the argument \code{t} in the \code{stdCox}
 #' function.
-#' @param CI.type string, indicating the type of confidence intervals. Either
+#' @param ci_type string, indicating the type of confidence intervals. Either
 #' "plain", which gives untransformed intervals, or "log", which gives
 #' log-transformed intervals.
-#' @param CI.level desired coverage probability of confidence intervals, on
+#' @param ci_level desired coverage probability of confidence intervals, on
 #' decimal form.
 #' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
 #' \code{"odds"}, the standardized survival function \eqn{\theta(t,x)} is
@@ -774,53 +774,34 @@ stdParfrailty <- function(formula, data, values, times, clusterid) {
 #' @param reference must be specified if \code{contrast} is specified.
 #' @param \dots not used.
 #' @author Arvid Sjolander
-#' @seealso \code{\link{stdParfrailty}}
+#' @seealso \code{\link{standardize_parfrailty}}
 #' @examples
 #'
-#' ## See documentation for stdParfrailty
+#' ## See documentation for standardize_parfrailty
 #'
 #' @rdname summary
-#' @export summary.stdParfrailty
+#' @export summary.std_parfrailty
 #' @export
-summary.stdParfrailty <- summary.stdCoxph
+summary.std_parfrailty <- summary.std_coxph
 
 #' @rdname print
-#' @export print.stdParfrailty
+#' @export print.std_parfrailty
 #' @export
-print.stdParfrailty <- function(x, ...) {
+print.std_parfrailty <- function(x, ...) {
   print(summary(x))
 }
 
-#' @title Prints summary of Frailty standardization fit
-#'
-#' @description This is a \code{print} method for class \code{"summary.stdParfrailty"}.
-#'
-#'
-#' @param x an object of class \code{"summary.stdParfrailty"}.
-#' @param \dots not used.
-#' @author Arvid Sjolander
-#' @seealso \code{\link{stdParfrailty}}
-#' @examples
-#'
-#'
-#' ## See documentation for stdParfrailty
-#'
-#' @rdname print
-#' @export print.summary.stdParfrailty
-#' @export
-print.summary.stdParfrailty <- print.summary.stdCoxph
-
 #' @title Plots parfrailty standardization fit
 #'
-#' @description This is a \code{plot} method for class \code{"stdParfrailty"}.
+#' @description This is a \code{plot} method for class \code{"std_parfrailty"}.
 #'
-#' @param x an object of class \code{"stdParfrailty"}.
-#' @param plot.CI logical, indicating whether confidence intervals should be
+#' @param x an object of class \code{"std_parfrailty"}.
+#' @param plot_ci logical, indicating whether confidence intervals should be
 #' added to the plot.
-#' @param CI.type string, indicating the type of confidence intervals. Either
+#' @param ci_type string, indicating the type of confidence intervals. Either
 #' "plain", which gives untransformed intervals, or "log", which gives
 #' log-transformed intervals.
-#' @param CI.level desired coverage probability of confidence intervals, on
+#' @param ci_level desired coverage probability of confidence intervals, on
 #' decimal form.
 #' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
 #' \code{"odds"}, the standardized survival function \eqn{\theta(t,x)} is
@@ -836,13 +817,13 @@ print.summary.stdParfrailty <- print.summary.stdCoxph
 #' @param legendpos position of the legend; see help for \code{legend}.
 #' @param \dots further arguments passed on to plot.default.
 #' @author Arvid Sjolander
-#' @seealso \code{\link{stdParfrailty}}
+#' @seealso \code{\link{standardize_parfrailty}}
 #' @examples
 #'
 #'
-#' ## See documentation for stdParfrailty
+#' ## See documentation for standardize_parfrailty
 #'
 #' @rdname plot
-#' @export plot.stdParfrailty
+#' @export plot.std_parfrailty
 #' @export
-plot.stdParfrailty <- plot.stdCoxph
+plot.std_parfrailty <- plot.std_coxph

@@ -27,7 +27,13 @@ test_that("check estimates and standard errors against older package (parfrailty
   dd <- data.frame(L, time, D, X, id)
   dd <- dd[incl, ]
 
-  fit.std <- stdParfrailty(formula = Surv(L, time, D) ~ X, data = dd, values = list(X=seq(-1, 1, 0.5)), times = 3, clusterid = "id")
+  fit.std <- standardize_parfrailty(
+    formula = Surv(L, time, D) ~ X,
+    data = dd,
+    values = list(X = seq(-1, 1, 0.5)),
+    times = 3,
+    clusterid = "id"
+  )
   x <- summary(fit.std)
 
   expect_equal(unname(x$est.table[[1]][, 1]), c(
