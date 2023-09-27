@@ -89,11 +89,13 @@ Z <- rnorm(n * ni)
 X <- rnorm(n * ni, mean = ai + Z)
 Y <- rnorm(n * ni, mean = ai + X + Z + 0.1 * X^2)
 dd <- data.frame(id, Z, X, Y)
-fit.std <- standardize_gee(formula = Y ~ X + Z + I(X^2),
-                           link = "identity",
-                           data = dd,
-                           values = list(X = seq(-3, 3, 0.5)),
-                           clusterid = "id")
+fit.std <- standardize_gee(
+  formula = Y ~ X + Z + I(X^2),
+  link = "identity",
+  data = dd,
+  values = list(X = seq(-3, 3, 0.5)),
+  clusterid = "id"
+)
 print(summary(fit.std, contrast = "difference", reference = 2))
 plot(fit.std)
 

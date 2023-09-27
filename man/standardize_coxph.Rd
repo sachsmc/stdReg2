@@ -102,10 +102,12 @@ C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
 U <- pmin(T, C) # time at risk
 D <- as.numeric(T < C) # event indicator
 dd <- data.frame(Z, X, U, D)
-fit.std <- standardize_coxph(formula = Surv(U, D) ~ X + Z + X * Z,
-                             data = dd,
-                             values = list(X = seq(-1, 1, 0.5)),
-                             times = 1:5)
+fit.std <- standardize_coxph(
+  formula = Surv(U, D) ~ X + Z + X * Z,
+  data = dd,
+  values = list(X = seq(-1, 1, 0.5)),
+  times = 1:5
+)
 print(summary(fit.std, times = 3))
 plot(fit.std)
 
