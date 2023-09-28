@@ -167,7 +167,7 @@ parfrailty <- function(formula, data, clusterid, init) {
 
     # construct elements for hessian
     B <- as.vector(X %*% beta)
-    XX <- c(X) * X[rep(1:nrow(X), nbeta), ]
+    XX <- c(X) * X[rep(seq_len(nrow(X)), nbeta), ]
     h.eta <- delta * (1 + eta * (log(times) - log(alpha)))
     H <- (times / alpha)^eta * exp(B)
     Hstar <- (tstar / alpha)^eta * exp(B)
@@ -450,7 +450,6 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
   table.est <- cbind(x$est, exp(x$est), x$se, x$zvalue, x$pvalue)
   rownames(table.est) <- names(x$est)
   colnames(table.est) <- c("coef", "exp(coef)", "se(coef)", "z", "Pr(>|z|)")
-  # print.default(table.est, digits=3)
   printCoefmat(table.est, digits = 3)
   cat("\n")
   cat("Number of observations:", x$n, "\n")
@@ -575,8 +574,6 @@ standardize_parfrailty <- function(formula,
   } else {
     valuesout <- values
   }
-  exposure_names <- colnames(valuesout)
-  exposure <- data[, exposure_names]
 
   fit <- tryCatch(
     {
@@ -601,20 +598,6 @@ standardize_parfrailty <- function(formula,
   n <- nrow(data)
 
   input <- as.list(environment())
-
-  # extract end variable and event variable
-  Y <- model.extract(
-    frame = model.frame(formula = formula, data = data),
-    component = "response"
-  )
-  if (ncol(Y) == 2) {
-    end <- Y[, 1]
-    event <- Y[, 2]
-  }
-  if (ncol(Y) == 3) {
-    end <- Y[, 2]
-    event <- Y[, 3]
-  }
 
   clusters <- data[, clusterid]
   ncluster <- length(unique(clusters))

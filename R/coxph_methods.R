@@ -121,8 +121,6 @@ standardize_coxph <- function(formula,
   } else {
     valuesout <- values
   }
-  exposure_names <- colnames(valuesout)
-  exposure <- data[, exposure_names]
 
   fit <- tryCatch(
     {
@@ -526,7 +524,7 @@ plot.std_surv <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
   }
   legend <- c(legend, paste(object$input$exposure_names, "=", object$input$valuesout[, 1]))
   legend(
-    x = legendpos, legend = legend, lty = rep(1, length(x)), col = 1:length(x),
+    x = legendpos, legend = legend, lty = rep(1, length(x)), col = seq_len(length(x)),
     bty = "n"
   )
 }

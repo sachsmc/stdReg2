@@ -206,7 +206,6 @@ estfun_glm <- function(x, ...) {
   rval <- wres * xmat / dispersion
   attr(rval, "assign") <- NULL
   attr(rval, "contrasts") <- NULL
-  res <- residuals(x, type = "pearson")
   return(rval)
 }
 
@@ -356,7 +355,7 @@ format_result_standardize <- function(res,
       reference = reference
     ))
   }
-  res_contrast <- as.list(as.data.frame(do.call(mapply, c("summary_fun", unname(as.list(grid))))))
+  res_contrast <- as.list(as.data.frame(do.call(mapply, c(summary_fun, unname(as.list(grid))))))
   res_fin <- list(res_contrast = res_contrast, res = res)
   class(res_fin) <- format_class
   res_fin

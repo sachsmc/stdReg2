@@ -122,7 +122,6 @@ standardize <- function(arguments,
     valuesout <- values
   }
   exposure_names <- colnames(valuesout)
-  exposure <- data[, exposure_names]
 
   fit_outcome <- fit_helper(arguments, fitter, data)
   estimate_fun <- function(valuesout, times, data, fit_outcome) {
@@ -282,7 +281,6 @@ standardize_level <- function(arguments,
     valuesout <- values
   }
   exposure_names <- colnames(valuesout)
-  exposure <- data[, exposure_names]
 
   if (length(fitter_list) != length(predict_fun_list) && length(predict_fun_list) != nrow(valuesout)) {
     stop("need the number fitters, prediction functions and the number of values to be the same")
@@ -492,7 +490,7 @@ summary_standardize <- function(object, ci_level = 0.95,
         res_table[[t_ind]] <- data.frame(temp)
       }
       est_table <- cbind(exposure_table, do.call("cbind", res_table))
-      colnames(est_table)[1:length(exposure_name_table)] <- exposure_name_table
+      colnames(est_table)[seq_len(length(exposure_name_table))] <- exposure_name_table
     }
   } else {
     est_table <- data.frame(exposure_table, as.matrix(est, nrow = length(est), ncol = 1L))
@@ -592,8 +590,6 @@ summary.plot_help <- function(object,
       (identical(res_cont[["contrast"]], contrast)) &&
       (identical(res_cont[["reference"]], reference))) {
       level_exists <- TRUE
-      xlab <- res_cont[["exposure_names"]]
-      x <- res_cont[["est_table"]][, 1]
       break
     }
   }
@@ -641,7 +637,6 @@ plot.std_custom <- function(x,
                             transform = NULL,
                             contrast = NULL,
                             reference = NULL, ...) {
-  dots <- list(...)
   times <- x[["res"]][["times"]]
   B <- x[["res"]][["B"]]
 

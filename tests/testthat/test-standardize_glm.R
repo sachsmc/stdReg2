@@ -79,9 +79,6 @@ test_that("check estimates and standard errors standardize_glm (simple estimator
   X <- rnorm(n, mean = Z)
   Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
   dd <- data.frame(Z, X, Y)
-  # fit.stdReg1 <- glm(Y~X*Z, family=binomial,data=dd)
-  # y <- stdGlm(fit.stdReg1,data=dd, X="X",x=0:1)
-  # est.y <- summary(y)$est.table
   x <- standardize_glm(formula = Y ~ X * Z, family = "binomial", data = dd, values = list(X = 0:1))
   expect_equal(x$res_contrast$V1$estimates$estimates, c(0.519063874450474, 0.390531102199254), tolerance = 1e-5)
   expect_equal(x$res_contrast$V1$estimates$se, c(0.0614996028608024, 0.0881636202817664), tolerance = 1e-5)

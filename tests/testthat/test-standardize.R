@@ -45,10 +45,10 @@ test_that("standardize with survival data (no bootstrap) gives the same as stand
   n <- 500
   Z <- rnorm(n)
   X <- rnorm(n, mean = Z)
-  T <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
+  time <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
   C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
-  U <- pmin(T, C) # time at risk
-  D <- as.numeric(T < C) # event indicator
+  U <- pmin(time, C) # time at risk
+  D <- as.numeric(time < C) # event indicator
   dd <- data.frame(Z, X, U, D)
   x <- standardize(
     arguments = list(
@@ -93,10 +93,10 @@ test_that("standardize generates output with survival data (single time point)",
   n <- 500
   Z <- rnorm(n)
   X <- rnorm(n, mean = Z)
-  T <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
+  time <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
   C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
-  U <- pmin(T, C) # time at risk
-  D <- as.numeric(T < C) # event indicator
+  U <- pmin(time, C) # time at risk
+  D <- as.numeric(time < C) # event indicator
   dd <- data.frame(Z, X, U, D)
   x <- standardize(
     arguments = list(

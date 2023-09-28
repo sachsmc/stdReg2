@@ -89,8 +89,6 @@ standardize_gee <- function(formula, link = "identity", data, values, clusterid,
                             family = "gaussian",
                             references = NULL,
                             transforms = NULL) {
-  call <- match.call()
-
   if (!inherits(values, c("data.frame", "list"))) {
     stop("values is not an object of class list or data.frame")
   }
@@ -127,7 +125,7 @@ standardize_gee <- function(formula, link = "identity", data, values, clusterid,
     stop("standardize_gee is only implemented for gee object with cond=TRUE. For cond=FALSE, use stdGlm.")
   }
   link <- summary(fit)$link
-  if (link != "identity" & link != "log") {
+  if (link != "identity" && link != "log") {
     stop("standardize_gee is only implemented for gee object with identity link or log link.")
   }
 
@@ -142,8 +140,6 @@ standardize_gee <- function(formula, link = "identity", data, values, clusterid,
   m <- fit$x
   data <- data[match(rownames(m), rownames(data)), ]
   n <- nrow(data)
-
-  input <- as.list(environment())
 
   ncluster <- length(unique(data[, clusterid]))
 
@@ -232,7 +228,6 @@ standardize_gee <- function(formula, link = "identity", data, values, clusterid,
   V <- (solve(I) %*% J %*% t(solve(I)) * ncluster / n^2)[1:nX, 1:nX]
   vcov <- V
 
-  out <- list(call = call, input = input, est = est, vcov = vcov)
   fit_exposure <- contrast <- reference <- NULL
   variance <- vcov
   estimates <- est

@@ -106,13 +106,13 @@ plot(x, reference = 0, contrast = "difference")
 plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
 
 require(survival)
-prob_predict.coxph <- function(object, newdata, times){
+prob_predict.coxph <- function(object, newdata, times) {
   fit.detail <- suppressWarnings(basehaz(object))
   cum.haz <- fit.detail$hazard[sapply(times, function(x) max(which(fit.detail$time <= x)))]
   predX <- predict(object = object, newdata = newdata, type = "risk")
   res <- matrix(NA, ncol = length(times), nrow = length(predX))
-  for (ti in seq_len(length(times))){
-    res[, ti] <- exp(-predX*cum.haz[ti])
+  for (ti in seq_len(length(times))) {
+    res[, ti] <- exp(-predX * cum.haz[ti])
   }
   res
 }

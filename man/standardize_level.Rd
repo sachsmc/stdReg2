@@ -72,13 +72,13 @@ can be fitted for each value of \code{x} in \code{values}.
 \examples{
 
 require(survival)
-prob_predict.coxph <- function(object, newdata, times){
+prob_predict.coxph <- function(object, newdata, times) {
   fit.detail <- suppressWarnings(basehaz(object))
   cum.haz <- fit.detail$hazard[sapply(times, function(x) max(which(fit.detail$time <= x)))]
   predX <- predict(object = object, newdata = newdata, type = "risk")
   res <- matrix(NA, ncol = length(times), nrow = length(predX))
-  for (ti in seq_len(length(times))){
-    res[, ti] <- exp(-predX*cum.haz[ti])
+  for (ti in seq_len(length(times))) {
+    res[, ti] <- exp(-predX * cum.haz[ti])
   }
   res
 }
@@ -94,19 +94,23 @@ D <- as.numeric(T < C) # event indicator
 dd <- data.frame(Z, X, U, D)
 x <- standardize_level(
   arguments = list(
-    list(formula = Surv(U, D) ~ X + Z + X * Z,
-    method = "breslow",
-    x = TRUE,
-    y = TRUE),
-    list(formula = Surv(U, D) ~ X,
-    method = "breslow",
-    x = TRUE,
-    y = TRUE)
+    list(
+      formula = Surv(U, D) ~ X + Z + X * Z,
+      method = "breslow",
+      x = TRUE,
+      y = TRUE
+    ),
+    list(
+      formula = Surv(U, D) ~ X,
+      method = "breslow",
+      x = TRUE,
+      y = TRUE
+    )
   ),
-  fitter_list = list("coxph","coxph"),
+  fitter_list = list("coxph", "coxph"),
   data = dd,
-  times = seq(1,5,0.1),
-  predict_fun_list = list(prob_predict.coxph,prob_predict.coxph),
+  times = seq(1, 5, 0.1),
+  predict_fun_list = list(prob_predict.coxph, prob_predict.coxph),
   values = list(X = c(0, 1)),
   B = 100,
   references = 0,
