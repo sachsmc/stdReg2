@@ -210,7 +210,7 @@ estfun_glm <- function(x, ...)
 
 aggr <- function(x, clusters) {
   temp <- data.table(x)
-  temp <- as.matrix(temp[, j = lapply(.SD, sum), by = clusters])[, -1]
+  as.matrix(temp[, j = lapply(.SD, sum), by = clusters])[, -1]
 }
 
 CI <- function(est, var, ci_type = "plain", ci_level = 0.95) {

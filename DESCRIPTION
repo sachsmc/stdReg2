@@ -1,8 +1,9 @@
 Package: stdReg2
 Type: Package
 Title: Regression Standardization for Causal Inference
-Version: 0.1.0
+Version: 0.2.0
 Author: Michael C Sachs, Arvid Sjölander, Adam Brand, Erin E Gabriel
+Contributor: Johan Sebastian Ohlendorff
 Maintainer: Michael C Sachs <sachsmc@gmail.com>
 Description: Contains more modern tools for causal inference using regression 
       standardization. Four general classes of models are allowed; generalized 
@@ -19,11 +20,8 @@ Imports:
     survival,
 Suggests: 
     AF,
-    emmeans, 
     knitr,
-    marginaleffects,
     rmarkdown,
-    stdReg,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
