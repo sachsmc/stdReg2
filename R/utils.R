@@ -197,13 +197,6 @@ aggr <- function(x, clusters) {
   temp <- as.matrix(temp[, j = lapply(.SD, sum), by = clusters])[, -1]
 }
 
-confintall <- function(object, parm, level = 0.95, fun, type = "plain", ...) {
-  est <- do.call(what = fun, args = list(est = object$est))
-  var <- delmet(fun = fun, est = object$est, vcov = object$vcov)
-  ci <- CI(est = est, var = var, ci_type = type, ci_level = level)
-  return(ci)
-}
-
 CI <- function(est, var, ci_type = "plain", ci_level = 0.95) {
   se <- sqrt(var)
   qqq <- abs(qnorm((1 - ci_level) / 2))
@@ -219,25 +212,6 @@ CI <- function(est, var, ci_type = "plain", ci_level = 0.95) {
 
   ci <- cbind(lower, upper)
   return(ci)
-}
-
-confint.stdCoxph <- confintall
-confint.stdGee <- confintall
-confint.stdGlm <- confintall
-confint.stdParfrailty <- confintall
-
-delmet <- function(fun, est, vcov) {
-  if (!is.list(vcov)) {
-    est <- matrix(est, nrow = 1)
-    vcov <- list(vcov)
-  }
-  p <- length(vcov)
-  var <- vector(length = p)
-  for (i in 1:p) {
-    gradient <- matrix(grad(func = fun, x = est[i, , drop = FALSE]), nrow = 1)
-    var[i] <- gradient %*% vcov[[i]] %*% t(gradient)
-  }
-  return(var)
 }
 
 expand <- function(x, names) {
