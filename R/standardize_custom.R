@@ -190,6 +190,177 @@ standardize <- function(arguments,
                             "summary_standardize")
 }
 
+#' @title Get standardized estimates using the g-formula with and separate models for each exposure level in the data
+#' @inherit standardize
+#' @param fitter_list The function to call to fit the data (as a list).
+#' @param predict_fun_list The function used to predict the means/probabilities
+#' for a new data set on the response level. For survival data,
+#' this should be a matrix where each column is the time, and each
+#' row the data (as a list).
+#' @details
+#' See \code{standardize}. The difference is here that different models
+#' can be fitted for each value of \code{x} in \code{values}.
+#' @examples
+#'
+#' require(survival)
+#' prob_predict.coxph <- function(object, newdata, times){
+#'   fit.detail <- suppressWarnings(basehaz(object))
+#'   cum.haz <- fit.detail$hazard[sapply(times, function(x) max(which(fit.detail$time <= x)))]
+#'   predX <- predict(object = object, newdata = newdata, type = "risk")
+#'   res <- matrix(NA, ncol = length(times), nrow = length(predX))
+#'   for (ti in seq_len(length(times))){
+#'     res[, ti] <- exp(-predX*cum.haz[ti])
+#'   }
+#'   res
+#' }
+#'
+#' set.seed(68)
+#' n <- 500
+#' Z <- rnorm(n)
+#' X <- rbinom(n, 1, prob = 0.5)
+#' T <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
+#' C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
+#' U <- pmin(T, C) # time at risk
+#' D <- as.numeric(T < C) # event indicator
+#' dd <- data.frame(Z, X, U, D)
+#' x <- standardize_level(
+#'   arguments = list(
+#'     list(formula = Surv(U, D) ~ X + Z + X * Z,
+#'     method = "breslow",
+#'     x = TRUE,
+#'     y = TRUE),
+#'     list(formula = Surv(U, D) ~ X,
+#'     method = "breslow",
+#'     x = TRUE,
+#'     y = TRUE)
+#'   ),
+#'   fitter_list = list("coxph","coxph"),
+#'   data = dd,
+#'   times = seq(1,5,0.1),
+#'   predict_fun_list = list(prob_predict.coxph,prob_predict.coxph),
+#'   values = list(X = c(0, 1)),
+#'   B = 100,
+#'   references = 0,
+#'   contrasts = "difference"
+#' )
+#' print(x)
+#' plot(x)
+#' plot(x, reference = 0, contrast = "difference")
+#' @export standardize_level
+standardize_level <- function(arguments,
+                              data,
+                              fitter_list,
+                              predict_fun_list,
+                              values,
+                              B = NULL,
+                              ci_level = 0.95,
+                              contrasts = NULL,
+                              references = NULL,
+                              seed = NULL,
+                              times = NULL,
+                              transforms = NULL) {
+  ## Preparation and various checks
+  n <- nrow(data)
+
+  if (!inherits(values, c("data.frame", "list"))) {
+    stop("values is not an object of class list or data.frame")
+  }
+
+  ## Check that the names of values appear in the data
+  check_values_data(values, data)
+
+  ## Set various relevant variables
+  if (!is.data.frame(values)) {
+    valuesout <- expand.grid(values)
+  } else {
+    valuesout <- values
+  }
+  exposure_names <- colnames(valuesout)
+  exposure <- data[, exposure_names]
+
+  if (length(fitter_list) != length(predict_fun_list) && length(predict_fun_list) != nrow(valuesout)){
+    stop("need the number fitters, prediction functions and the number of values to be the same")
+  }
+
+  fit_outcome <- list()
+  for (i in seq_len(length(fitter_list))){
+    fit_outcome[[i]] <- fit_helper(arguments[[i]], fitter_list[[i]],data)
+  }
+  estimate_fun <- function(valuesout, times, data, fit_outcome, exposure_names) {
+    if (is.null(times)) {
+      estimates <- rep(NA, nrow(valuesout))
+    } else {
+      estimates <- matrix(NA, ncol = length(times), nrow = nrow(valuesout))
+      colnames(estimates) <- paste("t =", times)
+    }
+
+    for (i in seq_len(nrow(valuesout))) {
+      # Initialize an empty condition
+      subset_condition <- rep(TRUE, nrow(data))
+
+      # Loop through exposure_names and covariate_values
+      for (j in seq_along(exposure_names)) {
+        var_name <- exposure_names[j]
+        var_value <- valuesout[i,j]
+
+        # Update the condition based on the current covariate
+        subset_condition <- subset_condition & (data[[var_name]] == var_value)
+      }
+      data_x <- data[subset_condition, ]
+      ## Save the predictions for data_x
+      if (is.null(times)) {
+        estimates[i] <- mean(predict_fun_list[[i]](object = fit_outcome[[i]], newdata = data_x))
+      } else {
+        estimates[i, ] <- colMeans(predict_fun_list[[i]](object = fit_outcome[[i]], newdata = data_x, times = times))
+      }
+    }
+    estimates
+  }
+  estimates <- estimate_fun(valuesout, times, data, fit_outcome,exposure_names)
+  estimates_boot <- list()
+  if (!is.null(B)) {
+    if (!is.null(seed)) {
+      set.seed(seed)
+    }
+    pb <- utils::txtProgressBar(
+      min = 1,
+      max = B,
+      style = 3,
+      width = 50
+    )
+
+    cat("Bootstrapping... This may take some time... \n")
+    for (b in seq_len(B)) {
+      utils::setTxtProgressBar(pb, b)
+      data_boot <- data[sample(seq_len(n), replace = TRUE), ]
+      fit_outcome_boot <- list()
+      for (i in seq_len(length(fitter_list))){
+        fit_outcome_boot[[i]] <- fit_helper(arguments[[i]], fitter_list[[i]],data_boot)
+      }
+      estimates_boot[[b]] <- estimate_fun(valuesout, times, data_boot, fit_outcome_boot, exposure_names)
+    }
+  }
+  valuesout <- cbind(valuesout, estimates)
+  res <- structure(
+    list(
+      B = B,
+      estimates = valuesout,
+      fit_outcome = fit_outcome,
+      estimates_boot = estimates_boot,
+      exposure_names = exposure_names,
+      times = times
+    )
+  )
+  format_result_standardize(res,
+                            contrasts,
+                            references,
+                            transforms,
+                            "plain",
+                            ci_level,
+                            "std_custom",
+                            "summary_standardize")
+}
+
 summary_standardize <- function(object, ci_level = 0.95,
                                 transform = NULL, contrast = NULL, reference = NULL, ...) {
   null_helper <- function(x) {
@@ -373,7 +544,6 @@ print.std_custom <- function(x, ...) {
     cat("\n")
   }
 }
-
 
 fit_helper <- function(args, fitter, data) {
   ## try fitting a glm model
