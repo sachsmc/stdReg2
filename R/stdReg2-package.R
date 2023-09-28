@@ -4,7 +4,8 @@
 #' @importFrom graphics lines mtext points
 #' @importFrom survival coxph.detail coxph Surv
 #' @importFrom stats ave binomial family glm model.extract model.frame
-#' @importFrom stats model.matrix optim pnorm predict predict.glm
-#' @importFrom stats printCoefmat qnorm residuals stepfun terms var vcov
+#' @importFrom stats coef model.matrix naresid optim pnorm predict
+#' @importFrom stats predict.glm printCoefmat qnorm residuals stepfun terms
+#' @importFrom stats var vcov weights
 #' @importFrom utils setTxtProgressBar txtProgressBar
 NULL

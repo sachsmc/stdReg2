@@ -192,6 +192,22 @@ sandwich <- function(fit, data, weights, t, fit.detail) {
   return(list(I = I, U = U))
 }
 
+## copy paste from sandwich package; we don't need the entire package
+estfun_glm <- function(x, ...)
+{
+  xmat <- model.matrix(x)
+  xmat <- naresid(x$na.action, xmat)
+  if(any(alias <- is.na(coef(x)))) xmat <- xmat[, !alias, drop = FALSE]
+  wres <- as.vector(residuals(x, "working")) * weights(x, "working")
+  dispersion <- if(substr(x$family$family, 1, 17) %in% c("poisson", "binomial", "Negative Binomial")) 1
+  else sum(wres^2, na.rm = TRUE)/sum(weights(x, "working"), na.rm = TRUE)
+  rval <- wres * xmat / dispersion
+  attr(rval, "assign") <- NULL
+  attr(rval, "contrasts") <- NULL
+  res <- residuals(x, type = "pearson")
+  return(rval)
+}
+
 aggr <- function(x, clusters) {
   temp <- data.table(x)
   temp <- as.matrix(temp[, j = lapply(.SD, sum), by = clusters])[, -1]
