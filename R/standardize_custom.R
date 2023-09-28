@@ -53,13 +53,13 @@
 #' plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
 #'
 #' require(survival)
-#' prob_predict.coxph <- function(object, newdata, times){
+#' prob_predict.coxph <- function(object, newdata, times) {
 #'   fit.detail <- suppressWarnings(basehaz(object))
 #'   cum.haz <- fit.detail$hazard[sapply(times, function(x) max(which(fit.detail$time <= x)))]
 #'   predX <- predict(object = object, newdata = newdata, type = "risk")
 #'   res <- matrix(NA, ncol = length(times), nrow = length(predX))
-#'   for (ti in seq_len(length(times))){
-#'     res[, ti] <- exp(-predX*cum.haz[ti])
+#'   for (ti in seq_len(length(times))) {
+#'     res[, ti] <- exp(-predX * cum.haz[ti])
 #'   }
 #'   res
 #' }
@@ -180,14 +180,16 @@ standardize <- function(arguments,
       times = times
     )
   )
-  format_result_standardize(res,
-                            contrasts,
-                            references,
-                            transforms,
-                            "plain",
-                            ci_level,
-                            "std_custom",
-                            "summary_standardize")
+  format_result_standardize(
+    res,
+    contrasts,
+    references,
+    transforms,
+    "plain",
+    ci_level,
+    "std_custom",
+    "summary_standardize"
+  )
 }
 
 #' @title Get standardized estimates using the g-formula with and separate models for each exposure level in the data
@@ -203,13 +205,13 @@ standardize <- function(arguments,
 #' @examples
 #'
 #' require(survival)
-#' prob_predict.coxph <- function(object, newdata, times){
+#' prob_predict.coxph <- function(object, newdata, times) {
 #'   fit.detail <- suppressWarnings(basehaz(object))
 #'   cum.haz <- fit.detail$hazard[sapply(times, function(x) max(which(fit.detail$time <= x)))]
 #'   predX <- predict(object = object, newdata = newdata, type = "risk")
 #'   res <- matrix(NA, ncol = length(times), nrow = length(predX))
-#'   for (ti in seq_len(length(times))){
-#'     res[, ti] <- exp(-predX*cum.haz[ti])
+#'   for (ti in seq_len(length(times))) {
+#'     res[, ti] <- exp(-predX * cum.haz[ti])
 #'   }
 #'   res
 #' }
@@ -225,19 +227,23 @@ standardize <- function(arguments,
 #' dd <- data.frame(Z, X, U, D)
 #' x <- standardize_level(
 #'   arguments = list(
-#'     list(formula = Surv(U, D) ~ X + Z + X * Z,
-#'     method = "breslow",
-#'     x = TRUE,
-#'     y = TRUE),
-#'     list(formula = Surv(U, D) ~ X,
-#'     method = "breslow",
-#'     x = TRUE,
-#'     y = TRUE)
+#'     list(
+#'       formula = Surv(U, D) ~ X + Z + X * Z,
+#'       method = "breslow",
+#'       x = TRUE,
+#'       y = TRUE
+#'     ),
+#'     list(
+#'       formula = Surv(U, D) ~ X,
+#'       method = "breslow",
+#'       x = TRUE,
+#'       y = TRUE
+#'     )
 #'   ),
-#'   fitter_list = list("coxph","coxph"),
+#'   fitter_list = list("coxph", "coxph"),
 #'   data = dd,
-#'   times = seq(1,5,0.1),
-#'   predict_fun_list = list(prob_predict.coxph,prob_predict.coxph),
+#'   times = seq(1, 5, 0.1),
+#'   predict_fun_list = list(prob_predict.coxph, prob_predict.coxph),
 #'   values = list(X = c(0, 1)),
 #'   B = 100,
 #'   references = 0,
@@ -278,13 +284,13 @@ standardize_level <- function(arguments,
   exposure_names <- colnames(valuesout)
   exposure <- data[, exposure_names]
 
-  if (length(fitter_list) != length(predict_fun_list) && length(predict_fun_list) != nrow(valuesout)){
+  if (length(fitter_list) != length(predict_fun_list) && length(predict_fun_list) != nrow(valuesout)) {
     stop("need the number fitters, prediction functions and the number of values to be the same")
   }
 
   fit_outcome <- list()
-  for (i in seq_len(length(fitter_list))){
-    fit_outcome[[i]] <- fit_helper(arguments[[i]], fitter_list[[i]],data)
+  for (i in seq_len(length(fitter_list))) {
+    fit_outcome[[i]] <- fit_helper(arguments[[i]], fitter_list[[i]], data)
   }
   estimate_fun <- function(valuesout, times, data, fit_outcome, exposure_names) {
     if (is.null(times)) {
@@ -301,7 +307,7 @@ standardize_level <- function(arguments,
       # Loop through exposure_names and covariate_values
       for (j in seq_along(exposure_names)) {
         var_name <- exposure_names[j]
-        var_value <- valuesout[i,j]
+        var_value <- valuesout[i, j]
 
         # Update the condition based on the current covariate
         subset_condition <- subset_condition & (data[[var_name]] == var_value)
@@ -316,7 +322,7 @@ standardize_level <- function(arguments,
     }
     estimates
   }
-  estimates <- estimate_fun(valuesout, times, data, fit_outcome,exposure_names)
+  estimates <- estimate_fun(valuesout, times, data, fit_outcome, exposure_names)
   estimates_boot <- list()
   if (!is.null(B)) {
     if (!is.null(seed)) {
@@ -334,8 +340,8 @@ standardize_level <- function(arguments,
       utils::setTxtProgressBar(pb, b)
       data_boot <- data[sample(seq_len(n), replace = TRUE), ]
       fit_outcome_boot <- list()
-      for (i in seq_len(length(fitter_list))){
-        fit_outcome_boot[[i]] <- fit_helper(arguments[[i]], fitter_list[[i]],data_boot)
+      for (i in seq_len(length(fitter_list))) {
+        fit_outcome_boot[[i]] <- fit_helper(arguments[[i]], fitter_list[[i]], data_boot)
       }
       estimates_boot[[b]] <- estimate_fun(valuesout, times, data_boot, fit_outcome_boot, exposure_names)
     }
@@ -351,14 +357,16 @@ standardize_level <- function(arguments,
       times = times
     )
   )
-  format_result_standardize(res,
-                            contrasts,
-                            references,
-                            transforms,
-                            "plain",
-                            ci_level,
-                            "std_custom",
-                            "summary_standardize")
+  format_result_standardize(
+    res,
+    contrasts,
+    references,
+    transforms,
+    "plain",
+    ci_level,
+    "std_custom",
+    "summary_standardize"
+  )
 }
 
 summary_standardize <- function(object, ci_level = 0.95,
@@ -648,8 +656,8 @@ plot.std_custom <- function(x,
         times = times,
         B = B
       ),
-      res_contrasts = x[["res_contrast"]])
-    )
+      res_contrasts = x[["res_contrast"]]
+    ))
     class(obj) <- "plot_help"
     plot.std_surv(
       x = obj,

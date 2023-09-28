@@ -703,12 +703,14 @@ standardize_parfrailty <- function(formula,
   #---OUTPUT---
 
   class(out) <- "std_surv"
-  format_result_standardize(out,
-                            contrasts,
-                            references,
-                            transforms,
-                            ci_type,
-                            ci_level,
-                            "std_surv",
-                            "summary_std_coxph")
+  format_result_standardize(
+    out,
+    contrasts,
+    references,
+    transforms,
+    ci_type,
+    ci_level,
+    "std_surv",
+    "summary_std_coxph"
+  )
 }

@@ -291,14 +291,16 @@ standardize_glm <- function(formula,
     exposure_names = exposure_names
   )
 
-  format_result_standardize(res,
-                            contrasts,
-                            references,
-                            transforms,
-                            ci_type,
-                            ci_level,
-                            "std_glm",
-                            "summary_std_glm")
+  format_result_standardize(
+    res,
+    contrasts,
+    references,
+    transforms,
+    ci_type,
+    ci_level,
+    "std_glm",
+    "summary_std_glm"
+  )
 }
 
 #' @title Get regression standardized doubly-robust estimates from a glm
@@ -465,14 +467,16 @@ standardize_glm_dr <- function(formula_exposure,
     exposure_names = exposure_names
   )
 
-  format_result_standardize(res,
-                            contrasts,
-                            references,
-                            transforms,
-                            ci_type,
-                            ci_level,
-                            "std_glm",
-                            "summary_std_glm")
+  format_result_standardize(
+    res,
+    contrasts,
+    references,
+    transforms,
+    ci_type,
+    ci_level,
+    "std_glm",
+    "summary_std_glm"
+  )
 }
 
 fit_glm <- function(formula, family, data, response) {
@@ -505,7 +509,7 @@ fit_glm <- function(formula, family, data, response) {
 }
 
 summary_std_glm <- function(object, ci_type = "plain", ci_level = 0.95,
-                                   transform = NULL, contrast = NULL, reference = NULL, ...) {
+                            transform = NULL, contrast = NULL, reference = NULL, ...) {
   est_old_table <- object[["estimates"]]
   est <- est_old_table[["estimates"]]
   v_mat <- as.matrix(object[["covariance"]])

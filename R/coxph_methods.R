@@ -264,19 +264,21 @@ standardize_coxph <- function(formula,
   class(out) <- "std_coxph"
 
   #---OUTPUT---
-  format_result_standardize(out,
-                            contrasts,
-                            references,
-                            transforms,
-                            ci_type,
-                            ci_level,
-                            "std_surv",
-                            "summary_std_coxph")
+  format_result_standardize(
+    out,
+    contrasts,
+    references,
+    transforms,
+    ci_type,
+    ci_level,
+    "std_surv",
+    "summary_std_coxph"
+  )
 }
 
 summary_std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
                               transform = NULL, contrast = NULL, reference = NULL, ...) {
-  if (dim(object$input$valuesout)[2] > 1){
+  if (dim(object$input$valuesout)[2] > 1) {
     stop("multiple exposures not currently suported with standardize_coxph/standardize_parfrailty")
   }
   est.all <- object$est
@@ -320,7 +322,7 @@ summary_std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
       if (is.null(reference)) {
         stop("When specifying contrast, reference must be specified as well")
       }
-      referencepos <- match(reference, object$input$valuesout[,1])
+      referencepos <- match(reference, object$input$valuesout[, 1])
       if (is.na(referencepos)) {
         stop("reference must be a value in x")
       }
@@ -372,7 +374,7 @@ summary_std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
 #' @export print.std_surv
 #' @export
 print.std_surv <- function(x, ...) {
-  for (v in x$res_contrast){
+  for (v in x$res_contrast) {
     print_summary_std_coxph(summary_std_coxph(v))
   }
 }
@@ -403,7 +405,7 @@ print_summary_std_coxph <- function(x, ...) {
 #' @export plot.std_surv
 #' @export
 plot.std_surv <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
-                           transform = NULL, contrast = NULL, reference = NULL, legendpos = "bottomleft", summary_fun = "summary_std_coxph",...) {
+                          transform = NULL, contrast = NULL, reference = NULL, legendpos = "bottomleft", summary_fun = "summary_std_coxph", ...) {
   object <- x$res
   if (ncol(object$input$valuesout) != 1) {
     stop("multiple exposures")
@@ -522,7 +524,7 @@ plot.std_surv <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
     }
     temp <- as.character(x[i])
   }
-  legend <- c(legend, paste(object$input$exposure_names, "=", object$input$valuesout[,1]))
+  legend <- c(legend, paste(object$input$exposure_names, "=", object$input$valuesout[, 1]))
   legend(
     x = legendpos, legend = legend, lty = rep(1, length(x)), col = 1:length(x),
     bty = "n"

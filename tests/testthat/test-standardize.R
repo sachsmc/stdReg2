@@ -7,7 +7,7 @@ test_that("standardize with non-survival data (no bootstrap) gives the same as s
   dd <- data.frame(Z, X, Y)
   prob_predict.glm <- function(...) predict.glm(..., type = "response")
   y <- standardize_glm(
-    formula = Y ~ X*Z,
+    formula = Y ~ X * Z,
     family = "binomial",
     data = dd,
     values = list(X = seq(-1, 1, 0.1)),
@@ -26,18 +26,18 @@ test_that("standardize with non-survival data (no bootstrap) gives the same as s
     references = 0,
     contrasts = c("ratio", "difference")
   )
-  expect_equal(x$res$estimates[,2],y$res$estimates[,3])
+  expect_equal(x$res$estimates[, 2], y$res$estimates[, 3])
 })
 
 test_that("standardize with survival data (no bootstrap) gives the same as standardize_coxph", {
   require(survival)
-  prob_predict.coxph <- function(object, newdata, times){
+  prob_predict.coxph <- function(object, newdata, times) {
     fit.detail <- suppressWarnings(basehaz(object))
     cum.haz <- fit.detail$hazard[sapply(times, function(x) max(which(fit.detail$time <= x)))]
     predX <- predict(object = object, newdata = newdata, type = "risk")
     res <- matrix(NA, ncol = length(times), nrow = length(predX))
-    for (ti in seq_len(length(times))){
-      res[, ti] <- exp(-predX*cum.haz[ti])
+    for (ti in seq_len(length(times))) {
+      res[, ti] <- exp(-predX * cum.haz[ti])
     }
     res
   }
@@ -74,18 +74,18 @@ test_that("standardize with survival data (no bootstrap) gives the same as stand
     contrasts = "difference"
   )
 
-  expect_equal(fit.std$res$est,unname(t(x$res$estimates[,-1])))
+  expect_equal(fit.std$res$est, unname(t(x$res$estimates[, -1])))
 })
 
 test_that("standardize generates output with survival data (single time point)", {
   require(survival)
-  prob_predict.coxph <- function(object, newdata, times){
+  prob_predict.coxph <- function(object, newdata, times) {
     fit.detail <- suppressWarnings(basehaz(object))
     cum.haz <- fit.detail$hazard[sapply(times, function(x) max(which(fit.detail$time <= x)))]
     predX <- predict(object = object, newdata = newdata, type = "risk")
     res <- matrix(NA, ncol = length(times), nrow = length(predX))
-    for (ti in seq_len(length(times))){
-      res[, ti] <- exp(-predX*cum.haz[ti])
+    for (ti in seq_len(length(times))) {
+      res[, ti] <- exp(-predX * cum.haz[ti])
     }
     res
   }

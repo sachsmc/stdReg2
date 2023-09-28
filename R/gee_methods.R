@@ -254,13 +254,14 @@ standardize_gee <- function(formula, link = "identity", data, values, clusterid,
     exposure_names = exposure_names
   )
 
-  format_result_standardize(res,
-                            contrasts,
-                            references,
-                            transforms,
-                            ci_type,
-                            ci_level,
-                            "std_glm",
-                            "summary_std_glm")
-
+  format_result_standardize(
+    res,
+    contrasts,
+    references,
+    transforms,
+    ci_type,
+    ci_level,
+    "std_glm",
+    "summary_std_glm"
+  )
 }

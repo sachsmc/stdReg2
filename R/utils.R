@@ -193,14 +193,16 @@ sandwich <- function(fit, data, weights, t, fit.detail) {
 }
 
 ## copy paste from sandwich package; we don't need the entire package
-estfun_glm <- function(x, ...)
-{
+estfun_glm <- function(x, ...) {
   xmat <- model.matrix(x)
   xmat <- naresid(x$na.action, xmat)
-  if(any(alias <- is.na(coef(x)))) xmat <- xmat[, !alias, drop = FALSE]
+  if (any(alias <- is.na(coef(x)))) xmat <- xmat[, !alias, drop = FALSE]
   wres <- as.vector(residuals(x, "working")) * weights(x, "working")
-  dispersion <- if(substr(x$family$family, 1, 17) %in% c("poisson", "binomial", "Negative Binomial")) 1
-  else sum(wres^2, na.rm = TRUE)/sum(weights(x, "working"), na.rm = TRUE)
+  dispersion <- if (substr(x$family$family, 1, 17) %in% c("poisson", "binomial", "Negative Binomial")) {
+    1
+  } else {
+    sum(wres^2, na.rm = TRUE) / sum(weights(x, "working"), na.rm = TRUE)
+  }
   rval <- wres * xmat / dispersion
   attr(rval, "assign") <- NULL
   attr(rval, "contrasts") <- NULL
@@ -332,7 +334,7 @@ format_result_standardize <- function(res,
     transform = transforms
   )
   grid <- subset(grid, (contrast == "NULL" & reference == "NULL") |
-                   (contrast != "NULL" & reference != "NULL"))
+    (contrast != "NULL" & reference != "NULL"))
   summary_fun <- function(contrast, reference, transform) {
     null_helper <- function(x) {
       if (is.null(x) || x == "NULL") {
@@ -345,12 +347,13 @@ format_result_standardize <- function(res,
     contrast <- null_helper(contrast)
     reference <- null_helper(reference)
 
-    do.call(summary_fun_name, list(object=res,
-                                   ci_type = ci_type,
-                                   ci_level = ci_level,
-                                   transform = transform,
-                                   contrast = contrast,
-                                   reference = reference
+    do.call(summary_fun_name, list(
+      object = res,
+      ci_type = ci_type,
+      ci_level = ci_level,
+      transform = transform,
+      contrast = contrast,
+      reference = reference
     ))
   }
   res_contrast <- as.list(as.data.frame(do.call(mapply, c("summary_fun", unname(as.list(grid))))))
