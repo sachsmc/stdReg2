@@ -4,7 +4,20 @@
 \alias{standardize_gee}
 \title{Regression standardization in conditional generalized estimating equations}
 \usage{
-standardize_gee(formula, link = "identity", data, values, clusterid)
+standardize_gee(
+  formula,
+  link = "identity",
+  data,
+  values,
+  clusterid,
+  case_control = FALSE,
+  ci_level = 0.95,
+  ci_type = "plain",
+  contrasts = NULL,
+  family = "gaussian",
+  references = NULL,
+  transforms = NULL
+)
 }
 \arguments{
 \item{formula}{A formula to be used with \code{"gee"} in the \pkg{drgee} package.}
@@ -18,16 +31,37 @@ at which marginal means of the outcome will be estimated.}
 
 \item{clusterid}{An optional string containing the name of a cluster identification variable
 when data are clustered.}
+
+\item{case_control}{Whether the data comes from a case-control study.}
+
+\item{ci_level}{Coverage probability of confidence intervals.}
+
+\item{ci_type}{A string, indicating the type of confidence intervals.
+Either "plain", which gives untransformed intervals, or "log", which gives
+log-transformed intervals.}
+
+\item{contrasts}{A vector of contrasts in the following format:
+If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
+or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
+level specified by the \code{reference} argument. Has to be be \code{NULL}
+if no references are specified.}
+
+\item{family}{The family argument which is used to fit the glm model for the outcome.}
+
+\item{references}{A vector of references in the following format:
+If \code{contrasts} is not \code{NULL}, the desired reference level(s).}
+
+\item{transforms}{A vector of transforms in the following format:
+If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
+\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+\eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
+If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
-An object of class \code{"std_gee"} is a list containing \item{call}{
-the matched call.  } \item{input}{ \code{input} is a list containing all
-input arguments.  } \item{est}{ a vector with length equal to
-\code{length(x)}, where element \code{j} is equal to
-\eqn{\hat{\theta}}(\code{x[j]}).  } \item{vcov}{ a square matrix with
-\code{length(x)} rows, where the element on row \code{i} and column \code{j}
-is the (estimated) covariance of \eqn{\hat{\theta}}(\code{x[i]}) and
-\eqn{\hat{\theta}}(\code{x[j]}).  }
+An object of class \code{std_glm}.
+This is basically a list with components estimates and covariance estimates in \code{res}
+Results for transformations, contrasts, references are stored in \code{res_contrasts}.
 }
 \description{
 \code{standardize_gee} performs regression standardization in linear and log-linear
@@ -96,7 +130,7 @@ fit.std <- standardize_gee(
   values = list(X = seq(-3, 3, 0.5)),
   clusterid = "id"
 )
-print(summary(fit.std, contrast = "difference", reference = 2))
+print(fit.std)
 plot(fit.std)
 
 }

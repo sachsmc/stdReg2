@@ -294,3 +294,77 @@ is.binary <- function(v) {
 logit <- function(x) log(x) - log(1 - x)
 
 odds <- function(x) x / (1 - x)
+
+check_values_data <- function(values, data) {
+  xnms <- names(values)
+  fitnms <- names(data)
+  mnams <- match(xnms, fitnms)
+  if (anyNA(mnams)) {
+    stop(
+      "variable(s) ", toString(xnms[which(is.na(mnams))]),
+      " not found in ", deparse1(substitute(fit_outcome)), "$data"
+    )
+  }
+}
+
+get_outcome_exposure <- function(formula_outcome, data, values) {
+  outcome <- data[, as.character(formula_outcome)[[2L]]]
+  if (!is.data.frame(values)) {
+    valuesout <- expand.grid(values)
+  } else {
+    valuesout <- values
+  }
+  exposure_names <- colnames(valuesout)
+  exposure <- data[, exposure_names]
+  list(outcome = outcome, exposure = exposure, exposure_names = exposure_names, valuesout = valuesout)
+}
+
+format_result_standardize <- function(res,
+                                      contrasts,
+                                      references,
+                                      transforms,
+                                      ci_type,
+                                      ci_level,
+                                      format_class,
+                                      summary_fun_name) {
+  contrast <- reference <- NULL
+  ## change contrasts, references and transforms to NULL in string format
+  if (is.null(contrasts) && !is.null(references) || !is.null(contrasts) && is.null(references)) {
+    warning("Reference level or contrast not specified. Defaulting to NULL. ")
+  }
+
+  contrasts <- unique(c("NULL", contrasts))
+  references <- unique(c("NULL", references))
+  transforms <- unique(c("NULL", transforms))
+  grid <- expand.grid(
+    contrast = contrasts,
+    reference = references,
+    transform = transforms
+  )
+  grid <- subset(grid, (contrast == "NULL" & reference == "NULL") |
+                   (contrast != "NULL" & reference != "NULL"))
+  summary_fun <- function(contrast, reference, transform) {
+    null_helper <- function(x) {
+      if (is.null(x) || x == "NULL") {
+        NULL
+      } else {
+        as.character(x)
+      }
+    }
+    transform <- null_helper(transform)
+    contrast <- null_helper(contrast)
+    reference <- null_helper(reference)
+
+    do.call(summary_fun_name, list(object=res,
+                                   ci_type = ci_type,
+                                   ci_level = ci_level,
+                                   transform = transform,
+                                   contrast = contrast,
+                                   reference = reference
+    ))
+  }
+  res_contrast <- as.list(as.data.frame(do.call(mapply, c("summary_fun", unname(as.list(grid))))))
+  res_fin <- list(res_contrast = res_contrast, res = res)
+  class(res_fin) <- format_class
+  res_fin
+}

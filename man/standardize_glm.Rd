@@ -71,9 +71,8 @@ If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
 An object of class \code{std_glm}.
-This is basically a list with components estimates and covariance estimates.
-The output contains estimates for contrasts and confidence intervals
-for all combinations of \code{transforms}, \code{references}
+This is basically a list with components estimates and covariance estimates in \code{res}
+Results for transformations, contrasts, references are stored in \code{res_contrasts}.
 }
 \description{
 Get regression standardized estimates from a glm

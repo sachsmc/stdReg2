@@ -11,7 +11,7 @@
 #' @param B Number of nonparametric bootstrap resamples. Default is \code{NULL} (no bootstrap).
 #' @param seed The seed to use with the nonparametric bootstrap.
 #' @returns
-#' An object of class \code{std_helper}.
+#' An object of class \code{std_custom}.
 #' This is basically a list with components estimates and fit for the outcome model.
 #' @details
 #' Let \eqn{Y}, \eqn{X}, and \eqn{Z} be the outcome, the exposure, and a
@@ -52,9 +52,17 @@
 #' plot(x, reference = 0, contrast = "difference")
 #' plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
 #'
-#' \dontrun{
-#' prob_predict.coxph <- function(...) 1 - riskRegression::predictRisk(...)
 #' require(survival)
+#' prob_predict.coxph <- function(object, newdata, times){
+#'   fit.detail <- suppressWarnings(basehaz(object))
+#'   cum.haz <- fit.detail$hazard[sapply(times, function(x) max(which(fit.detail$time <= x)))]
+#'   predX <- predict(object = object, newdata = newdata, type = "risk")
+#'   res <- matrix(NA, ncol = length(times), nrow = length(predX))
+#'   for (ti in seq_len(length(times))){
+#'     res[, ti] <- exp(-predX*cum.haz[ti])
+#'   }
+#'   res
+#' }
 #' set.seed(68)
 #' n <- 500
 #' Z <- rnorm(n)
@@ -84,7 +92,6 @@
 #' plot(x)
 #' plot(x, reference = 0, contrast = "difference")
 #' plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
-#' }
 #' @export standardize
 standardize <- function(arguments,
                         data,
@@ -163,19 +170,24 @@ standardize <- function(arguments,
     }
   }
   valuesout <- cbind(valuesout, estimates)
-  format_result_standardize(
-    B,
-    contrasts,
-    references,
-    transforms,
-    valuesout,
-    fit_outcome,
-    exposure_names,
-    estimates_boot,
-    estimates,
-    ci_level,
-    times
+  res <- structure(
+    list(
+      B = B,
+      estimates = valuesout,
+      fit_outcome = fit_outcome,
+      estimates_boot = estimates_boot,
+      exposure_names = exposure_names,
+      times = times
+    )
   )
+  format_result_standardize(res,
+                            contrasts,
+                            references,
+                            transforms,
+                            "plain",
+                            ci_level,
+                            "std_custom",
+                            "summary_standardize")
 }
 
 summary_standardize <- function(object, ci_level = 0.95,
@@ -320,61 +332,10 @@ summary_standardize <- function(object, ci_level = 0.95,
   return(out)
 }
 
-
-format_result_standardize <- function(B,
-                                      contrasts,
-                                      references,
-                                      transforms,
-                                      valuesout,
-                                      fit_outcome,
-                                      exposure_names,
-                                      estimates_boot,
-                                      estimates,
-                                      ci_level,
-                                      times) {
-  contrast <- reference <- NULL
-  res <- structure(
-    list(
-      B = B,
-      estimates = valuesout,
-      fit_outcome = fit_outcome,
-      estimates_boot = estimates_boot,
-      exposure_names = exposure_names,
-      times = times
-    )
-  )
-  ## change contrasts, references and transforms to NULL in string format
-  if (is.null(contrasts) && !is.null(references) || !is.null(contrasts) && is.null(references)) {
-    warning("Reference level or contrast not specified. Defaulting to NULL. ")
-  }
-  contrasts <- unique(c("NULL", contrasts))
-  references <- unique(c("NULL", references))
-  transforms <- unique(c("NULL", transforms))
-  grid <- expand.grid(
-    contrast = contrasts,
-    reference = references,
-    transform = transforms
-  )
-  grid <- subset(grid, (contrast == "NULL" & reference == "NULL") |
-    (contrast != "NULL" & reference != "NULL"))
-  summary_fun <- function(contrast, reference, transform) {
-    summary_standardize(res,
-      ci_level = ci_level,
-      transform = transform,
-      contrast = contrast,
-      reference = reference
-    )
-  }
-  res_contrast <- as.list(as.data.frame(do.call(mapply, c("summary_fun", unname(as.list(grid))))))
-  res_fin <- list(res_contrast = res_contrast, res = res)
-  class(res_fin) <- "std_helper"
-  res_fin
-}
-
 #' @rdname print
-#' @export print.std_helper
+#' @export print.std_custom
 #' @export
-print.std_helper <- function(x, ...) {
+print.std_custom <- function(x, ...) {
   B <- x[["res"]][["B"]]
   if (!is.null(B)) {
     cat("Number of bootstraps: ", B, "\n")
@@ -389,7 +350,7 @@ print.std_helper <- function(x, ...) {
     }
     if (!is.null(temp[["contrast"]])) {
       cat("Reference level: ", temp[["input"]][["X"]], "=", temp[["reference"]], "\n")
-      cat("Contrast: ", levels(temp[["contrast"]])[[temp[["contrast"]]]], "\n")
+      cat("Contrast: ", temp[["contrast"]], "\n")
     }
     if (is.null(temp[["times"]])) {
       print(temp[["est_table"]], digits = 3L)
@@ -433,8 +394,7 @@ fit_helper <- function(args, fitter, data) {
 }
 
 summary.plot_help <- function(object,
-                              CI.level = NULL,
-                              ci_level = NULL,
+                              ci_level,
                               transform,
                               contrast,
                               reference,
@@ -495,9 +455,9 @@ summary.plot_help <- function(object,
 }
 
 #' @rdname plot
-#' @export plot.std_helper
+#' @export plot.std_custom
 #' @export
-plot.std_helper <- function(x,
+plot.std_custom <- function(x,
                             plot_ci = TRUE,
                             ci_level = 0.95,
                             transform = NULL,
@@ -512,34 +472,37 @@ plot.std_helper <- function(x,
   }
 
   if (!is.null(times)) {
-    obj <- list(
+    obj <- list(res = list(
       input = list(
-        x = x[["res"]][["estimates"]][, 1],
-        t = times,
+        valuesout = x[["res"]][["estimates"]][1],
+        times = times,
         B = B
       ),
-      res_contrasts = x[["res_contrast"]]
+      res_contrasts = x[["res_contrast"]])
     )
     class(obj) <- "plot_help"
-    plot.std_coxph(
+    plot.std_surv(
       x = obj,
       plot_ci = !is.null(B) && plot_ci,
       ci_level = ci_level,
       transform = transform,
       reference = reference,
-      contrast = contrast
+      contrast = contrast,
+      summary_fun = "summary.plot_help"
     )
   } else {
     temp <- x
     temp[["res"]][["res_contrasts"]] <- x[["res_contrast"]]
     class(temp[["res"]]) <- "plot_help"
+    ## needs summary function to be rewriten
     plot.std_glm(
       x = temp,
       plot_ci = !is.null(B) && plot_ci,
       ci_level = ci_level,
       transform = transform,
       reference = reference,
-      contrast = contrast
+      contrast = contrast,
+      summary_fun = "summary.plot_help"
     )
   }
 }

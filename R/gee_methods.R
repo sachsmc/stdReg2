@@ -33,14 +33,6 @@
 #' @param formula A formula to be used with \code{"gee"} in the \pkg{drgee} package.
 #' @param link The link function to be used with \code{"gee"}.
 #' @inherit standardize_glm
-#' @return An object of class \code{"std_gee"} is a list containing \item{call}{
-#' the matched call.  } \item{input}{ \code{input} is a list containing all
-#' input arguments.  } \item{est}{ a vector with length equal to
-#' \code{length(x)}, where element \code{j} is equal to
-#' \eqn{\hat{\theta}}(\code{x[j]}).  } \item{vcov}{ a square matrix with
-#' \code{length(x)} rows, where the element on row \code{i} and column \code{j}
-#' is the (estimated) covariance of \eqn{\hat{\theta}}(\code{x[i]}) and
-#' \eqn{\hat{\theta}}(\code{x[j]}).  }
 #' @note The variance calculation performed by \code{standardize_gee} does not condition
 #' on the observed covariates \eqn{\bar{Z}=(Z_{11},...,Z_{nn_i})}. To see how
 #' this matters, note that
@@ -85,11 +77,18 @@
 #'   values = list(X = seq(-3, 3, 0.5)),
 #'   clusterid = "id"
 #' )
-#' print(summary(fit.std, contrast = "difference", reference = 2))
+#' print(fit.std)
 #' plot(fit.std)
 #'
 #' @export standardize_gee
-standardize_gee <- function(formula, link = "identity", data, values, clusterid) {
+standardize_gee <- function(formula, link = "identity", data, values, clusterid,
+                            case_control = FALSE,
+                            ci_level = 0.95,
+                            ci_type = "plain",
+                            contrasts = NULL,
+                            family = "gaussian",
+                            references = NULL,
+                            transforms = NULL) {
   call <- match.call()
 
   if (!inherits(values, c("data.frame", "list"))) {
@@ -234,297 +233,34 @@ standardize_gee <- function(formula, link = "identity", data, values, clusterid)
   vcov <- V
 
   out <- list(call = call, input = input, est = est, vcov = vcov)
+  fit_exposure <- contrast <- reference <- NULL
+  variance <- vcov
+  estimates <- est
+  fit_outcome <- fit
 
-  #---OUTPUT---
+  ## Add names to asymptotic covariance matrix
+  rownames(variance) <- colnames(variance) <-
+    do.call("paste", c(lapply(seq_len(ncol(valuesout)), function(i) {
+      paste(names(valuesout)[i], "=", round(valuesout[[i]], 2L))
+    }), sep = "; "))
 
-  class(out) <- "std_gee"
-  return(out)
-}
-
-#' @title Summarizes GEE regression standardization fit
-#'
-#' @description This is a \code{summary} method for class \code{"std_gee"}.
-#'
-#' @param object an object of class \code{"std_gee"}.
-#' @param ci_type string, indicating the type of confidence intervals. Either
-#' "plain", which gives untransformed intervals, or "log", which gives
-#' log-transformed intervals.
-#' @param ci_level desired coverage probability of confidence intervals, on
-#' decimal form.
-#' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
-#' \code{"odds"}, the standardized mean \eqn{\theta(x)} is transformed into
-#' \eqn{\psi(x)=log\{\theta(x)\}},
-#' \eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
-#' \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively. If left unspecified,
-#' \eqn{\psi(x)=\theta(x)}.
-#' @param contrast a string. If set to \code{"difference"} or \code{"ratio"},
-#' then \eqn{\psi(x)-\psi(x_0)} or \eqn{\psi(x) / \psi(x_0)} are constructed,
-#' where \eqn{x_0} is a reference level specified by the \code{reference}
-#' argument.
-#' @param reference must be specified if \code{contrast} is specified.
-#' @param \dots not used.
-#' @author Arvid Sjolander
-#' @seealso \code{\link{standardize_gee}}
-#' @examples
-#'
-#' ## See documentation for standardize_gee
-#'
-#' @rdname summary
-#' @export summary.std_gee
-#' @export
-summary.std_gee <- function(object, ci_type = "plain", ci_level = 0.95,
-                            transform = NULL, contrast = NULL, reference = NULL, ...) {
-  est <- object$est
-  V <- as.matrix(object$vcov)
-  nX <- length(est)
-
-  if (!is.null(transform)) {
-    if (transform == "log") {
-      dtransform.dm <- diag(1 / est, nrow = nX, ncol = nX)
-      est <- log(est)
-    }
-    if (transform == "logit") {
-      dtransform.dm <- diag(1 / (est * (1 - est)), nrow = nX, ncol = nX)
-      est <- logit(est)
-    }
-    if (transform == "odds") {
-      dtransform.dm <- diag(1 / (1 - est)^2, nrow = nX, ncol = nX)
-      est <- odds(est)
-    }
-    V <- t(dtransform.dm) %*% V %*% dtransform.dm
-  }
-
-  if (!is.null(contrast)) {
-    if (is.null(reference)) {
-      stop("When specifying contrast, reference must be specified as well")
-    }
-    referencepos <- match(reference, object$input$valuesout[, 1])
-    if (is.na(referencepos)) {
-      stop("reference must be a value in x")
-    }
-    if (contrast == "difference") {
-      dcontrast.dtransform <- diag(nX)
-      dcontrast.dtransform[referencepos, ] <- -1
-      dcontrast.dtransform[referencepos, referencepos] <- 0
-      est <- est - est[referencepos]
-    }
-    if (contrast == "ratio") {
-      dcontrast.dtransform <- diag(1 / est[referencepos], nrow = nX, ncol = nX)
-      dcontrast.dtransform[referencepos, ] <- -est / est[referencepos]^2
-      dcontrast.dtransform[referencepos, referencepos] <- 1
-      est <- est / est[referencepos]
-    }
-    V <- t(dcontrast.dtransform) %*% V %*% dcontrast.dtransform
-    V[referencepos, ] <- 0
-    V[, referencepos] <- 0
-  }
-
-  var <- diag(V)
-  se <- sqrt(var)
-  conf.int <- CI(est = est, var = var, ci_type = ci_type, ci_level = ci_level)
-
-  if (is.factor(reference)) {
-    reference <- as.character(reference)
-  }
-  est.table <- as.matrix(cbind(est, se, conf.int), nrow = length(est), ncol = 4)
-  dimnames(est.table) <- list(
-    object$input$valuesout[, 1],
-    c(
-      "Estimate", "Std. Error", paste("lower", ci_level),
-      paste("upper", ci_level)
-    )
+  valuesout[["se"]] <- sqrt(diag(variance))
+  valuesout[["estimates"]] <- estimates
+  res <- list(
+    estimates = valuesout,
+    covariance = variance,
+    fit_outcome = fit_outcome,
+    fit_exposure = fit_exposure,
+    exposure_names = exposure_names
   )
-  out <- c(object, list(
-    est.table = est.table, transform = transform,
-    contrast = contrast, reference = reference
-  ))
 
-  class(out) <- "summary_std_gee"
-  return(out)
-}
+  format_result_standardize(res,
+                            contrasts,
+                            references,
+                            transforms,
+                            ci_type,
+                            ci_level,
+                            "std_glm",
+                            "summary_std_glm")
 
-#' @rdname print
-#' @export print.std_gee
-#' @export
-print.std_gee <- function(x, ...) {
-  print(summary(x))
-}
-
-#' @title Prints summary of GEE regression standardization fit
-#'
-#' @description This is a \code{print} method for class \code{"summary_std_gee"}.
-#'
-#' @param x an object of class \code{"summary_std_gee"}.
-#' @param \dots not used.
-#' @author Arvid Sjolander
-#' @seealso \code{\link{standardize_gee}}
-#' @examples
-#'
-#' ## See documentation for standardize_gee
-#'
-#' @rdname print
-#' @export print.summary_std_gee
-#' @export
-print.summary_std_gee <- function(x, ...) {
-  cat("\nFormula: ")
-  print(x$input$fit$formula)
-  cat("Link function:", summary(x$input$fit)$link, "\n")
-  cat("Exposure: ", x$input$exposure_names, "\n")
-  if (!is.null(x$transform)) {
-    cat("Transform: ", x$transform, "\n")
-  }
-  if (!is.null(x$contrast)) {
-    cat("Reference level: ", x$input$exposure_names, "=", x$reference, "\n")
-    cat("Contrast: ", x$contrast, "\n")
-  }
-  cat("\n")
-  print(x$est.table, digits = 3)
-}
-
-#' @title Plots GEE regression standardization fit
-#'
-#' @description This is a \code{plot} method for class \code{"std_gee"}.
-#'
-#' @param x an object of class \code{"std_gee"}.
-#' @param ci_type string, indicating the type of confidence intervals. Either
-#' "plain", which gives untransformed intervals, or "log", which gives
-#' log-transformed intervals.
-#' @param ci_level desired coverage probability of confidence intervals, on
-#' decimal form.
-#' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
-#' \code{"odds"}, the standardized mean \eqn{\theta(x)} is transformed into
-#' \eqn{\psi(x)=log\{\theta(x)\}},
-#' \eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
-#' \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively. If left unspecified,
-#' \eqn{\psi(x)=\theta(x)}.
-#' @param contrast a string. If set to \code{"difference"} or \code{"ratio"},
-#' then \eqn{\psi(x)-\psi(x_0)} or \eqn{\psi(x) / \psi(x_0)} are constructed,
-#' where \eqn{x_0} is a reference level specified by the \code{reference}
-#' argument.
-#' @param reference must be specified if \code{contrast} is specified.
-#' @param \dots further arguments passed on to plot.default.
-#' @author Arvid Sjolander
-#' @seealso \code{\link{standardize_gee}}
-#' @examples
-#'
-#' ## See documentation for standardize_gee
-#'
-#' @rdname plot
-#' @export plot.std_gee
-#' @export
-plot.std_gee <- function(x, ci_type = "plain", ci_level = 0.95,
-                         transform = NULL, contrast = NULL, reference = NULL, ...) {
-  object <- x
-  x <- object$input$valuesout[, 1]
-
-  dots <- list(...)
-
-  xlab <- object$input$exposure_names
-
-  if (is.factor(reference)) {
-    reference <- as.character(reference)
-  }
-
-  if (is.null(contrast)) {
-    if (is.null(transform)) {
-      ylab <- expression(mu)
-    } else {
-      if (transform == "log") {
-        ylab <- expression(paste("log(", mu, ")"))
-      }
-      if (transform == "logit") {
-        ylab <- expression(paste("logit(", mu, ")"))
-      }
-      if (transform == "odds") {
-        ylab <- expression(paste(mu, "/(1-", mu, ")"))
-      }
-    }
-  } else {
-    if (contrast == "difference") {
-      if (is.null(transform)) {
-        ylab <- c(bquote(paste(mu, "-", mu[.(reference)])), expression())
-      } else {
-        if (transform == "log") {
-          ylab <- c(bquote(paste(log, "(", mu, ")-", log, "(",
-            mu[.(reference)], ")",
-            sep = ""
-          )), expression())
-        }
-        if (transform == "logit") {
-          ylab <- c(bquote(paste(logit, "(", mu, ")-", logit,
-            "(", mu[.(reference)], ")",
-            sep = ""
-          )), expression())
-        }
-        if (transform == "odds") {
-          ylab <- c(
-            bquote(paste(mu, "/(", 1 - mu, ")-",
-              mu[.(reference)], "/(", 1 - mu[.(reference)], ")",
-              sep = ""
-            )),
-            expression()
-          )
-        }
-      }
-    }
-    if (contrast == "ratio") {
-      if (is.null(transform)) {
-        ylab <- c(bquote(paste(mu, "/", mu[.(reference)])), expression())
-      } else {
-        if (transform == "log") {
-          ylab <- c(bquote(paste(log, "(", mu, ")/", log, "(",
-            mu[.(reference)], ")",
-            sep = ""
-          )), expression())
-        }
-        if (transform == "logit") {
-          ylab <- c(bquote(paste(logit, "(", mu, ")/", logit,
-            "(", mu[.(reference)], ")",
-            sep = ""
-          )), expression())
-        }
-        if (transform == "odds") {
-          ylab <- c(bquote(paste(mu, "/(", 1 - mu, ")/",
-            mu[.(reference)], "/(", 1 - mu[.(reference)],
-            ")",
-            sep = ""
-          )), expression())
-        }
-      }
-    }
-  }
-
-  sum.obj <- summary(
-    object = object, ci_type = ci_type, ci_level = ci_level,
-    transform = transform, contrast = contrast, reference = reference
-  )
-  est <- sum.obj$est.table[, 1]
-  lower <- sum.obj$est.table[, 3]
-  upper <- sum.obj$est.table[, 4]
-
-  ylim <- c(min(c(lower, upper)), max(c(lower, upper)))
-
-  if (is.numeric(x) & length(x) > 1) {
-    args <- list(x = x, y = x, xlab = xlab, ylab = ylab, ylim = ylim, type = "n")
-    args[names(dots)] <- dots
-    do.call("plot", args = args)
-    lines(x, est)
-    lines(x, upper, lty = 3)
-    lines(x, lower, lty = 3)
-  }
-  if (is.factor(x) | is.binary(x) | (is.numeric(x) & length(x) == 1)) {
-    args <- list(
-      x = 1:length(x), y = 1:length(x), xlab = xlab, ylab = ylab,
-      xlim = c(0, length(x) + 1), ylim = ylim, type = "n", xaxt = "n"
-    )
-    args[names(dots)] <- dots
-    do.call("plot", args = args)
-    points(1:length(x), est)
-    points(1:length(x), upper, pch = 0)
-    points(1:length(x), lower, pch = 0)
-    for (i in 1:length(x)) {
-      lines(x = c(i, i), y = c(lower[i], upper[i]), lty = "dashed")
-    }
-    mtext(text = x, side = 1, at = 1:length(x))
-  }
 }

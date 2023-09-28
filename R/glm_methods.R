@@ -39,12 +39,9 @@
 #' if no references are specified.
 #' @param references A vector of references in the following format:
 #' If \code{contrasts} is not \code{NULL}, the desired reference level(s).
-#' @returns
-#' An object of class \code{std_glm}.
-#' This is basically a list with components estimates and covariance estimates.
-#' The output contains estimates for contrasts and confidence intervals
-#' for all combinations of \code{transforms}, \code{references}
-# 'and \code{transforms}.
+#' @returns An object of class \code{std_glm}.
+#' This is basically a list with components estimates and covariance estimates in \code{res}
+#' Results for transformations, contrasts, references are stored in \code{res_contrasts}.
 #' @details \code{standardize_glm} performs regression standardization
 #' in generalized linear models,
 #' at specified values of the exposure, over the sample covariate distribution.
@@ -278,20 +275,30 @@ standardize_glm <- function(formula,
     variance <- (solve(i_mat) %*% j_mat %*% t(solve(i_mat)) * length(unique(clusters)) / n^2L)[seq_len(nrow(valuesout)), seq_len(nrow(valuesout))]
   }
   fit_exposure <- NULL
+  ## Add names to asymptotic covariance matrix
+  rownames(variance) <- colnames(variance) <-
+    do.call("paste", c(lapply(seq_len(ncol(valuesout)), function(i) {
+      paste(names(valuesout)[i], "=", round(valuesout[[i]], 2L))
+    }), sep = "; "))
 
-  format_result_standardize_glm(
-    contrasts,
-    references,
-    transforms,
-    valuesout,
-    variance,
-    fit_outcome,
-    fit_exposure,
-    exposure_names,
-    estimates,
-    ci_type,
-    ci_level
+  valuesout[["se"]] <- sqrt(diag(variance))
+  valuesout[["estimates"]] <- estimates
+  res <- list(
+    estimates = valuesout,
+    covariance = variance,
+    fit_outcome = fit_outcome,
+    fit_exposure = fit_exposure,
+    exposure_names = exposure_names
   )
+
+  format_result_standardize(res,
+                            contrasts,
+                            references,
+                            transforms,
+                            ci_type,
+                            ci_level,
+                            "std_glm",
+                            "summary_std_glm")
 }
 
 #' @title Get regression standardized doubly-robust estimates from a glm
@@ -442,43 +449,30 @@ standardize_glm_dr <- function(formula_exposure,
   variance <- matrix(c(sum(if_0^2L), covar, covar, sum(if_1^2L)), nrow = 2L)
   estimates <- c(standardized_estimate_0, standardized_estimate_1)
 
-  format_result_standardize_glm(
-    contrasts,
-    references,
-    transforms,
-    valuesout,
-    variance,
-    fit_outcome,
-    fit_exposure,
-    exposure_names,
-    estimates,
-    ci_type,
-    ci_level
+  ## Add names to asymptotic covariance matrix
+  rownames(variance) <- colnames(variance) <-
+    do.call("paste", c(lapply(seq_len(ncol(valuesout)), function(i) {
+      paste(names(valuesout)[i], "=", round(valuesout[[i]], 2L))
+    }), sep = "; "))
+
+  valuesout[["se"]] <- sqrt(diag(variance))
+  valuesout[["estimates"]] <- estimates
+  res <- list(
+    estimates = valuesout,
+    covariance = variance,
+    fit_outcome = fit_outcome,
+    fit_exposure = fit_exposure,
+    exposure_names = exposure_names
   )
-}
 
-check_values_data <- function(values, data) {
-  xnms <- names(values)
-  fitnms <- names(data)
-  mnams <- match(xnms, fitnms)
-  if (anyNA(mnams)) {
-    stop(
-      "variable(s) ", toString(xnms[which(is.na(mnams))]),
-      " not found in ", deparse1(substitute(fit_outcome)), "$data"
-    )
-  }
-}
-
-get_outcome_exposure <- function(formula_outcome, data, values) {
-  outcome <- data[, as.character(formula_outcome)[[2L]]]
-  if (!is.data.frame(values)) {
-    valuesout <- expand.grid(values)
-  } else {
-    valuesout <- values
-  }
-  exposure_names <- colnames(valuesout)
-  exposure <- data[, exposure_names]
-  list(outcome = outcome, exposure = exposure, exposure_names = exposure_names, valuesout = valuesout)
+  format_result_standardize(res,
+                            contrasts,
+                            references,
+                            transforms,
+                            ci_type,
+                            ci_level,
+                            "std_glm",
+                            "summary_std_glm")
 }
 
 fit_glm <- function(formula, family, data, response) {
@@ -510,78 +504,8 @@ fit_glm <- function(formula, family, data, response) {
   }
 }
 
-format_result_standardize_glm <- function(contrasts,
-                                          references,
-                                          transforms,
-                                          valuesout,
-                                          variance,
-                                          fit_outcome,
-                                          fit_exposure,
-                                          exposure_names,
-                                          estimates,
-                                          ci_type,
-                                          ci_level) {
-  contrast <- reference <- NULL
-  ## Add names to asymptotic covariance matrix
-  rownames(variance) <- colnames(variance) <-
-    do.call("paste", c(lapply(seq_len(ncol(valuesout)), function(i) {
-      paste(names(valuesout)[i], "=", round(valuesout[[i]], 2L))
-    }), sep = "; "))
-
-  valuesout[["se"]] <- sqrt(diag(variance))
-  valuesout[["estimates"]] <- estimates
-  res <- structure(
-    list(
-      estimates = valuesout,
-      covariance = variance,
-      fit_outcome = fit_outcome,
-      fit_exposure = fit_exposure,
-      exposure_names = exposure_names
-    ),
-    class = "std_glm_helper"
-  )
-  ## change contrasts, references and transforms to NULL in string format
-  if (is.null(contrasts) && !is.null(references) || !is.null(contrasts) && is.null(references)) {
-    warning("Reference level or contrast not specified. Defaulting to NULL. ")
-  }
-  contrasts <- unique(c("NULL", contrasts))
-  references <- unique(c("NULL", references))
-  transforms <- unique(c("NULL", transforms))
-  grid <- expand.grid(
-    contrast = contrasts,
-    reference = references,
-    transform = transforms
-  )
-  grid <- subset(grid, (contrast == "NULL" & reference == "NULL") |
-    (contrast != "NULL" & reference != "NULL"))
-  summary_fun <- function(contrast, reference, transform) {
-    summary.std_glm_helper(res,
-      ci_type = ci_type,
-      ci_level = ci_level,
-      transform = transform,
-      contrast = contrast,
-      reference = reference
-    )
-  }
-  res_contrast <- as.list(as.data.frame(do.call(mapply, c("summary_fun", unname(as.list(grid))))))
-  res_fin <- list(res_contrast = res_contrast, res = res)
-  class(res_fin) <- "std_glm"
-  res_fin
-}
-
-summary.std_glm_helper <- function(object, ci_type = "plain", ci_level = 0.95,
+summary_std_glm <- function(object, ci_type = "plain", ci_level = 0.95,
                                    transform = NULL, contrast = NULL, reference = NULL, ...) {
-  null_helper <- function(x) {
-    if (is.null(x) || x == "NULL") {
-      NULL
-    } else {
-      x
-    }
-  }
-  transform <- null_helper(transform)
-  contrast <- null_helper(contrast)
-  reference <- null_helper(reference)
-
   est_old_table <- object[["estimates"]]
   est <- est_old_table[["estimates"]]
   v_mat <- as.matrix(object[["covariance"]])
@@ -663,13 +587,11 @@ summary.std_glm_helper <- function(object, ci_type = "plain", ci_level = 0.95,
     contrast = contrast, reference = reference,
     ci_type = ci_type, ci_level = ci_level
   ))
-
-  class(out) <- "summary.std_glm_helper"
   return(out)
 }
 
-#' @title Prints summary of GLM regression standardization fit
-#' @param x an object of class \code{"std_glm"}.
+#' @title Prints summary of regression standardization fit
+#' @param x an object of class \code{"std_glm"}, \code{"std_surv"} or \code{"std_custom"}.
 #' @param \dots unused
 #' @rdname print
 #' @export print.std_glm
@@ -695,14 +617,14 @@ print.std_glm <- function(x, ...) {
     }
     if (!is.null(temp[["contrast"]])) {
       cat("Reference level: ", temp[["input"]][["X"]], "=", temp[["reference"]], "\n")
-      cat("Contrast: ", levels(temp[["contrast"]])[[temp[["contrast"]]]], "\n")
+      cat("Contrast: ", temp[["contrast"]], "\n")
     }
     print(temp[["est_table"]], digits = 3L)
     cat("\n")
   }
 }
 
-#' @title Plots GLM regression standardization fit
+#' @title Plots regression standardization fit
 #' @description This is a \code{plot} method for class \code{"std_glm"}.
 #' @param x An object of class \code{"std_glm"}.
 #' @param plot_ci if \code{TRUE}, add the confidence intervals to the plot.
@@ -719,6 +641,7 @@ print.std_glm <- function(x, ...) {
 #' level specified by the \code{reference} argument.
 #' If not \code{NULL}, a doubly robust estimator of the standardized estimator is used.
 #' @param reference If \code{contrast} is specified, the desired reference level.
+#' @param summary_fun For internal use only. Do not change.
 #' @param \dots Unused.
 #' @examples
 #' # see standardize_glm
@@ -727,7 +650,8 @@ print.std_glm <- function(x, ...) {
 #' @export plot.std_glm
 #' @export
 plot.std_glm <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
-                         transform = NULL, contrast = NULL, reference = NULL, ...) {
+                         transform = NULL, contrast = NULL, reference = NULL,
+                         summary_fun = "summary_std_glm", ...) {
   object <- x[["res"]]
   x <- object[["estimates"]][, object[["exposure_names"]]]
 
@@ -812,10 +736,10 @@ plot.std_glm <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
     }
   }
 
-  sum.obj <- summary(
+  sum.obj <- do.call(summary_fun, list(
     object = object, ci_type = ci_type, ci_level = ci_level,
     transform = transform, contrast = contrast, reference = reference
-  )
+  ))
   est <- sum.obj[["est_table"]][, 2L]
   if (plot_ci) {
     lower <- sum.obj[["est_table"]][, 4L]

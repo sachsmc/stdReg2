@@ -4,39 +4,63 @@
 \alias{standardize_coxph}
 \title{Regression standardization in Cox proportional hazards models}
 \usage{
-standardize_coxph(formula, data, values, times, clusterid)
+standardize_coxph(
+  formula,
+  data,
+  values,
+  times,
+  clusterid,
+  ci_level = 0.95,
+  ci_type = "plain",
+  contrasts = NULL,
+  family = "gaussian",
+  references = NULL,
+  transforms = NULL
+)
 }
 \arguments{
-\item{formula}{A formula for the
-\code{coxph} function in the \pkg{survival} package, but without special
-terms \code{strata}, \code{cluster} or \code{tt}.  Only \code{breslow}
-method for handling ties is allowed.}
+\item{formula}{The formula which is used to fit the glm model for the outcome.}
 
-\item{data}{a data frame containing the variables in the model. This should
-be the same data frame as was used to fit the model in \code{fit}.}
+\item{data}{The data.}
 
 \item{values}{A named list or data.frame specifying the variables and values
 at which marginal means of the outcome will be estimated.}
 
-\item{times}{an optional vector containing the specific values of \eqn{T} at
-which to estimate the standardized survival function. It defaults to all the
-observed event times in \code{data}.}
+\item{times}{A vector containing the specific values of \eqn{T} at
+which to estimate the standardized survival function.}
 
-\item{clusterid}{an optional string containing the name of a cluster
-identification variable when data are clustered.}
+\item{clusterid}{An optional string containing the name of a cluster identification variable
+when data are clustered.}
+
+\item{ci_level}{Coverage probability of confidence intervals.}
+
+\item{ci_type}{A string, indicating the type of confidence intervals.
+Either "plain", which gives untransformed intervals, or "log", which gives
+log-transformed intervals.}
+
+\item{contrasts}{A vector of contrasts in the following format:
+If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
+or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
+level specified by the \code{reference} argument. Has to be be \code{NULL}
+if no references are specified.}
+
+\item{family}{The family argument which is used to fit the glm model for the outcome.}
+
+\item{references}{A vector of references in the following format:
+If \code{contrasts} is not \code{NULL}, the desired reference level(s).}
+
+\item{transforms}{A vector of transforms in the following format:
+If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
+\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+\eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
+If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
-An object of class \code{"std_coxph"} is a list containing
-\item{call}{ the matched call.  } \item{input}{ \code{input} is a list
-containing all input arguments.  } \item{est}{ a matrix with
-\code{length(t)} rows and \code{length(x)} columns, where the element on row
-\code{i} and column \code{j} is equal to
-\eqn{\hat{\theta}}(\code{t[i],x[j]}).  } \item{vcov}{ a list with
-\code{length(t)} elements. Each element is a square matrix with
-\code{length(x)} rows. In the \code{k:th} matrix, the element on row
-\code{i} and column \code{j} is the (estimated) covariance of
-\eqn{\hat{\theta}}(\code{t[k]},\code{x[i]}) and
-\eqn{\hat{\theta}}(\code{t[k]},\code{x[j]}).  }
+An object of class \code{std_surv}.
+This is basically a list with components estimates and covariance estimates in \code{res}
+Results for transformations, contrasts, references are stored in \code{res_contrasts}.
+ The output contains estimates for contrasts and confidence intervals for all combinations of transforms, references
 }
 \description{
 \code{standardize_coxph} performs regression standardization in Cox proportional
@@ -67,10 +91,10 @@ for \eqn{\hat{\theta}(t,x)} is obtained by the sandwich formula.
 Standardized survival functions are sometimes referred to as (direct)
 adjusted survival functions in the literature.
 
-\code{standardize_coxph} does not currently handle time-varying exposures or
+\code{standardize_coxph/standardize_parfrailty} does not currently handle time-varying exposures or
 covariates.
 
-\code{standardize_coxph} internally loops over all values in the \code{t} argument.
+\code{standardize_coxph/standardize_parfrailty} internally loops over all values in the \code{t} argument.
 Therefore, the function will usually be considerably faster if
 \code{length(t)} is small.
 
@@ -108,7 +132,7 @@ fit.std <- standardize_coxph(
   values = list(X = seq(-1, 1, 0.5)),
   times = 1:5
 )
-print(summary(fit.std, times = 3))
+print(fit.std)
 plot(fit.std)
 
 }

@@ -77,8 +77,7 @@
 #' dd <- dd[incl, ]
 #'
 #' fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
-#' print(summary(fit))
-#'
+#' print(fit)
 #' @export parfrailty
 parfrailty <- function(formula, data, clusterid, init) {
   #---HELPER FUNCTIONS---
@@ -441,22 +440,6 @@ summary.parfrailty <- function(object, ci_type = "plain", ci_level = 0.95,
 }
 
 
-#' @title Prints summary of parfrailty fit
-#'
-#' @description This is a \code{print} method for class \code{"summary.parfrailty"}.
-#'
-#' @param x an object of class \code{"summary.parfrailty"}.
-#' @param digits the number of significant digits to use when printing.
-#' @param \dots not used.
-#' @author Arvid Sjolander and Elisabeth Dahlqwist
-#' @seealso \code{\link{parfrailty}}
-#' @examples
-#'
-#' ## See documentation for frailty
-#'
-#' @rdname print
-#' @export print.summary.parfrailty
-#' @export
 print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3L),
                                      ...) {
   ## Function call
@@ -504,41 +487,6 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' \eqn{\hat{\theta}(t,x)} is obtained by the sandwich formula.
 #'
 #' @inherit standardize_coxph
-#' @return An object of class \code{"std_parfrailty"} is a list containing
-#' \item{call}{ the matched call.  } \item{input}{ \code{input} is a list
-#' containing all input arguments.  } \item{est}{ a matrix with
-#' \code{length(t)} rows and \code{length(x)} columns, where the element on row
-#' \code{i} and column \code{j} is equal to
-#' \eqn{\hat{\theta}}(\code{t[i],x[j]}).  } \item{vcov}{ a list with
-#' \code{length(t)} elements. Each element is a square matrix with
-#' \code{length(x)} rows. In the \code{k:th} matrix, the element on row
-#' \code{i} and column \code{j} is the (estimated) covariance of
-#' \eqn{\hat{\theta}}(\code{t[k]},\code{x[i]}) and
-#' \eqn{\hat{\theta}}(\code{t[k]},\code{x[j]}).  }
-#' @note Standardized survival functions are sometimes referred to as (direct)
-#' adjusted survival functions in the literature.
-#'
-#' \code{standardize_parfrailty} does not currently handle time-varying exposures or
-#' covariates.
-#'
-#' \code{standardize_parfrailty} internally loops over all values in the \code{t}
-#' argument. Therefore, the function will usually be considerably faster if
-#' \code{length(t)} is small.
-#'
-#' The variance calculation performed by \code{standardize_parfrailty} does not
-#' condition on the observed covariates \eqn{\bar{Z}=(Z_1,...,Z_n)}. To see how
-#' this matters, note that
-#' \deqn{var\{\hat{\theta}(t,x)\}=E[var\{\hat{\theta}(t,x)|\bar{Z}\}]+var[E\{\hat{\theta}(t,x)|\bar{Z}\}].}
-#' The usual parameter \eqn{\beta} in a Cox proportional hazards model does not
-#' depend on \eqn{\bar{Z}}. Thus, \eqn{E(\hat{\beta}|\bar{Z})} is independent
-#' of \eqn{\bar{Z}} as well (since \eqn{E(\hat{\beta}|\bar{Z})=\beta}), so that
-#' the term \eqn{var[E\{\hat{\beta}|\bar{Z}\}]} in the corresponding variance
-#' decomposition for \eqn{var(\hat{\beta})} becomes equal to 0. However,
-#' \eqn{\theta(t,x)} depends on \eqn{\bar{Z}} through the average over the
-#' sample distribution for \eqn{Z}, and thus the term
-#' \eqn{var[E\{\hat{\theta}(t,x)|\bar{Z}\}]} is not 0, unless one conditions on
-#' \eqn{\bar{Z}}. The variance calculation by Gail and Byar (1986) ignores this
-#' term, and thus effectively conditions on \eqn{\bar{Z}}.
 #' @author Arvid Sjolander
 #' @references
 #'
@@ -597,11 +545,21 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #'   times = 1:5,
 #'   clusterid = "id"
 #' )
-#' print(summary(fit.std, times = 3))
+#' print(fit.std)
 #' plot(fit.std)
 #'
 #' @export standardize_parfrailty
-standardize_parfrailty <- function(formula, data, values, times, clusterid) {
+standardize_parfrailty <- function(formula,
+                                   data,
+                                   values,
+                                   times,
+                                   clusterid,
+                                   ci_level = 0.95,
+                                   ci_type = "plain",
+                                   contrasts = NULL,
+                                   family = "gaussian",
+                                   references = NULL,
+                                   transforms = NULL) {
   call <- match.call()
 
   if (!inherits(values, c("data.frame", "list"))) {
@@ -744,86 +702,13 @@ standardize_parfrailty <- function(formula, data, values, times, clusterid) {
   out <- list(call = call, input = input, est = est, vcov = vcov)
   #---OUTPUT---
 
-  class(out) <- "std_parfrailty"
-  return(out)
+  class(out) <- "std_surv"
+  format_result_standardize(out,
+                            contrasts,
+                            references,
+                            transforms,
+                            ci_type,
+                            ci_level,
+                            "std_surv",
+                            "summary_std_coxph")
 }
-
-#' @title Summarizes Frailty standardization fit
-#'
-#' @description This is a \code{summary} method for class \code{"std_parfrailty"}.
-#'
-#' @param object an object of class \code{"std_parfrailty"}.
-#' @param times numeric, indicating the times at which to summarize. It defaults to
-#' the specified value(s) of the argument \code{t} in the \code{stdCox}
-#' function.
-#' @param ci_type string, indicating the type of confidence intervals. Either
-#' "plain", which gives untransformed intervals, or "log", which gives
-#' log-transformed intervals.
-#' @param ci_level desired coverage probability of confidence intervals, on
-#' decimal form.
-#' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
-#' \code{"odds"}, the standardized survival function \eqn{\theta(t,x)} is
-#' transformed into \eqn{\psi(t,x)=log\{\theta(t,x)\}},
-#' \eqn{\psi(t,x)=log[\theta(t,x)/\{1-\theta(t,x)\}]}, or
-#' \eqn{\psi(t,x)=\theta(t,x)/\{1-\theta(t,x)\}}, respectively. If left
-#' unspecified, \eqn{\psi(t,x)=\theta(t,x)}.
-#' @param contrast a string. If set to \code{"difference"} or \code{"ratio"},
-#' then \eqn{\psi(t,x)-\psi(t,x_0)} or \eqn{\psi(t,x) / \psi(t,x_0)} are
-#' constructed, where \eqn{x_0} is a reference level specified by the
-#' \code{reference} argument.
-#' @param reference must be specified if \code{contrast} is specified.
-#' @param \dots not used.
-#' @author Arvid Sjolander
-#' @seealso \code{\link{standardize_parfrailty}}
-#' @examples
-#'
-#' ## See documentation for standardize_parfrailty
-#'
-#' @rdname summary
-#' @export summary.std_parfrailty
-#' @export
-summary.std_parfrailty <- summary.std_coxph
-
-#' @rdname print
-#' @export print.std_parfrailty
-#' @export
-print.std_parfrailty <- function(x, ...) {
-  print(summary(x))
-}
-
-#' @title Plots parfrailty standardization fit
-#'
-#' @description This is a \code{plot} method for class \code{"std_parfrailty"}.
-#'
-#' @param x an object of class \code{"std_parfrailty"}.
-#' @param plot_ci logical, indicating whether confidence intervals should be
-#' added to the plot.
-#' @param ci_type string, indicating the type of confidence intervals. Either
-#' "plain", which gives untransformed intervals, or "log", which gives
-#' log-transformed intervals.
-#' @param ci_level desired coverage probability of confidence intervals, on
-#' decimal form.
-#' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
-#' \code{"odds"}, the standardized survival function \eqn{\theta(t,x)} is
-#' transformed into \eqn{\psi(t,x)=log\{\theta(t,x)\}},
-#' \eqn{\psi(t,x)=log[\theta(t,x)/\{1-\theta(t,x)\}]}, or
-#' \eqn{\psi(t,x)=\theta(t,x)/\{1-\theta(t,x)\}}, respectively. If left
-#' unspecified, \eqn{\psi(t,x)=\theta(t,x)}.
-#' @param contrast a string. If set to \code{"difference"} or \code{"ratio"},
-#' then \eqn{\psi(t,x)-\psi(t,x_0)} or \eqn{\psi(t,x) / \psi(t,x_0)} are
-#' constructed, where \eqn{x_0} is a reference level specified by the
-#' \code{reference} argument.
-#' @param reference must be specified if \code{contrast} is specified.
-#' @param legendpos position of the legend; see help for \code{legend}.
-#' @param \dots further arguments passed on to plot.default.
-#' @author Arvid Sjolander
-#' @seealso \code{\link{standardize_parfrailty}}
-#' @examples
-#'
-#'
-#' ## See documentation for standardize_parfrailty
-#'
-#' @rdname plot
-#' @export plot.std_parfrailty
-#' @export
-plot.std_parfrailty <- plot.std_coxph

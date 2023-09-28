@@ -85,8 +85,7 @@ dd <- data.frame(L, T, D, X, id)
 dd <- dd[incl, ]
 
 fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
-print(summary(fit))
-
+print(fit)
 }
 \references{
 Dahlqwist E., Pawitan Y., Sjolander A. (2019). Regression

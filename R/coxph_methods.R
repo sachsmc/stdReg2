@@ -22,39 +22,20 @@
 #' \deqn{\hat{\theta}(t,x)=\sum_{i=1}^n \hat{S}(t|X=x,Z_i)/n,} where \eqn{Z_i}
 #' is the value of \eqn{Z} for subject \eqn{i}, \eqn{i=1,...,n}.  The variance
 #' for \eqn{\hat{\theta}(t,x)} is obtained by the sandwich formula.
-#'
-#' @param formula A formula for the
-#' \code{coxph} function in the \pkg{survival} package, but without special
-#' terms \code{strata}, \code{cluster} or \code{tt}.  Only \code{breslow}
-#' method for handling ties is allowed.
-#' @param data a data frame containing the variables in the model. This should
-#' be the same data frame as was used to fit the model in \code{fit}.
-#' @param values
-#' A named list or data.frame specifying the variables and values
-#' at which marginal means of the outcome will be estimated.
-#' @param times an optional vector containing the specific values of \eqn{T} at
-#' which to estimate the standardized survival function. It defaults to all the
-#' observed event times in \code{data}.
-#' @param clusterid an optional string containing the name of a cluster
-#' identification variable when data are clustered.
-#' @return An object of class \code{"std_coxph"} is a list containing
-#' \item{call}{ the matched call.  } \item{input}{ \code{input} is a list
-#' containing all input arguments.  } \item{est}{ a matrix with
-#' \code{length(t)} rows and \code{length(x)} columns, where the element on row
-#' \code{i} and column \code{j} is equal to
-#' \eqn{\hat{\theta}}(\code{t[i],x[j]}).  } \item{vcov}{ a list with
-#' \code{length(t)} elements. Each element is a square matrix with
-#' \code{length(x)} rows. In the \code{k:th} matrix, the element on row
-#' \code{i} and column \code{j} is the (estimated) covariance of
-#' \eqn{\hat{\theta}}(\code{t[k]},\code{x[i]}) and
-#' \eqn{\hat{\theta}}(\code{t[k]},\code{x[j]}).  }
+#' @return An object of class \code{std_surv}.
+#' This is basically a list with components estimates and covariance estimates in \code{res}
+#' Results for transformations, contrasts, references are stored in \code{res_contrasts}.
+#'  The output contains estimates for contrasts and confidence intervals for all combinations of transforms, references
+#' @inherit standardize_glm
+#' @param times A vector containing the specific values of \eqn{T} at
+#' which to estimate the standardized survival function.
 #' @note Standardized survival functions are sometimes referred to as (direct)
 #' adjusted survival functions in the literature.
 #'
-#' \code{standardize_coxph} does not currently handle time-varying exposures or
+#' \code{standardize_coxph/standardize_parfrailty} does not currently handle time-varying exposures or
 #' covariates.
 #'
-#' \code{standardize_coxph} internally loops over all values in the \code{t} argument.
+#' \code{standardize_coxph/standardize_parfrailty} internally loops over all values in the \code{t} argument.
 #' Therefore, the function will usually be considerably faster if
 #' \code{length(t)} is small.
 #'
@@ -110,11 +91,21 @@
 #'   values = list(X = seq(-1, 1, 0.5)),
 #'   times = 1:5
 #' )
-#' print(summary(fit.std, times = 3))
+#' print(fit.std)
 #' plot(fit.std)
 #'
 #' @export standardize_coxph
-standardize_coxph <- function(formula, data, values, times, clusterid) {
+standardize_coxph <- function(formula,
+                              data,
+                              values,
+                              times,
+                              clusterid,
+                              ci_level = 0.95,
+                              ci_type = "plain",
+                              contrasts = NULL,
+                              family = "gaussian",
+                              references = NULL,
+                              transforms = NULL) {
   call <- match.call()
 
   if (!inherits(values, c("data.frame", "list"))) {
@@ -270,52 +261,27 @@ standardize_coxph <- function(formula, data, values, times, clusterid) {
   }
 
   out <- list(call = call, input = input, est = est, vcov = vcov)
+  class(out) <- "std_coxph"
 
   #---OUTPUT---
-
-  class(out) <- "std_coxph"
-  return(out)
+  format_result_standardize(out,
+                            contrasts,
+                            references,
+                            transforms,
+                            ci_type,
+                            ci_level,
+                            "std_surv",
+                            "summary_std_coxph")
 }
 
-#' @title Summarizes Cox regression standardization fit
-#'
-#' @description This is a \code{summary} method for class \code{"std_coxph"}.
-#'
-#' @param object an object of class \code{"std_coxph"}.
-#' @param times numeric, indicating the times at which to summarize. It defaults to
-#' the specified value(s) of the argument \code{t} in the \code{stdCox}
-#' function.
-#' @param ci_type string, indicating the type of confidence intervals. Either
-#' "plain", which gives untransformed intervals, or "log", which gives
-#' log-transformed intervals.
-#' @param ci_level desired coverage probability of confidence intervals, on
-#' decimal form.
-#' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
-#' \code{"odds"}, the standardized survival function \eqn{\theta(t,x)} is
-#' transformed into \eqn{\psi(t,x)=log\{\theta(t,x)\}},
-#' \eqn{\psi(t,x)=log[\theta(t,x)/\{1-\theta(t,x)\}]}, or
-#' \eqn{\psi(t,x)=\theta(t,x)/\{1-\theta(t,x)\}}, respectively. If left
-#' unspecified, \eqn{\psi(t,x)=\theta(t,x)}.
-#' @param contrast a string. If set to \code{"difference"} or \code{"ratio"},
-#' then \eqn{\psi(t,x)-\psi(t,x_0)} or \eqn{\psi(t,x) / \psi(t,x_0)} are
-#' constructed, where \eqn{x_0} is a reference level specified by the
-#' \code{reference} argument.
-#' @param reference must be specified if \code{contrast} is specified.
-#' @param \dots not used.
-#' @author Arvid Sjolander
-#' @seealso \code{\link{standardize_coxph}}
-#' @examples
-#'
-#' ## See documentation for standardize_coxph
-#'
-#' @rdname summary
-#' @export summary.std_coxph
-#' @export
-summary.std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
+summary_std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
                               transform = NULL, contrast = NULL, reference = NULL, ...) {
+  if (dim(object$input$valuesout)[2] > 1){
+    stop("multiple exposures not currently suported with standardize_coxph/standardize_parfrailty")
+  }
   est.all <- object$est
   V.all <- object$vcov
-  nX <- length(object$input$x)
+  nX <- nrow(object$input$valuesout)
   if (missing(times)) {
     times <- object$input$times
   }
@@ -354,7 +320,7 @@ summary.std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
       if (is.null(reference)) {
         stop("When specifying contrast, reference must be specified as well")
       }
-      referencepos <- match(reference, object$input$x)
+      referencepos <- match(reference, object$input$valuesout[,1])
       if (is.na(referencepos)) {
         stop("reference must be a value in x")
       }
@@ -399,39 +365,24 @@ summary.std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
       reference = reference
     )
   )
-  class(out) <- "summary_std_coxph"
   return(out)
 }
 
 #' @rdname print
-#' @export print.std_coxph
+#' @export print.std_surv
 #' @export
-print.std_coxph <- function(x, ...) {
-  print(summary(x))
+print.std_surv <- function(x, ...) {
+  for (v in x$res_contrast){
+    print_summary_std_coxph(summary_std_coxph(v))
+  }
 }
 
-#' @title Prints summary of Cox regression standardization fit
-#'
-#' @description This is a \code{print} method for class \code{"summary.std_coxph"}.
-#'
-#' @param x an object of class \code{"summary.std_coxph"}.
-#' @param \dots not used.
-#' @author Arvid Sjolander
-#' @seealso \code{\link{standardize_coxph}}
-#' @examples
-#'
-#'
-#' ## See documentation for standardize_coxph
-#'
-#' @rdname print
-#' @export print.summary_std_coxph
-#' @export
-print.summary_std_coxph <- function(x, ...) {
+print_summary_std_coxph <- function(x, ...) {
   nt <- length(x$tsum)
   for (j in 1:nt) {
     cat("\nFormula: ")
     print(x$input$fit$formula, showEnv = FALSE)
-    cat("Exposure: ", x$input$X, "\n")
+    cat("Exposure: ", x$input$exposure_names, "\n")
 
     if (!is.null(x$transform)) {
       cat("Transform: ", x$transform, "\n")
@@ -447,43 +398,13 @@ print.summary_std_coxph <- function(x, ...) {
   }
 }
 
-#' @title Plots Cox regression standardization fit
-#'
-#' @description This is a \code{plot} method for class \code{"std_coxph"}.
-#'
-#' @param x an object of class \code{"std_coxph"}.
-#' @param plot_ci logical, indicating whether confidence intervals should be
-#' added to the plot.
-#' @param ci_type string, indicating the type of confidence intervals. Either
-#' "plain", which gives untransformed intervals, or "log", which gives
-#' log-transformed intervals.
-#' @param ci_level desired coverage probability of confidence intervals, on
-#' decimal form.
-#' @param transform a string. If set to \code{"log"}, \code{"logit"}, or
-#' \code{"odds"}, the standardized survival function \eqn{\theta(t,x)} is
-#' transformed into \eqn{\psi(t,x)=log\{\theta(t,x)\}},
-#' \eqn{\psi(t,x)=log[\theta(t,x)/\{1-\theta(t,x)\}]}, or
-#' \eqn{\psi(t,x)=\theta(t,x)/\{1-\theta(t,x)\}}, respectively. If left
-#' unspecified, \eqn{\psi(t,x)=\theta(t,x)}.
-#' @param contrast a string. If set to \code{"difference"} or \code{"ratio"},
-#' then \eqn{\psi(t,x)-\psi(t,x_0)} or \eqn{\psi(t,x) / \psi(t,x_0)} are
-#' constructed, where \eqn{x_0} is a reference level specified by the
-#' \code{reference} argument.
-#' @param reference must be specified if \code{contrast} is specified.
 #' @param legendpos position of the legend; see help for \code{legend}.
-#' @param \dots further arguments passed on to plot.default.
-#' @author Arvid Sjolander
-#' @seealso \code{\link{standardize_coxph}}
-#' @examples
-#'
-#' ## See documentation for standardize_coxph
-#'
 #' @rdname plot
-#' @export plot.std_coxph
+#' @export plot.std_surv
 #' @export
-plot.std_coxph <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
-                           transform = NULL, contrast = NULL, reference = NULL, legendpos = "bottomleft", ...) {
-  object <- x
+plot.std_surv <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
+                           transform = NULL, contrast = NULL, reference = NULL, legendpos = "bottomleft", summary_fun = "summary_std_coxph",...) {
+  object <- x$res
   if (ncol(object$input$valuesout) != 1) {
     stop("multiple exposures")
   } else {
@@ -568,42 +489,40 @@ plot.std_coxph <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95
     }
   }
 
-  t <- object$input$t
-  nt <- length(t)
+  times <- object$input$times
+  nt <- length(times)
   nX <- length(x)
 
-  sum.obj <- summary(
+  sum.obj <- do.call(summary_fun, list(
     object = object, ci_type = ci_type, ci_level = ci_level,
     transform = transform, contrast = contrast, reference = reference
-  )
+  ))
 
   temp <- Reduce(f = rbind, x = sum.obj$est.table)
-
   est <- matrix(temp[, 1], nrow = nt, ncol = nX, byrow = TRUE)
   lower <- matrix(temp[, 3], nrow = nt, ncol = nX, byrow = TRUE)
   upper <- matrix(temp[, 4], nrow = nt, ncol = nX, byrow = TRUE)
-
   if (plot_ci) {
     ylim <- c(min(lower), max(upper))
   } else {
     ylim <- c(min(est), max(est))
   }
   args <- list(
-    x = object$input$t, y = rep(0, length(t)), xlab = xlab, ylab = ylab,
+    x = times, y = rep(0, length(times)), xlab = xlab, ylab = ylab,
     ylim = ylim, type = "n"
   )
   args[names(dots)] <- dots
   do.call("plot", args = args)
   legend <- NULL
   for (i in seq_len(nX)) {
-    lines(t, est[, i], col = i)
+    lines(times, est[, i], col = i)
     if (plot_ci) {
-      lines(t, upper[, i], lty = "dashed", col = i)
-      lines(t, lower[, i], lty = "dashed", col = i)
+      lines(times, upper[, i], lty = "dashed", col = i)
+      lines(times, lower[, i], lty = "dashed", col = i)
     }
     temp <- as.character(x[i])
-    legend <- c(legend, paste(object$input$X, "=", object$input$x[i]))
   }
+  legend <- c(legend, paste(object$input$exposure_names, "=", object$input$valuesout[,1]))
   legend(
     x = legendpos, legend = legend, lty = rep(1, length(x)), col = 1:length(x),
     bty = "n"

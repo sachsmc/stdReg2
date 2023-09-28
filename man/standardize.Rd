@@ -59,7 +59,7 @@ mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
 If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
-An object of class \code{std_helper}.
+An object of class \code{std_custom}.
 This is basically a list with components estimates and fit for the outcome model.
 }
 \description{
@@ -105,9 +105,17 @@ plot(x)
 plot(x, reference = 0, contrast = "difference")
 plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
 
-\dontrun{
-prob_predict.coxph <- function(...) 1 - riskRegression::predictRisk(...)
 require(survival)
+prob_predict.coxph <- function(object, newdata, times){
+  fit.detail <- suppressWarnings(basehaz(object))
+  cum.haz <- fit.detail$hazard[sapply(times, function(x) max(which(fit.detail$time <= x)))]
+  predX <- predict(object = object, newdata = newdata, type = "risk")
+  res <- matrix(NA, ncol = length(times), nrow = length(predX))
+  for (ti in seq_len(length(times))){
+    res[, ti] <- exp(-predX*cum.haz[ti])
+  }
+  res
+}
 set.seed(68)
 n <- 500
 Z <- rnorm(n)
@@ -137,7 +145,6 @@ x
 plot(x)
 plot(x, reference = 0, contrast = "difference")
 plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
-}
 }
 \references{
 Rothman K.J., Greenland S., Lash T.L. (2008).
