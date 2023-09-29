@@ -625,6 +625,11 @@ standardize_parfrailty <- function(formula,
   beta <- fit$est[(3 + 1):npar]
 
   #---LOOP OVER nt
+  si <- array(dim = c(n,nX,nt))
+  SI.logalpha <- matrix(nrow = nX, ncol = nt)
+  SI.logeta <- matrix(nrow = nX, ncol = nt)
+  SI.logphi <- matrix(nrow = nX, ncol = nt)
+  SI.beta <- array(dim = c(nX, npar - 3, nt))
 
   for (j in 1:nt) {
     if (times[j] == 0) {
@@ -635,11 +640,6 @@ standardize_parfrailty <- function(formula,
 
       #---ESTIMATES OF SURVIVAL PROBABILITIES AT VALUES SPECIFIED BY x ---
 
-      si <- matrix(nrow = n, ncol = nX)
-      SI.logalpha <- vector(length = nX)
-      SI.logeta <- vector(length = nX)
-      SI.logphi <- vector(length = nX)
-      SI.beta <- matrix(nrow = nX, ncol = npar - 3)
       for (i in 1:nX) {
         data.x <- do.call("transform", c(
           list(data),
@@ -648,32 +648,39 @@ standardize_parfrailty <- function(formula,
         m <- model.matrix(object = formula, data = data.x)[, -1, drop = FALSE]
         predX <- colSums(beta * t(m))
         temp <- 1 + phi * H0t * exp(predX)
-        si[, i] <- temp^(-1 / phi)
-        SI.logalpha[i] <- mean(H0t * eta * exp(predX) / temp^(1 / phi + 1)) * n /
+        si[, i, j] <- temp^(-1 / phi)
+        SI.logalpha[i, j] <- mean(H0t * eta * exp(predX) / temp^(1 / phi + 1)) * n /
           ncluster
-        SI.logeta[i] <- mean((-H0t) * exp(predX) * log(times[j] / alpha) * eta /
+        SI.logeta[i, j] <- mean((-H0t) * exp(predX) * log(times[j] / alpha) * eta /
           temp^(1 / phi + 1)) * n / ncluster
-        SI.logphi[i] <- mean(log(temp) / (phi * temp^(1 / phi)) -
+        SI.logphi[i, j] <- mean(log(temp) / (phi * temp^(1 / phi)) -
           H0t * exp(predX) / temp^(1 / phi + 1)) * n / ncluster
-        SI.beta[i, ] <- colMeans((-H0t) * exp(predX) * m / temp^(1 / phi + 1)) *
+        SI.beta[i, ,j] <- colMeans((-H0t) * exp(predX) * m / temp^(1 / phi + 1)) *
           n / ncluster
       }
-      est[j, ] <- colSums(si, na.rm = TRUE) / n
+      est[j, ] <- colSums(si[,,j], na.rm = TRUE) / n
 
       #---VARIANCE OF SURVIVAL PROBABILITIES AT VALUES SPECIFIED BY x ---
+    }
+  }
+  sres <- data.table::rbindlist(lapply(1:nt, function(j) data.table(val = si[,,j] - matrix(rep(est[j, ], each = n),
+                                                                               nrow = n, ncol = nX),
+                                                        times = j, clusters = clusters)))
+  sres <- sres[, j = lapply(.SD, sum), by = list(clusters,times)][,c(-1,-2)]
 
-      sres <- (si - matrix(rep(est[j, ], each = n), nrow = n, ncol = nX))
-      sres <- aggr(sres, clusters)
+  n_unique_clusters <- length(unique(clusters))
+  for (j in 1:nt){
+    if (times[j] !=0){
       coefres <- fit$score
-      res <- cbind(sres, coefres)
+      res <- cbind(sres[((j-1)*n_unique_clusters+1):(j*n_unique_clusters),], coefres)
 
       J <- var(res, na.rm = TRUE)
 
       # Note: the term n/ncluster is because SI.logalpha, SI.logeta, SI.logphi,
       # and SI.beta are clustered, which they are not in stdCoxph
       SI <- cbind(
-        -diag(nX) * n / ncluster, SI.logalpha, SI.logeta,
-        SI.logphi, SI.beta
+        -diag(nX) * n / ncluster, SI.logalpha[, j], SI.logeta[, j],
+        SI.logphi[, j],SI.beta[,, j]
       )
 
       betaI <- cbind(matrix(0, nrow = npar, ncol = nX), -solve(fit$vcov) / ncluster)

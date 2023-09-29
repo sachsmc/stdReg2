@@ -1,5 +1,5 @@
 # handle various imports here
-#' @importFrom data.table data.table .N .SD
+#' @importFrom data.table data.table .N rbindlist .SD
 #' @importFrom drgee gee
 #' @importFrom graphics lines mtext points
 #' @importFrom survival coxph.detail coxph Surv
