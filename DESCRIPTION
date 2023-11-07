@@ -27,7 +27,8 @@ LazyData: true
 Imports:
     data.table,
     drgee,
-    survival,
+    generics,
+    survival
 Suggests: 
     AF,
     knitr,

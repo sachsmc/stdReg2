@@ -330,6 +330,8 @@ format_result_standardize <- function(res,
   }
   if(is.null(contrasts)) {
     contrasts <- list(NULL)
+  } else {
+    contrasts <- c(list(NULL), as.list(contrasts))
   }
   grid <- list()
   k <- 1
@@ -357,3 +359,7 @@ format_result_standardize <- function(res,
   class(res_fin) <- format_class
   res_fin
 }
+
+#' @importFrom generics tidy
+#' @export
+generics::tidy

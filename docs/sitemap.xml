@@ -40,6 +40,9 @@
     <loc>/reference/print.html</loc>
   </url>
   <url>
+    <loc>/reference/reexports.html</loc>
+  </url>
+  <url>
     <loc>/reference/sandwich.html</loc>
   </url>
   <url>
@@ -68,5 +71,8 @@
   </url>
   <url>
     <loc>/reference/summary.html</loc>
+  </url>
+  <url>
+    <loc>/reference/tidy.std_glm.html</loc>
   </url>
 </urlset>

@@ -26,7 +26,7 @@ the marginal distribution of \(Z\)."><!-- mathjax --><script src="https://cdnjs.
     
     <a class="navbar-brand me-2" href="../index.html">stdReg2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -128,17 +128,12 @@ log-transformed intervals.</p></dd>
 <dd><p>A vector of contrasts in the following format:
 If set to <code>"difference"</code> or <code>"ratio"</code>, then \(\psi(x)-\psi(x_0)\)
 or \(\psi(x) / \psi(x_0)\) are constructed, where \(x_0\) is a reference
-level specified by the <code>reference</code> argument. Has to be be <code>NULL</code>
+level specified by the <code>reference</code> argument. Has to be <code>NULL</code>
 if no references are specified.</p></dd>
 
 
 <dt>family</dt>
 <dd><p>The family argument which is used to fit the glm model for the outcome.</p></dd>
-
-
-<dt>references</dt>
-<dd><p>A vector of references in the following format:
-If <code>contrasts</code> is not <code>NULL</code>, the desired reference level(s).</p></dd>
 
 
 <dt>transforms</dt>

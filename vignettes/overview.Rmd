@@ -149,22 +149,20 @@ m2 <- standardize_glm(wt82_71 ~ qsmk + sex + race + age + I(age^2) +
             contrasts = c("difference", "ratio"),
             reference = 0)
 
-m2 <- standardize_glm(wt82_71 ~ qsmk + sex + race + age + I(age^2) + 
-               as.factor(education) + smokeintensity + I(smokeintensity^2) + 
-               smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
-               wt71 + I(wt71^2), 
-            data = nhefs_dat, 
-            values = list(qsmk = c(0,1), sex = c(0,1)),
-            contrasts = c("difference", "ratio"),
-            reference = c(0,0))
-
-m2  ## fix print method
+m2
 
 plot(m2)
 plot(m2, contrast = "difference", reference = 0)
 ```
 
 The output from the model shows the estimated potential outcome means in each exposure level, the difference and ratio thereof, and the associated standard error estimates, confidence intervals, and p-values. Inference is done using the sandwich method for variance calculation. Under the assumptions that the outcome model is correctly specified and contains all confounders, these are consistent estimates of the causal effects of interest. We can also get plots of the effects by using the plot function. 
+
+To obtain the estimates and inference for the different contrasts as a tidy data frame, suitable for saving as a data table or using in downstream analyses or reports, we provide the `tidy` function: 
+
+```{r}
+tidy(m2)
+```
+
 
 
 To obtain doubly robust inference we use the following command. Note that we now specify a model for the exposure, the propensity score model.

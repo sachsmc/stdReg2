@@ -595,11 +595,11 @@ summary_std_glm <- function(object, ci_type = "plain", ci_level = 0.95,
     tmpmat <- as.matrix(cbind(est, se, conf_int), nrow = length(est), ncol = 4L)
     est_table <- data.frame(est_old_table[, object[["exposure_names"]]],
                             tmpmat)
-    colnames(est_table) <- c(object[["exposure_names"]], "Estimate", "Std. Error", paste("lower", ci_level), paste("upper", ci_level))
+    colnames(est_table) <- c(object[["exposure_names"]], "Estimate", "Std.Error", paste0("lower.", ci_level), paste0("upper.", ci_level))
 
   } else {
     est_table <- data.frame(est_old_table[, object[["exposure_names"]]], as.matrix(cbind(est, se, conf_int), nrow = length(est), ncol = 4L))
-    colnames(est_table) <- c(object[["exposure_names"]], "Estimate", "Std. Error", paste("lower", ci_level), paste("upper", ci_level))
+    colnames(est_table) <- c(object[["exposure_names"]], "Estimate", "Std.Error", paste0("lower.", ci_level), paste0("upper.", ci_level))
   }
   rownames(est_table) <- NULL
   out <- c(object, list(
@@ -836,8 +836,12 @@ tidy.std_glm <- function(x, ...) {
 
     tmpres <- as.data.frame(xl$est_table)
     colnames(tmpres) <- make.names(colnames(tmpres))
-    tmpres$exposure.name <- xl$exposure_names
+    tmpres$contrast <- if(is.null(xl$contrast)) "none" else xl$contrast
+    tmpres$transform <- if(is.null(xl$transform)) "identity" else xl$transform
+    tmpres
 
   })
+
+  do.call("rbind", res_list)
 
 }

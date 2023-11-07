@@ -4,7 +4,7 @@
 \alias{tidy.std_glm}
 \title{Provide tidy output from a std_glm object for use in downstream computations}
 \usage{
-tidy.std_glm(x, ...)
+\method{tidy}{std_glm}(x, ...)
 }
 \arguments{
 \item{x}{An object of class std_glm}
