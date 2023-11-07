@@ -5,7 +5,6 @@
 \alias{nhefs_dat}
 \title{Data from the National Health and Nutrition Examination Survey Data I Epidemiologic Follow-up Study (NHEFS).}
 \format{
-\subsection{\code{nhefs_dat}}
 A data frame with 1566 rows and 66 columns:
 \describe{
 \item{seqn}{person id}

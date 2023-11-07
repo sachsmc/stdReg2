@@ -18,7 +18,7 @@ standardize_glm(
   ci_type = "plain",
   contrasts = NULL,
   family = "gaussian",
-  references = NULL,
+  reference = NULL,
   transforms = NULL
 )
 }
@@ -54,13 +54,15 @@ log-transformed intervals.}
 \item{contrasts}{A vector of contrasts in the following format:
 If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
 or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
-level specified by the \code{reference} argument. Has to be be \code{NULL}
+level specified by the \code{reference} argument. Has to be \code{NULL}
 if no references are specified.}
 
 \item{family}{The family argument which is used to fit the glm model for the outcome.}
 
-\item{references}{A vector of references in the following format:
-If \code{contrasts} is not \code{NULL}, the desired reference level(s).}
+\item{reference}{A vector of reference levels in the following format:
+If \code{contrasts} is not \code{NULL}, the desired reference level(s). This
+must be a vector or list the same length as \code{contrasts}, and if not named,
+it is assumed that the order is as specified in contrasts.}
 
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
@@ -142,7 +144,7 @@ x <- standardize_glm(
   family = "binomial",
   data = dd, values = list(X1 = 0:1, X2 = 0:1),
   contrasts = c("difference", "ratio"),
-  references = "0, 0"
+  reference = "0, 0"
 )
 x
 

@@ -2,7 +2,7 @@
 #'
 #' The data was collected as part of a project by the National Center for Health Statistics and the National Institute on Aging in collaboration with other agencies of the United States Public Health Service. It was designed to investigate the relationships between clinical, nutritional, and behavioral factors and subsequent morbidity, mortality, and hospital utilization and changes in risk factors, functional limitation, and institutionalization. The dataset includes 1629 individuals and contains among others the following variables:
 #'
-#' @format \subsection{\code{nhefs_dat}}
+#' @format
 #' A data frame with 1566 rows and 66 columns:
 #' \describe{
 #' \item{seqn}{person id}

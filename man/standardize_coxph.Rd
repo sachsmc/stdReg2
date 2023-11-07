@@ -41,13 +41,10 @@ log-transformed intervals.}
 \item{contrasts}{A vector of contrasts in the following format:
 If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
 or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
-level specified by the \code{reference} argument. Has to be be \code{NULL}
+level specified by the \code{reference} argument. Has to be \code{NULL}
 if no references are specified.}
 
 \item{family}{The family argument which is used to fit the glm model for the outcome.}
-
-\item{references}{A vector of references in the following format:
-If \code{contrasts} is not \code{NULL}, the desired reference level(s).}
 
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized

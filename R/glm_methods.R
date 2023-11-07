@@ -809,7 +809,7 @@ plot.std_glm <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
 #' @param x An object of class std_glm
 #' @param ... Not currently used
 #'
-#' @value A data.frame
+#' @returns A data.frame
 #' @examples
 #' set.seed(6)
 #' n <- 100

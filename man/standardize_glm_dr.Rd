@@ -5,8 +5,8 @@
 \title{Get regression standardized doubly-robust estimates from a glm}
 \usage{
 standardize_glm_dr(
-  formula_exposure,
   formula_outcome,
+  formula_exposure,
   data,
   values,
   ci_level = 0.95,
@@ -14,16 +14,16 @@ standardize_glm_dr(
   contrasts = NULL,
   family_outcome = "gaussian",
   family_exposure = "binomial",
-  references = NULL,
+  reference = NULL,
   transforms = NULL
 )
 }
 \arguments{
+\item{formula_outcome}{The formula which is used to fit the glm model for the outcome.}
+
 \item{formula_exposure}{The formula which is used to fit the glm model for the exposure.
 If not \code{NULL},
 a doubly robust estimator of the standardized estimator is used.}
-
-\item{formula_outcome}{The formula which is used to fit the glm model for the outcome.}
 
 \item{data}{The data.}
 
@@ -39,15 +39,17 @@ log-transformed intervals.}
 \item{contrasts}{A vector of contrasts in the following format:
 If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
 or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
-level specified by the \code{reference} argument. Has to be be \code{NULL}
+level specified by the \code{reference} argument. Has to be \code{NULL}
 if no references are specified.}
 
 \item{family_outcome}{The family argument which is used to fit the glm model for the outcome.}
 
 \item{family_exposure}{The family argument which is used to fit the glm model for the exposure.}
 
-\item{references}{A vector of references in the following format:
-If \code{contrasts} is not \code{NULL}, the desired reference level(s).}
+\item{reference}{A vector of reference levels in the following format:
+If \code{contrasts} is not \code{NULL}, the desired reference level(s). This
+must be a vector or list the same length as \code{contrasts}, and if not named,
+it is assumed that the order is as specified in contrasts.}
 
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
@@ -97,7 +99,8 @@ x <- standardize_glm_dr(
   formula_outcome = Y ~ X * Z, formula_exposure = X ~ Z,
   family_outcome = "binomial",
   data = dd,
-  values = list(X = 0:1), references = c(0, 1), contrasts = c("difference"), transforms = c("odds")
+  values = list(X = 0:1), reference = c(0, 1),
+  contrasts = c("difference"), transforms = c("odds")
 )
 
 }
