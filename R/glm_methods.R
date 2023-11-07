@@ -520,7 +520,7 @@ summary_std_glm <- function(object, ci_type = "plain", ci_level = 0.95,
   if (!is.null(transform)) {
     if (transform == "log") {
       if (any(est <= 0)) {
-        stop("transform='log' requires that the (standardized) estiamtes are positive.")
+        stop("transform='log' requires that the (standardized) estimates are positive.")
       }
       dtransform_dm <- diag(1.0 / est, nrow = n_x_levs, ncol = n_x_levs)
       est <- log(est)

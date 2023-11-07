@@ -328,6 +328,9 @@ format_result_standardize <- function(res,
   if(is.null(transforms)) {
     transforms <- list(NULL)
   }
+  if(is.null(contrasts)) {
+    contrasts <- list(NULL)
+  }
   grid <- list()
   k <- 1
   for(i in contrasts) {

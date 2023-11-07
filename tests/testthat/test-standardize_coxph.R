@@ -14,11 +14,11 @@ test_that("check estimates and standard errors against older package (coxph)", {
     data = dd, values = list(X = seq(-1, 1, 0.5)), times = 3
   )
 
-  expect_equal(unname(fit.std$res_contrast$V1$est.table[[1]][, 1]), c(
+  expect_equal(unname(fit.std$res_contrast[[1]]$est.table[[1]][, 1]), c(
     0.290086650197531, 0.119930794890419, 0.0812019338211797, 0.0796974035238777,
     0.0840306008325879
   ), tolerance = 1e-5)
-  expect_equal(unname(fit.std$res_contrast$V1$est.table[[1]][, 2]), c(
+  expect_equal(unname(fit.std$res_contrast[[1]]$est.table[[1]][, 2]), c(
     0.0550200346274478, 0.0365154454326768, 0.0265626695896798,
     0.0241162661987073, 0.0234315572499484
   ), tolerance = 1e-5)
