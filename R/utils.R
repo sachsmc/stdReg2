@@ -312,39 +312,33 @@ get_outcome_exposure <- function(formula_outcome, data, values) {
 
 format_result_standardize <- function(res,
                                       contrasts,
-                                      references,
+                                      reference,
                                       transforms,
                                       ci_type,
                                       ci_level,
                                       format_class,
                                       summary_fun_name) {
-  contrast <- reference <- NULL
+  #contrast <- reference0 <- NULL
   ## change contrasts, references and transforms to NULL in string format
-  if (is.null(contrasts) && !is.null(references) || !is.null(contrasts) && is.null(references)) {
+  if (is.null(contrasts) && !is.null(reference) || !is.null(contrasts) && is.null(reference)) {
     warning("Reference level or contrast not specified. Defaulting to NULL. ")
   }
 
-  contrasts <- unique(c("NULL", contrasts))
-  references <- unique(c("NULL", references))
-  transforms <- unique(c("NULL", transforms))
-  grid <- expand.grid(
-    contrast = contrasts,
-    reference = references,
-    transform = transforms
-  )
-  grid <- subset(grid, (contrast == "NULL" & reference == "NULL") |
-    (contrast != "NULL" & reference != "NULL"))
-  summary_fun <- function(contrast, reference, transform) {
-    null_helper <- function(x) {
-      if (is.null(x) || x == "NULL") {
-        NULL
-      } else {
-        as.character(x)
-      }
+  ## list of all combinations of contrasts, reference, transforms
+  if(is.null(transforms)) {
+    transforms <- list(NULL)
+  }
+  grid <- list()
+  k <- 1
+  for(i in contrasts) {
+    for(j in transforms) {
+      grid[[k]] <- list(contrast = i, reference = reference, transform = j)
+      k <- k + 1
     }
-    transform <- null_helper(transform)
-    contrast <- null_helper(contrast)
-    reference <- null_helper(reference)
+  }
+
+
+  summary_fun <- function(contrast, reference, transform) {
 
     do.call(summary_fun_name, list(
       object = res,
@@ -355,7 +349,7 @@ format_result_standardize <- function(res,
       reference = reference
     ))
   }
-  res_contrast <- as.list(as.data.frame(do.call(mapply, c(summary_fun, unname(as.list(grid))))))
+  res_contrast <- lapply(grid, \(args) do.call(summary_fun, args))
   res_fin <- list(res_contrast = res_contrast, res = res)
   class(res_fin) <- format_class
   res_fin

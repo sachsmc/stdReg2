@@ -35,10 +35,12 @@
 #' @param contrasts A vector of contrasts in the following format:
 #' If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
 #' or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
-#' level specified by the \code{reference} argument. Has to be be \code{NULL}
+#' level specified by the \code{reference} argument. Has to be \code{NULL}
 #' if no references are specified.
-#' @param references A vector of references in the following format:
-#' If \code{contrasts} is not \code{NULL}, the desired reference level(s).
+#' @param reference A vector of reference levels in the following format:
+#' If \code{contrasts} is not \code{NULL}, the desired reference level(s). This
+#' must be a vector or list the same length as \code{contrasts}, and if not named,
+#' it is assumed that the order is as specified in contrasts.
 #' @returns An object of class \code{std_glm}.
 #' This is basically a list with components estimates and covariance estimates in \code{res}
 #' Results for transformations, contrasts, references are stored in \code{res_contrasts}.
@@ -114,7 +116,7 @@
 #'   family = "binomial",
 #'   data = dd, values = list(X1 = 0:1, X2 = 0:1),
 #'   contrasts = c("difference", "ratio"),
-#'   references = "0, 0"
+#'   reference = "0, 0"
 #' )
 #' x
 #'
@@ -151,7 +153,7 @@ standardize_glm <- function(formula,
                             ci_type = "plain",
                             contrasts = NULL,
                             family = "gaussian",
-                            references = NULL,
+                            reference = NULL,
                             transforms = NULL) {
   n <- nrow(data)
 
@@ -294,7 +296,7 @@ standardize_glm <- function(formula,
   format_result_standardize(
     res,
     contrasts,
-    references,
+    reference,
     transforms,
     ci_type,
     ci_level,
@@ -351,7 +353,8 @@ standardize_glm <- function(formula,
 #'   formula_outcome = Y ~ X * Z, formula_exposure = X ~ Z,
 #'   family_outcome = "binomial",
 #'   data = dd,
-#'   values = list(X = 0:1), references = c(0, 1), contrasts = c("difference"), transforms = c("odds")
+#'   values = list(X = 0:1), reference = c(0, 1),
+#'   contrasts = c("difference"), transforms = c("odds")
 #' )
 #'
 #' @export standardize_glm_dr
@@ -364,7 +367,7 @@ standardize_glm_dr <- function(formula_outcome,
                                contrasts = NULL,
                                family_outcome = "gaussian",
                                family_exposure = "binomial",
-                               references = NULL,
+                               reference = NULL,
                                transforms = NULL) {
   ## Preparation and various checks
   n <- nrow(data)
@@ -470,7 +473,7 @@ standardize_glm_dr <- function(formula_outcome,
   format_result_standardize(
     res,
     contrasts,
-    references,
+    reference,
     transforms,
     ci_type,
     ci_level,
@@ -542,14 +545,24 @@ summary_std_glm <- function(object, ci_type = "plain", ci_level = 0.95,
     if (is.null(reference)) {
       stop("When specifying contrast, reference must be specified as well")
     }
-    reference <- gsub(" ", "", reference, fixed = TRUE)
-    if (length(object[["exposure_names"]]) > 1L) {
-      est_old_table[["exposure"]] <- do.call(paste, c(est_old_table[, object[["exposure_names"]]], sep = ","))
-    } else {
-      est_old_table[["exposure"]] <- est_old_table[[object[["exposure_names"]]]]
+    #reference <- gsub(" ", "", reference, fixed = TRUE)
+    if(length(reference) != length(object[["exposure_names"]])) {
+      stop("Reference level must be specified for each exposure variable")
     }
 
-    referencepos <- match(reference, est_old_table[["exposure"]])
+   #   est_old_table[["exposure"]] <- do.call(paste, c(est_old_table[, object[["exposure_names"]]], sep = ","))
+   # } else {
+   #   est_old_table[["exposure"]] <- est_old_table[[object[["exposure_names"]]]]
+   # }
+
+    if (length(object[["exposure_names"]]) > 1L) {
+      referencepos <- which(apply(sapply(1:length(object[["exposure_names"]]),
+                             \(i) {
+                               est_old_table[, object[["exposure_names"]]][, i] == reference[i]
+                             }), MAR = 1, FUN = \(x) all(x)))
+    } else {
+      referencepos <- match(reference, est_old_table[, object[["exposure_names"]]])
+    }
     if (is.na(referencepos)) {
       stop("reference must be a value in x")
     }
@@ -579,8 +592,11 @@ summary_std_glm <- function(object, ci_type = "plain", ci_level = 0.95,
     reference <- as.character(reference)
   }
   if (!is.null(contrast)) {
-    est_table <- data.frame(est_old_table[["exposure"]], as.matrix(cbind(est, se, conf_int), nrow = length(est), ncol = 4L))
-    colnames(est_table) <- c("Exposure", "Estimate", "Std. Error", paste("lower", ci_level), paste("upper", ci_level))
+    tmpmat <- as.matrix(cbind(est, se, conf_int), nrow = length(est), ncol = 4L)
+    est_table <- data.frame(est_old_table[, object[["exposure_names"]]],
+                            tmpmat)
+    colnames(est_table) <- c(object[["exposure_names"]], "Estimate", "Std. Error", paste("lower", ci_level), paste("upper", ci_level))
+
   } else {
     est_table <- data.frame(est_old_table[, object[["exposure_names"]]], as.matrix(cbind(est, se, conf_int), nrow = length(est), ncol = 4L))
     colnames(est_table) <- c(object[["exposure_names"]], "Estimate", "Std. Error", paste("lower", ci_level), paste("upper", ci_level))
@@ -807,11 +823,11 @@ plot.std_glm <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
 #'   data = dd,
 #'   values = list(X = 0:1),
 #'   contrasts = c("difference", "ratio"),
-#'   references = 0
+#'   reference = 0
 #' )
 #' tidy(x)
 #'
-#'
+#' @export
 tidy.std_glm <- function(x, ...) {
 
   stopifnot(inherits(x, "std_glm"))

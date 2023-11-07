@@ -147,9 +147,18 @@ m2 <- standardize_glm(wt82_71 ~ qsmk + sex + race + age + I(age^2) +
             data = nhefs_dat, 
             values = list(qsmk = c(0,1)),
             contrasts = c("difference", "ratio"),
-            reference = "0")
+            reference = 0)
 
-m2
+m2 <- standardize_glm(wt82_71 ~ qsmk + sex + race + age + I(age^2) + 
+               as.factor(education) + smokeintensity + I(smokeintensity^2) + 
+               smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
+               wt71 + I(wt71^2), 
+            data = nhefs_dat, 
+            values = list(qsmk = c(0,1), sex = c(0,1)),
+            contrasts = c("difference", "ratio"),
+            reference = c(0,0))
+
+m2  ## fix print method
 
 plot(m2)
 plot(m2, contrast = "difference", reference = 0)
