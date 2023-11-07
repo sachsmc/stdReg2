@@ -631,12 +631,12 @@ print.std_glm <- function(x, ...) {
   cat("\n")
   cat("Tables: \n")
   for (l in seq_len(length(x[["res_contrast"]]))) {
-    temp <- x[["res_contrast"]][[paste0("V", l)]]
+    temp <- x[["res_contrast"]][[l]]
     if (!is.null(temp[["transform"]])) {
       cat("Transform: ", levels(temp[["transform"]])[[temp[["transform"]]]], "\n")
     }
     if (!is.null(temp[["contrast"]])) {
-      cat("Reference level: ", temp[["input"]][["X"]], "=", temp[["reference"]], "\n")
+      cat("Reference level: ", paste(paste(temp[["exposure_names"]], temp[["reference"]], sep = " = "), collapse = "; "), "\n")
       cat("Contrast: ", temp[["contrast"]], "\n")
     }
     print(temp[["est_table"]], digits = 3L)
