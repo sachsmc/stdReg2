@@ -1,0 +1,9 @@
+pandoc: 3.1.1
+pkgdown: 2.0.7
+pkgdown_sha: ~
+articles:
+  cond-gee: cond-gee.html
+  event-history: event-history.html
+  overview: overview.html
+last_built: 2023-11-07T10:21Z
+

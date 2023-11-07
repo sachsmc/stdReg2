@@ -1,8 +1,8 @@
 ---
-title: "Basic usage of stdReg2"
+title: "Conditional models for repeated measures/clustered data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Basic usage of stdReg2}
+  %\VignetteIndexEntry{Conditional models for repeated measures/clustered data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

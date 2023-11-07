@@ -355,8 +355,8 @@ standardize_glm <- function(formula,
 #' )
 #'
 #' @export standardize_glm_dr
-standardize_glm_dr <- function(formula_exposure,
-                               formula_outcome,
+standardize_glm_dr <- function(formula_outcome,
+                               formula_exposure,
                                data,
                                values,
                                ci_level = 0.95,
@@ -752,7 +752,7 @@ plot.std_glm <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
   } else {
     ylim <- c(min(est), max(est))
   }
-  if (is.numeric(x) && length(x) > 1L) {
+  if (is.numeric(x) && length(x) > 1L && !is.binary(x)) {
     args <- list(x = x, y = x, xlab = xlab, ylab = ylab, ylim = ylim, type = "n")
     args[names(dots)] <- dots
     do.call("plot", args = args)
@@ -784,4 +784,44 @@ plot.std_glm <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
     }
     mtext(text = x, side = 1L, at = x_seq)
   }
+}
+
+
+#' Provide tidy output from a std_glm object for use in downstream computations
+#'
+#' Tidy summarizes information about the components of the standardized regression fit.
+#' @param x An object of class std_glm
+#' @param ... Not currently used
+#'
+#' @value A data.frame
+#' @examples
+#' set.seed(6)
+#' n <- 100
+#' Z <- rnorm(n)
+#' X <- rnorm(n, mean = Z)
+#' Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
+#' dd <- data.frame(Z, X, Y)
+#' x <- standardize_glm(
+#'   formula = Y ~ X * Z,
+#'   family = "binomial",
+#'   data = dd,
+#'   values = list(X = 0:1),
+#'   contrasts = c("difference", "ratio"),
+#'   references = 0
+#' )
+#' tidy(x)
+#'
+#'
+tidy.std_glm <- function(x, ...) {
+
+  stopifnot(inherits(x, "std_glm"))
+
+  res_list <- lapply(x$res_contrast, \(xl) {
+
+    tmpres <- as.data.frame(xl$est_table)
+    colnames(tmpres) <- make.names(colnames(tmpres))
+    tmpres$exposure.name <- xl$exposure_names
+
+  })
+
 }

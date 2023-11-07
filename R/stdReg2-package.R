@@ -8,4 +8,5 @@
 #' @importFrom stats predict.glm printCoefmat qnorm residuals stepfun terms
 #' @importFrom stats var vcov weights
 #' @importFrom utils setTxtProgressBar txtProgressBar
-NULL
+#' @docType package
+"_PACKAGE"
