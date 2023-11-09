@@ -1,6 +1,8 @@
 ---
 title: "Estimation of causal effects using stdReg2"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette: 
+    highlight: "haddock"
 vignette: >
   %\VignetteIndexEntry{Estimation of causal effects using stdReg2}
   %\VignetteEngine{knitr::rmarkdown}
@@ -160,10 +162,8 @@ The output from the model shows the estimated potential outcome means in each ex
 To obtain the estimates and inference for the different contrasts as a tidy data frame, suitable for saving as a data table or using in downstream analyses or reports, we provide the `tidy` function: 
 
 ```{r}
-tidy(m2)
+(tidy(m2) -> tidy_m2) |> print()
 ```
-
-
 
 To obtain doubly robust inference we use the following command. Note that we now specify a model for the exposure, the propensity score model.
 
@@ -182,7 +182,113 @@ m2_dr <- standardize_glm_dr(formula_outcome = wt82_71 ~ qsmk + sex + race + age 
             reference = 0) 
 
 m2_dr
+
+(tidy(m2_dr) -> tidy_m2_dr) |> print()
 ```
+
+Based on these results, we can report that the estimated effect of smoking on average weight change as measured by the difference in potential outcome means is `r with(subset(tidy_m2, contrast == "difference" & qsmk == 1), sprintf("%.2f (%.2f to %.2f)", Estimate, lower.0.95, upper.0.95))` and as measured by the ratio of potential outcome means is `r with(subset(tidy_m2, contrast == "ratio" & qsmk == 1), sprintf("%.2f (%.2f to %.2f)", Estimate, lower.0.95, upper.0.95))`. Using the doubly-robust estimation method, we obtain similarly `r with(subset(tidy_m2_dr, contrast == "difference" & qsmk == 1), sprintf("%.2f (%.2f to %.2f)", Estimate, lower.0.95, upper.0.95))` and as measured by the ratio of potential outcome means is `r with(subset(tidy_m2_dr, contrast == "ratio" & qsmk == 1), sprintf("%.2f (%.2f to %.2f)", Estimate, lower.0.95, upper.0.95))`. In particular, if we believe that the necessary assumptions are valid, we can conclude that smoking causes an increase in weight which the numeric summaries indicate that smoking increases the weight change over 11 years by about 3.5 pounds (additive scale) or smoking increases the weight change over 11 years by a multiplicative factor of about 3. 
+
+The doubly-robust method requires specification of an exposure model in addition to the specification of the outcome model. Both of these estimated models can be accessed and inspected by looking at the `fit_outcome` and `fit_exposure` elements of the return object: 
+
+```{r}
+m2_dr$res$fit_outcome
+m2_dr$res$fit_exposure
+```
+
+This is useful when we want to inspect the distribution of the propensity scores by exposure status. This is an important thing to check in practice, we are looking for any practical violations of the positivity assumption. 
+
+```{r}
+hist(m2_dr$res$fit_exposure$fitted[nhefs_dat$qsmk == 0], 
+    xlim = c(0, 1), main = "qsmk = 0", xlab = "estimated propensity")
+hist(m2_dr$res$fit_exposure$fitted[nhefs_dat$qsmk == 1], 
+    xlim = c(0, 1), main = "qsmk = 1", xlab = "estimated propensity")
+```
+
+## Other outcome types
+
+The function `standardize_glm` and its doubly-robust counterpart `standardize_glm_dr` support any outcome variable type the can be used with `glm`. This includes binary, count, and more. Just like in `glm`, we specify the model we would like to use for the outcome by specifying the `family` argument of `standardize_glm` or the `family_outcome` argument of `standardize_glm_dr`. By default this is `"gaussian"` which corresponds to linear regression. For a binary outcome we might like to use `"binomial"` which corresponds to logistic regression. Let us see how it works using the a binary outcome that we create by dichotomizing the weight change at 0.
+
+
+```{r}
+nhefs_dat$gained_weight <- 1.0 * (nhefs_dat$wt82_71 > 0)
+m3 <- standardize_glm(gained_weight ~ qsmk + sex + race + age + I(age^2) + 
+               as.factor(education) + smokeintensity + I(smokeintensity^2) + 
+               smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
+               wt71 + I(wt71^2), 
+            data = nhefs_dat, 
+            family = "binomial",
+            values = list(qsmk = c(0,1)),
+            contrasts = c("difference", "ratio"),
+            reference = 0)
+
+m3
+```
+
+Here we interpret the estimates in terms of probabilities, or the risk of gaining weight over 11 years. In particular, smoking causes a 13% additive increase in the risk of gaining weight, or a 1.2 fold multiplicative increase in the risk of gaining weight. With binary outcomes, we can use tranforms to get different contrasts, and also to improve the performance of the ratio contrast. By using the log transformation combined with the difference contrast, our estimates become the log risk ratios. We can exponential them to get the risk ratios, but often it is better to construct confidence intervals of ratios on the log scale and back transform. 
+
+```{r}
+m3_log <- standardize_glm(gained_weight ~ qsmk + sex + race + age + I(age^2) + 
+               as.factor(education) + smokeintensity + I(smokeintensity^2) + 
+               smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
+               wt71 + I(wt71^2), 
+            data = nhefs_dat, 
+            family = "binomial",
+            values = list(qsmk = c(0,1)),
+            contrasts = c("difference"),
+            transforms = c("log"),
+            reference = 0)
+m3_log
+```
+
+The estimates reported in the table are log risk ratios, which we now back transform by exponentiating and compare to the ratios estimated previously. 
+
+```{r}
+tm3_log <- tidy(m3_log)
+tm3_log$rr <- exp(tm3_log$Estimate)
+tm3_log$rr.lower <- exp(tm3_log$lower.0.95)
+tm3_log$rr.upper <- exp(tm3_log$upper.0.95)
+
+subset(tm3_log, contrast == "difference" & qsmk == 1)
+m3
+```
+
+In this case, the estimates and inference using transformation are nearly identical to those without transformation. 
+
+Other available transformations include the odds, and logit (log odds). These can be used to estimate causal odds ratios, untransformed and transformed, respectively. 
+
+```{r}
+m3_odds <- standardize_glm(gained_weight ~ qsmk + sex + race + age + I(age^2) + 
+               as.factor(education) + smokeintensity + I(smokeintensity^2) + 
+               smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
+               wt71 + I(wt71^2), 
+            data = nhefs_dat, 
+            family = "binomial",
+            values = list(qsmk = c(0,1)),
+            contrasts = c("ratio"),
+            transforms = c("odds"),
+            reference = 0)
+m3_odds
+
+m3_logit <- standardize_glm(gained_weight ~ qsmk + sex + race + age + I(age^2) + 
+               as.factor(education) + smokeintensity + I(smokeintensity^2) + 
+               smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
+               wt71 + I(wt71^2), 
+            data = nhefs_dat, 
+            family = "binomial",
+            values = list(qsmk = c(0,1)),
+            contrasts = c("difference"),
+            transforms = c("logit"),
+            reference = 0)
+m3_logit
+
+m3_logOR <- tidy(m3_logit) |> 
+  subset(contrast == "difference" & qsmk == 1) 
+  
+sprintf("%.2f (%.2f to %.2f)", exp(m3_logOR$Estimate), 
+        exp(m3_logOR$lower.0.95), exp(m3_logOR$upper.0.95))
+```
+
+In this case the estimate is identical, but the confidence interval is slightly different because it is symmetric on the odds ratio scale in the first case, and symmetric on the log odds ratio scale in the transformed case. 
 
 
 
