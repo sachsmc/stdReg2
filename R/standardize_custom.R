@@ -44,7 +44,7 @@
 #'   data = dd,
 #'   values = list(X = seq(-1, 1, 0.1)),
 #'   B = 100,
-#'   references = 0,
+#'   reference = 0,
 #'   contrasts = "difference"
 #' )
 #' x
@@ -85,7 +85,7 @@
 #'   predict_fun = prob_predict.coxph,
 #'   values = list(X = c(-1, 0, 1)),
 #'   B = 100,
-#'   references = 0,
+#'   reference = 0,
 #'   contrasts = "difference"
 #' )
 #' x
@@ -101,7 +101,7 @@ standardize <- function(arguments,
                         B = NULL,
                         ci_level = 0.95,
                         contrasts = NULL,
-                        references = NULL,
+                        reference = NULL,
                         seed = NULL,
                         times = NULL,
                         transforms = NULL) {
@@ -182,7 +182,7 @@ standardize <- function(arguments,
   format_result_standardize(
     res,
     contrasts,
-    references,
+    reference,
     transforms,
     "plain",
     ci_level,
@@ -245,7 +245,7 @@ standardize <- function(arguments,
 #'   predict_fun_list = list(prob_predict.coxph, prob_predict.coxph),
 #'   values = list(X = c(0, 1)),
 #'   B = 100,
-#'   references = 0,
+#'   reference = 0,
 #'   contrasts = "difference"
 #' )
 #' print(x)
@@ -260,7 +260,7 @@ standardize_level <- function(arguments,
                               B = NULL,
                               ci_level = 0.95,
                               contrasts = NULL,
-                              references = NULL,
+                              reference = NULL,
                               seed = NULL,
                               times = NULL,
                               transforms = NULL) {
@@ -358,7 +358,7 @@ standardize_level <- function(arguments,
   format_result_standardize(
     res,
     contrasts,
-    references,
+    reference,
     transforms,
     "plain",
     ci_level,

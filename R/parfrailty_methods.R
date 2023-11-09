@@ -557,7 +557,7 @@ standardize_parfrailty <- function(formula,
                                    ci_type = "plain",
                                    contrasts = NULL,
                                    family = "gaussian",
-                                   references = NULL,
+                                   reference = NULL,
                                    transforms = NULL) {
   call <- match.call()
 
@@ -696,7 +696,7 @@ standardize_parfrailty <- function(formula,
   format_result_standardize(
     out,
     contrasts,
-    references,
+    reference,
     transforms,
     ci_type,
     ci_level,

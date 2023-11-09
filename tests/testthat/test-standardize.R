@@ -11,7 +11,7 @@ test_that("standardize with non-survival data (no bootstrap) gives the same as s
     family = "binomial",
     data = dd,
     values = list(X = seq(-1, 1, 0.1)),
-    references = 0,
+    reference = 0,
     contrasts = c("ratio", "difference")
   )
   x <- standardize(
@@ -23,7 +23,7 @@ test_that("standardize with non-survival data (no bootstrap) gives the same as s
     fitter = "glm",
     data = dd,
     values = list(X = seq(-1, 1, 0.1)),
-    references = 0,
+    reference = 0,
     contrasts = c("ratio", "difference")
   )
   expect_equal(x$res$estimates[, 2], y$res$estimates[, 3])
@@ -62,7 +62,7 @@ test_that("standardize with survival data (no bootstrap) gives the same as stand
     times = 1:5,
     predict_fun = prob_predict.coxph,
     values = list(X = seq(-1, 1, 0.1)),
-    references = 0,
+    reference = 0,
     contrasts = "difference"
   )
   fit.std <- standardize_coxph(
@@ -70,11 +70,14 @@ test_that("standardize with survival data (no bootstrap) gives the same as stand
     data = dd,
     values = list(X = seq(-1, 1, 0.1)),
     times = 1:5,
-    references = 0,
+    reference = 0,
     contrasts = "difference"
   )
 
   expect_equal(fit.std$res$est, unname(t(x$res$estimates[, -1])))
+
+
+  expect_no_error(stop("Update summary methods for parfrailty, coxph, and custom"))
 })
 
 test_that("standardize generates output with survival data (single time point)", {
@@ -110,7 +113,7 @@ test_that("standardize generates output with survival data (single time point)",
     times = 3,
     predict_fun = prob_predict.coxph,
     values = list(X = seq(-1, 1, 0.1)),
-    references = 0,
+    reference = 0,
     contrasts = "difference"
   )
   expect_output(print(x))
