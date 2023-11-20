@@ -415,13 +415,13 @@ quadratic forms of the continuous covariates. We can fit this as</p>
 <span><span class="co">#&gt; AIC: 10701</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Number of Fisher Scoring iterations: 2</span></span></code></pre></div>
-<p>To peform regression standardization to estimate the causal effect we
-use . We must specify the same outcome regression model as a formula,
-provide the data, describe which values of the exposure we wish to
-estimate the counterfactual means, specify which contrasts we want, and
-specify the reference level for the contrasts. The following command
-estimates that model and we obtain the group-wise estimates, the
-difference, and the ratio.</p>
+<p>To perform regression standardization to estimate the causal effect
+we use <code>standardize_glm</code>. We must specify the same outcome
+regression model as a formula, provide the data, describe which values
+of the exposure we wish to estimate the counterfactual means, specify
+which contrasts we want, and specify the reference level for the
+contrasts. The following command estimates that model and we obtain the
+group-wise estimates, the difference, and the ratio.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_glm.html">standardize_glm</a></span><span class="op">(</span><span class="va">wt82_71</span> <span class="op">~</span> <span class="va">qsmk</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>               <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">education</span><span class="op">)</span> <span class="op">+</span> <span class="va">smokeintensity</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">smokeintensity</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>

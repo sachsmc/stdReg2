@@ -140,7 +140,7 @@ m <- glm(wt82_71 ~ qsmk + sex + race + age + I(age^2) +
 summary(m)
 ```
 
-To peform regression standardization to estimate the causal effect we use \texttt{standardize_glm}. We must specify the same outcome regression model as a formula, provide the data, describe which values of the exposure we wish to estimate the counterfactual means, specify which contrasts we want, and specify the reference level for the contrasts. The following command estimates that model and we obtain the group-wise estimates, the difference, and the ratio.
+To perform regression standardization to estimate the causal effect we use `standardize_glm`. We must specify the same outcome regression model as a formula, provide the data, describe which values of the exposure we wish to estimate the counterfactual means, specify which contrasts we want, and specify the reference level for the contrasts. The following command estimates that model and we obtain the group-wise estimates, the difference, and the ratio.
 
 ```{r}
 m2 <- standardize_glm(wt82_71 ~ qsmk + sex + race + age + I(age^2) + 
