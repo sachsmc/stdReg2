@@ -41,8 +41,6 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/cond-gee.html">Conditional models for repeated measures/clustered data</a>
-    <a class="dropdown-item" href="../articles/event-history.html">Standardization with time-to-event outcomes</a>
     <a class="dropdown-item" href="../articles/overview.html">Estimation of causal effects using stdReg2</a>
   </div>
 </li>
@@ -200,16 +198,16 @@ how you combine them!</p>
 <p>Here we will use regression standardization to estimate the average
 causal effect of the exposure (quitting smoking) in the variable
 <code>qsmk</code> on the weight gain outcome in the variable
-<code>wt82\_71</code> in the <code>dhefs_dat</code> dataset that comes
-with the <code>stdReg2</code> package. The data was collected as part of
-a project by the National Center for Health Statistics and the National
-Institute on Aging in collaboration with other agencies of the United
-States Public Health Service. It was designed to investigate the
-relationships between clinical, nutritional, and behavioral factors and
-subsequent morbidity, mortality, and hospital utilization and changes in
-risk factors, functional limitation, and institutionalization. The
-dataset includes 1629 individuals and contains among others the
-following variables:</p>
+<code>wt82_71</code> in the <code>nhefs_complete</code> dataset that
+comes with the <code>causaldata</code> package. The data was collected
+as part of a project by the National Center for Health Statistics and
+the National Institute on Aging in collaboration with other agencies of
+the United States Public Health Service. It was designed to investigate
+the relationships between clinical, nutritional, and behavioral factors
+and subsequent morbidity, mortality, and hospital utilization and
+changes in risk factors, functional limitation, and
+institutionalization. The dataset includes 1566 individuals and contains
+among others the following variables:</p>
 <ul>
 <li>seqn: person id}</li>
 <li>wt82_71: weight gain in kilograms between 1971 and 1982</li>
@@ -231,7 +229,8 @@ active, 2 = inactive, 3 = missing</li>
 <li>ht: height in centimeters in 1971</li>
 </ul>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">nhefs_dat</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">nhefs_dat</span> <span class="op">&lt;-</span> <span class="fu">causaldata</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/causaldata/man/nhefs_complete.html" class="external-link">nhefs_complete</a></span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">nhefs_dat</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       seqn            qsmk            death            yrdth      </span></span>
 <span><span class="co">#&gt;  Min.   :  233   Min.   :0.0000   Min.   :0.0000   Min.   :83.00  </span></span>
 <span><span class="co">#&gt;  1st Qu.:10625   1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:85.00  </span></span>
@@ -240,109 +239,101 @@ active, 2 = inactive, 3 = missing</li>
 <span><span class="co">#&gt;  3rd Qu.:22771   3rd Qu.:1.0000   3rd Qu.:0.0000   3rd Qu.:90.00  </span></span>
 <span><span class="co">#&gt;  Max.   :25061   Max.   :1.0000   Max.   :1.0000   Max.   :92.00  </span></span>
 <span><span class="co">#&gt;                                                    NA's   :1275   </span></span>
-<span><span class="co">#&gt;      modth            dadth           sbp             dbp        </span></span>
-<span><span class="co">#&gt;  Min.   : 1.000   Min.   : 1.0   Min.   : 87.0   Min.   : 47.00  </span></span>
-<span><span class="co">#&gt;  1st Qu.: 3.000   1st Qu.: 8.0   1st Qu.:115.0   1st Qu.: 70.00  </span></span>
-<span><span class="co">#&gt;  Median : 6.000   Median :16.0   Median :126.0   Median : 77.00  </span></span>
-<span><span class="co">#&gt;  Mean   : 6.383   Mean   :16.1   Mean   :128.6   Mean   : 77.74  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:10.000   3rd Qu.:24.5   3rd Qu.:139.0   3rd Qu.: 85.00  </span></span>
-<span><span class="co">#&gt;  Max.   :12.000   Max.   :31.0   Max.   :229.0   Max.   :130.00  </span></span>
-<span><span class="co">#&gt;  NA's   :1271     NA's   :1271   NA's   :29      NA's   :33      </span></span>
-<span><span class="co">#&gt;       sex              age             race            income     </span></span>
-<span><span class="co">#&gt;  Min.   :0.0000   Min.   :25.00   Min.   :0.0000   Min.   :11.00  </span></span>
-<span><span class="co">#&gt;  1st Qu.:0.0000   1st Qu.:33.00   1st Qu.:0.0000   1st Qu.:17.00  </span></span>
-<span><span class="co">#&gt;  Median :1.0000   Median :43.00   Median :0.0000   Median :19.00  </span></span>
-<span><span class="co">#&gt;  Mean   :0.5134   Mean   :43.66   Mean   :0.1315   Mean   :17.99  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:1.0000   3rd Qu.:53.00   3rd Qu.:0.0000   3rd Qu.:20.00  </span></span>
-<span><span class="co">#&gt;  Max.   :1.0000   Max.   :74.00   Max.   :1.0000   Max.   :22.00  </span></span>
-<span><span class="co">#&gt;                                                    NA's   :59     </span></span>
-<span><span class="co">#&gt;     marital          school        education           ht       </span></span>
-<span><span class="co">#&gt;  Min.   :2.000   Min.   : 0.00   Min.   :1.000   Min.   :142.9  </span></span>
-<span><span class="co">#&gt;  1st Qu.:2.000   1st Qu.:10.00   1st Qu.:2.000   1st Qu.:161.8  </span></span>
-<span><span class="co">#&gt;  Median :2.000   Median :12.00   Median :3.000   Median :168.2  </span></span>
-<span><span class="co">#&gt;  Mean   :2.496   Mean   :11.17   Mean   :2.715   Mean   :168.7  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:2.000   3rd Qu.:12.00   3rd Qu.:3.000   3rd Qu.:175.3  </span></span>
-<span><span class="co">#&gt;  Max.   :8.000   Max.   :17.00   Max.   :5.000   Max.   :198.1  </span></span>
-<span><span class="co">#&gt;                                                                 </span></span>
-<span><span class="co">#&gt;       wt71             wt82           wt82_71          birthplace   </span></span>
-<span><span class="co">#&gt;  Min.   : 39.58   Min.   : 35.38   Min.   :-41.280   Min.   : 1.00  </span></span>
-<span><span class="co">#&gt;  1st Qu.: 59.53   1st Qu.: 61.69   1st Qu.: -1.478   1st Qu.:22.00  </span></span>
-<span><span class="co">#&gt;  Median : 69.23   Median : 72.12   Median :  2.604   Median :34.00  </span></span>
-<span><span class="co">#&gt;  Mean   : 70.83   Mean   : 73.47   Mean   :  2.638   Mean   :31.67  </span></span>
-<span><span class="co">#&gt;  3rd Qu.: 79.80   3rd Qu.: 83.46   3rd Qu.:  6.690   3rd Qu.:42.00  </span></span>
-<span><span class="co">#&gt;  Max.   :151.73   Max.   :136.53   Max.   : 48.538   Max.   :56.00  </span></span>
-<span><span class="co">#&gt;                                                      NA's   :90     </span></span>
-<span><span class="co">#&gt;  smokeintensity  smkintensity82_71    smokeyrs         asthma       </span></span>
-<span><span class="co">#&gt;  Min.   : 1.00   Min.   :-80.000   Min.   : 1.00   Min.   :0.00000  </span></span>
-<span><span class="co">#&gt;  1st Qu.:10.00   1st Qu.:-10.000   1st Qu.:15.00   1st Qu.:0.00000  </span></span>
-<span><span class="co">#&gt;  Median :20.00   Median : -1.000   Median :24.00   Median :0.00000  </span></span>
-<span><span class="co">#&gt;  Mean   :20.53   Mean   : -4.633   Mean   :24.59   Mean   :0.04853  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:30.00   3rd Qu.:  1.000   3rd Qu.:33.00   3rd Qu.:0.00000  </span></span>
-<span><span class="co">#&gt;  Max.   :80.00   Max.   : 50.000   Max.   :64.00   Max.   :1.00000  </span></span>
+<span><span class="co">#&gt;      modth            dadth           sbp             dbp         sex    </span></span>
+<span><span class="co">#&gt;  Min.   : 1.000   Min.   : 1.0   Min.   : 87.0   Min.   : 47.00   0:762  </span></span>
+<span><span class="co">#&gt;  1st Qu.: 3.000   1st Qu.: 8.0   1st Qu.:115.0   1st Qu.: 70.00   1:804  </span></span>
+<span><span class="co">#&gt;  Median : 6.000   Median :16.0   Median :126.0   Median : 77.00          </span></span>
+<span><span class="co">#&gt;  Mean   : 6.383   Mean   :16.1   Mean   :128.6   Mean   : 77.74          </span></span>
+<span><span class="co">#&gt;  3rd Qu.:10.000   3rd Qu.:24.5   3rd Qu.:139.0   3rd Qu.: 85.00          </span></span>
+<span><span class="co">#&gt;  Max.   :12.000   Max.   :31.0   Max.   :229.0   Max.   :130.00          </span></span>
+<span><span class="co">#&gt;  NA's   :1271     NA's   :1271   NA's   :29      NA's   :33              </span></span>
+<span><span class="co">#&gt;       age        race         income         marital          school     </span></span>
+<span><span class="co">#&gt;  Min.   :25.00   0:1360   Min.   :11.00   Min.   :2.000   Min.   : 0.00  </span></span>
+<span><span class="co">#&gt;  1st Qu.:33.00   1: 206   1st Qu.:17.00   1st Qu.:2.000   1st Qu.:10.00  </span></span>
+<span><span class="co">#&gt;  Median :43.00            Median :19.00   Median :2.000   Median :12.00  </span></span>
+<span><span class="co">#&gt;  Mean   :43.66            Mean   :17.99   Mean   :2.496   Mean   :11.17  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:53.00            3rd Qu.:20.00   3rd Qu.:2.000   3rd Qu.:12.00  </span></span>
+<span><span class="co">#&gt;  Max.   :74.00            Max.   :22.00   Max.   :8.000   Max.   :17.00  </span></span>
+<span><span class="co">#&gt;                           NA's   :59                                     </span></span>
+<span><span class="co">#&gt;  education       ht             wt71             wt82           wt82_71       </span></span>
+<span><span class="co">#&gt;  1:291     Min.   :142.9   Min.   : 39.58   Min.   : 35.38   Min.   :-41.280  </span></span>
+<span><span class="co">#&gt;  2:340     1st Qu.:161.8   1st Qu.: 59.53   1st Qu.: 61.69   1st Qu.: -1.478  </span></span>
+<span><span class="co">#&gt;  3:637     Median :168.2   Median : 69.23   Median : 72.12   Median :  2.604  </span></span>
+<span><span class="co">#&gt;  4:121     Mean   :168.7   Mean   : 70.83   Mean   : 73.47   Mean   :  2.638  </span></span>
+<span><span class="co">#&gt;  5:177     3rd Qu.:175.3   3rd Qu.: 79.80   3rd Qu.: 83.46   3rd Qu.:  6.690  </span></span>
+<span><span class="co">#&gt;            Max.   :198.1   Max.   :151.73   Max.   :136.53   Max.   : 48.538  </span></span>
+<span><span class="co">#&gt;                                                                               </span></span>
+<span><span class="co">#&gt;    birthplace    smokeintensity  smkintensity82_71    smokeyrs    </span></span>
+<span><span class="co">#&gt;  Min.   : 1.00   Min.   : 1.00   Min.   :-80.000   Min.   : 1.00  </span></span>
+<span><span class="co">#&gt;  1st Qu.:22.00   1st Qu.:10.00   1st Qu.:-10.000   1st Qu.:15.00  </span></span>
+<span><span class="co">#&gt;  Median :34.00   Median :20.00   Median : -1.000   Median :24.00  </span></span>
+<span><span class="co">#&gt;  Mean   :31.67   Mean   :20.53   Mean   : -4.633   Mean   :24.59  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:42.00   3rd Qu.:30.00   3rd Qu.:  1.000   3rd Qu.:33.00  </span></span>
+<span><span class="co">#&gt;  Max.   :56.00   Max.   :80.00   Max.   : 50.000   Max.   :64.00  </span></span>
+<span><span class="co">#&gt;  NA's   :90                                                       </span></span>
+<span><span class="co">#&gt;      asthma            bronch              tb                hf          </span></span>
+<span><span class="co">#&gt;  Min.   :0.00000   Min.   :0.00000   Min.   :0.00000   Min.   :0.000000  </span></span>
+<span><span class="co">#&gt;  1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:0.000000  </span></span>
+<span><span class="co">#&gt;  Median :0.00000   Median :0.00000   Median :0.00000   Median :0.000000  </span></span>
+<span><span class="co">#&gt;  Mean   :0.04853   Mean   :0.08365   Mean   :0.01341   Mean   :0.005109  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:0.00000   3rd Qu.:0.00000   3rd Qu.:0.00000   3rd Qu.:0.000000  </span></span>
+<span><span class="co">#&gt;  Max.   :1.00000   Max.   :1.00000   Max.   :1.00000   Max.   :1.000000  </span></span>
+<span><span class="co">#&gt;                                                                          </span></span>
+<span><span class="co">#&gt;       hbp         pepticulcer        colitis          hepatitis      </span></span>
+<span><span class="co">#&gt;  Min.   :0.000   Min.   :0.0000   Min.   :0.00000   Min.   :0.00000  </span></span>
+<span><span class="co">#&gt;  1st Qu.:0.000   1st Qu.:0.0000   1st Qu.:0.00000   1st Qu.:0.00000  </span></span>
+<span><span class="co">#&gt;  Median :1.000   Median :0.0000   Median :0.00000   Median :0.00000  </span></span>
+<span><span class="co">#&gt;  Mean   :1.059   Mean   :0.1015   Mean   :0.03448   Mean   :0.01788  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:2.000   3rd Qu.:0.0000   3rd Qu.:0.00000   3rd Qu.:0.00000  </span></span>
+<span><span class="co">#&gt;  Max.   :2.000   Max.   :1.0000   Max.   :1.00000   Max.   :1.00000  </span></span>
+<span><span class="co">#&gt;                                                                      </span></span>
+<span><span class="co">#&gt;   chroniccough        hayfever          diabetes          polio        </span></span>
+<span><span class="co">#&gt;  Min.   :0.00000   Min.   :0.00000   Min.   :0.0000   Min.   :0.00000  </span></span>
+<span><span class="co">#&gt;  1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:0.0000   1st Qu.:0.00000  </span></span>
+<span><span class="co">#&gt;  Median :0.00000   Median :0.00000   Median :0.0000   Median :0.00000  </span></span>
+<span><span class="co">#&gt;  Mean   :0.05109   Mean   :0.08621   Mean   :0.9898   Mean   :0.01405  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:0.00000   3rd Qu.:0.00000   3rd Qu.:2.0000   3rd Qu.:0.00000  </span></span>
+<span><span class="co">#&gt;  Max.   :1.00000   Max.   :1.00000   Max.   :2.0000   Max.   :1.00000  </span></span>
+<span><span class="co">#&gt;                                                                        </span></span>
+<span><span class="co">#&gt;      tumor          nervousbreak       alcoholpy       alcoholfreq   </span></span>
+<span><span class="co">#&gt;  Min.   :0.00000   Min.   :0.00000   Min.   :0.0000   Min.   :0.000  </span></span>
+<span><span class="co">#&gt;  1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:1.0000   1st Qu.:1.000  </span></span>
+<span><span class="co">#&gt;  Median :0.00000   Median :0.00000   Median :1.0000   Median :2.000  </span></span>
+<span><span class="co">#&gt;  Mean   :0.02363   Mean   :0.02746   Mean   :0.8787   Mean   :1.913  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:0.00000   3rd Qu.:0.00000   3rd Qu.:1.0000   3rd Qu.:3.000  </span></span>
+<span><span class="co">#&gt;  Max.   :1.00000   Max.   :1.00000   Max.   :2.0000   Max.   :5.000  </span></span>
+<span><span class="co">#&gt;                                                                      </span></span>
+<span><span class="co">#&gt;   alcoholtype    alcoholhowmuch        pica          headache     </span></span>
+<span><span class="co">#&gt;  Min.   :1.000   Min.   : 1.000   Min.   :0.000   Min.   :0.0000  </span></span>
+<span><span class="co">#&gt;  1st Qu.:1.000   1st Qu.: 2.000   1st Qu.:0.000   1st Qu.:0.0000  </span></span>
+<span><span class="co">#&gt;  Median :3.000   Median : 2.000   Median :0.000   Median :1.0000  </span></span>
+<span><span class="co">#&gt;  Mean   :2.466   Mean   : 3.293   Mean   :0.986   Mean   :0.6328  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:4.000   3rd Qu.: 4.000   3rd Qu.:2.000   3rd Qu.:1.0000  </span></span>
+<span><span class="co">#&gt;  Max.   :4.000   Max.   :48.000   Max.   :2.000   Max.   :1.0000  </span></span>
+<span><span class="co">#&gt;                  NA's   :397                                      </span></span>
+<span><span class="co">#&gt;    otherpain        weakheart         allergies           nerves     </span></span>
+<span><span class="co">#&gt;  Min.   :0.0000   Min.   :0.00000   Min.   :0.00000   Min.   :0.000  </span></span>
+<span><span class="co">#&gt;  1st Qu.:0.0000   1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:0.000  </span></span>
+<span><span class="co">#&gt;  Median :0.0000   Median :0.00000   Median :0.00000   Median :0.000  </span></span>
+<span><span class="co">#&gt;  Mean   :0.2433   Mean   :0.02235   Mean   :0.06322   Mean   :0.145  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:0.0000   3rd Qu.:0.00000   3rd Qu.:0.00000   3rd Qu.:0.000  </span></span>
+<span><span class="co">#&gt;  Max.   :1.0000   Max.   :1.00000   Max.   :1.00000   Max.   :1.000  </span></span>
+<span><span class="co">#&gt;                                                                      </span></span>
+<span><span class="co">#&gt;     lackpep            hbpmed       boweltrouble       wtloss       </span></span>
+<span><span class="co">#&gt;  Min.   :0.00000   Min.   :0.000   Min.   :0.000   Min.   :0.00000  </span></span>
+<span><span class="co">#&gt;  1st Qu.:0.00000   1st Qu.:0.000   1st Qu.:0.000   1st Qu.:0.00000  </span></span>
+<span><span class="co">#&gt;  Median :0.00000   Median :1.000   Median :1.000   Median :0.00000  </span></span>
+<span><span class="co">#&gt;  Mean   :0.05045   Mean   :1.015   Mean   :1.046   Mean   :0.02618  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:0.00000   3rd Qu.:2.000   3rd Qu.:2.000   3rd Qu.:0.00000  </span></span>
+<span><span class="co">#&gt;  Max.   :1.00000   Max.   :2.000   Max.   :2.000   Max.   :1.00000  </span></span>
 <span><span class="co">#&gt;                                                                     </span></span>
-<span><span class="co">#&gt;      bronch              tb                hf                hbp       </span></span>
-<span><span class="co">#&gt;  Min.   :0.00000   Min.   :0.00000   Min.   :0.000000   Min.   :0.000  </span></span>
-<span><span class="co">#&gt;  1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:0.000000   1st Qu.:0.000  </span></span>
-<span><span class="co">#&gt;  Median :0.00000   Median :0.00000   Median :0.000000   Median :1.000  </span></span>
-<span><span class="co">#&gt;  Mean   :0.08365   Mean   :0.01341   Mean   :0.005109   Mean   :1.059  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:0.00000   3rd Qu.:0.00000   3rd Qu.:0.000000   3rd Qu.:2.000  </span></span>
-<span><span class="co">#&gt;  Max.   :1.00000   Max.   :1.00000   Max.   :1.000000   Max.   :2.000  </span></span>
-<span><span class="co">#&gt;                                                                        </span></span>
-<span><span class="co">#&gt;   pepticulcer        colitis          hepatitis        chroniccough    </span></span>
-<span><span class="co">#&gt;  Min.   :0.0000   Min.   :0.00000   Min.   :0.00000   Min.   :0.00000  </span></span>
-<span><span class="co">#&gt;  1st Qu.:0.0000   1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:0.00000  </span></span>
-<span><span class="co">#&gt;  Median :0.0000   Median :0.00000   Median :0.00000   Median :0.00000  </span></span>
-<span><span class="co">#&gt;  Mean   :0.1015   Mean   :0.03448   Mean   :0.01788   Mean   :0.05109  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:0.0000   3rd Qu.:0.00000   3rd Qu.:0.00000   3rd Qu.:0.00000  </span></span>
-<span><span class="co">#&gt;  Max.   :1.0000   Max.   :1.00000   Max.   :1.00000   Max.   :1.00000  </span></span>
-<span><span class="co">#&gt;                                                                        </span></span>
-<span><span class="co">#&gt;     hayfever          diabetes          polio             tumor        </span></span>
-<span><span class="co">#&gt;  Min.   :0.00000   Min.   :0.0000   Min.   :0.00000   Min.   :0.00000  </span></span>
-<span><span class="co">#&gt;  1st Qu.:0.00000   1st Qu.:0.0000   1st Qu.:0.00000   1st Qu.:0.00000  </span></span>
-<span><span class="co">#&gt;  Median :0.00000   Median :0.0000   Median :0.00000   Median :0.00000  </span></span>
-<span><span class="co">#&gt;  Mean   :0.08621   Mean   :0.9898   Mean   :0.01405   Mean   :0.02363  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:0.00000   3rd Qu.:2.0000   3rd Qu.:0.00000   3rd Qu.:0.00000  </span></span>
-<span><span class="co">#&gt;  Max.   :1.00000   Max.   :2.0000   Max.   :1.00000   Max.   :1.00000  </span></span>
-<span><span class="co">#&gt;                                                                        </span></span>
-<span><span class="co">#&gt;   nervousbreak       alcoholpy       alcoholfreq     alcoholtype   </span></span>
-<span><span class="co">#&gt;  Min.   :0.00000   Min.   :0.0000   Min.   :0.000   Min.   :1.000  </span></span>
-<span><span class="co">#&gt;  1st Qu.:0.00000   1st Qu.:1.0000   1st Qu.:1.000   1st Qu.:1.000  </span></span>
-<span><span class="co">#&gt;  Median :0.00000   Median :1.0000   Median :2.000   Median :3.000  </span></span>
-<span><span class="co">#&gt;  Mean   :0.02746   Mean   :0.8787   Mean   :1.913   Mean   :2.466  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:0.00000   3rd Qu.:1.0000   3rd Qu.:3.000   3rd Qu.:4.000  </span></span>
-<span><span class="co">#&gt;  Max.   :1.00000   Max.   :2.0000   Max.   :5.000   Max.   :4.000  </span></span>
-<span><span class="co">#&gt;                                                                    </span></span>
-<span><span class="co">#&gt;  alcoholhowmuch        pica          headache        otherpain     </span></span>
-<span><span class="co">#&gt;  Min.   : 1.000   Min.   :0.000   Min.   :0.0000   Min.   :0.0000  </span></span>
-<span><span class="co">#&gt;  1st Qu.: 2.000   1st Qu.:0.000   1st Qu.:0.0000   1st Qu.:0.0000  </span></span>
-<span><span class="co">#&gt;  Median : 2.000   Median :0.000   Median :1.0000   Median :0.0000  </span></span>
-<span><span class="co">#&gt;  Mean   : 3.293   Mean   :0.986   Mean   :0.6328   Mean   :0.2433  </span></span>
-<span><span class="co">#&gt;  3rd Qu.: 4.000   3rd Qu.:2.000   3rd Qu.:1.0000   3rd Qu.:0.0000  </span></span>
-<span><span class="co">#&gt;  Max.   :48.000   Max.   :2.000   Max.   :1.0000   Max.   :1.0000  </span></span>
-<span><span class="co">#&gt;  NA's   :397                                                       </span></span>
-<span><span class="co">#&gt;    weakheart         allergies           nerves         lackpep       </span></span>
-<span><span class="co">#&gt;  Min.   :0.00000   Min.   :0.00000   Min.   :0.000   Min.   :0.00000  </span></span>
-<span><span class="co">#&gt;  1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:0.000   1st Qu.:0.00000  </span></span>
-<span><span class="co">#&gt;  Median :0.00000   Median :0.00000   Median :0.000   Median :0.00000  </span></span>
-<span><span class="co">#&gt;  Mean   :0.02235   Mean   :0.06322   Mean   :0.145   Mean   :0.05045  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:0.00000   3rd Qu.:0.00000   3rd Qu.:0.000   3rd Qu.:0.00000  </span></span>
-<span><span class="co">#&gt;  Max.   :1.00000   Max.   :1.00000   Max.   :1.000   Max.   :1.00000  </span></span>
-<span><span class="co">#&gt;                                                                       </span></span>
-<span><span class="co">#&gt;      hbpmed       boweltrouble       wtloss          infection    </span></span>
-<span><span class="co">#&gt;  Min.   :0.000   Min.   :0.000   Min.   :0.00000   Min.   :0.000  </span></span>
-<span><span class="co">#&gt;  1st Qu.:0.000   1st Qu.:0.000   1st Qu.:0.00000   1st Qu.:0.000  </span></span>
-<span><span class="co">#&gt;  Median :1.000   Median :1.000   Median :0.00000   Median :0.000  </span></span>
-<span><span class="co">#&gt;  Mean   :1.015   Mean   :1.046   Mean   :0.02618   Mean   :0.145  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:2.000   3rd Qu.:2.000   3rd Qu.:0.00000   3rd Qu.:0.000  </span></span>
-<span><span class="co">#&gt;  Max.   :2.000   Max.   :2.000   Max.   :1.00000   Max.   :1.000  </span></span>
-<span><span class="co">#&gt;                                                                   </span></span>
-<span><span class="co">#&gt;      active          exercise      birthcontrol    pregnancies    </span></span>
-<span><span class="co">#&gt;  Min.   :0.0000   Min.   :0.000   Min.   :0.000   Min.   : 1.000  </span></span>
-<span><span class="co">#&gt;  1st Qu.:0.0000   1st Qu.:1.000   1st Qu.:0.000   1st Qu.: 2.000  </span></span>
-<span><span class="co">#&gt;  Median :1.0000   Median :1.000   Median :1.000   Median : 3.000  </span></span>
-<span><span class="co">#&gt;  Mean   :0.6469   Mean   :1.195   Mean   :1.081   Mean   : 3.694  </span></span>
-<span><span class="co">#&gt;  3rd Qu.:1.0000   3rd Qu.:2.000   3rd Qu.:2.000   3rd Qu.: 5.000  </span></span>
-<span><span class="co">#&gt;  Max.   :2.0000   Max.   :2.000   Max.   :2.000   Max.   :15.000  </span></span>
+<span><span class="co">#&gt;    infection     active  exercise  birthcontrol    pregnancies    </span></span>
+<span><span class="co">#&gt;  Min.   :0.000   0:702   0:300    Min.   :0.000   Min.   : 1.000  </span></span>
+<span><span class="co">#&gt;  1st Qu.:0.000   1:715   1:661    1st Qu.:0.000   1st Qu.: 2.000  </span></span>
+<span><span class="co">#&gt;  Median :0.000   2:149   2:605    Median :1.000   Median : 3.000  </span></span>
+<span><span class="co">#&gt;  Mean   :0.145                    Mean   :1.081   Mean   : 3.694  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:0.000                    3rd Qu.:2.000   3rd Qu.: 5.000  </span></span>
+<span><span class="co">#&gt;  Max.   :1.000                    Max.   :2.000   Max.   :15.000  </span></span>
 <span><span class="co">#&gt;                                                   NA's   :866     </span></span>
 <span><span class="co">#&gt;   cholesterol      hightax82         price71         price82     </span></span>
 <span><span class="co">#&gt;  Min.   : 78.0   Min.   :0.0000   Min.   :1.507   Min.   :1.452  </span></span>
@@ -360,13 +351,13 @@ active, 2 = inactive, 3 = missing</li>
 <span><span class="co">#&gt;  3rd Qu.:1.1548   3rd Qu.:0.5719   3rd Qu.: 0.4438   3rd Qu.:0.6220  </span></span>
 <span><span class="co">#&gt;  Max.   :1.5225   Max.   :0.7479   Max.   : 0.6121   Max.   :0.8844  </span></span>
 <span><span class="co">#&gt;  NA's   :90       NA's   :90       NA's   :90        NA's   :90      </span></span>
-<span><span class="co">#&gt;        w                sw        </span></span>
-<span><span class="co">#&gt;  Min.   : 1.054   Min.   :0.3312  </span></span>
-<span><span class="co">#&gt;  1st Qu.: 1.230   1st Qu.:0.8665  </span></span>
-<span><span class="co">#&gt;  Median : 1.373   Median :0.9503  </span></span>
-<span><span class="co">#&gt;  Mean   : 1.996   Mean   :0.9988  </span></span>
-<span><span class="co">#&gt;  3rd Qu.: 1.990   3rd Qu.:1.0793  </span></span>
-<span><span class="co">#&gt;  Max.   :16.700   Max.   :4.2977  </span></span>
+<span><span class="co">#&gt;        id            censored     older       </span></span>
+<span><span class="co">#&gt;  Min.   :   1.0   Min.   :0   Min.   :0.0000  </span></span>
+<span><span class="co">#&gt;  1st Qu.: 414.2   1st Qu.:0   1st Qu.:0.0000  </span></span>
+<span><span class="co">#&gt;  Median : 824.5   Median :0   Median :0.0000  </span></span>
+<span><span class="co">#&gt;  Mean   : 821.0   Mean   :0   Mean   :0.2989  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:1228.8   3rd Qu.:0   3rd Qu.:1.0000  </span></span>
+<span><span class="co">#&gt;  Max.   :1629.0   Max.   :0   Max.   :1.0000  </span></span>
 <span><span class="co">#&gt; </span></span></code></pre></div>
 <p>We will assume that the set of confounders in <span class="math inline">\(\boldsymbol{Z}\)</span> includes sex, race, age,
 education, number of cigarettes smoked per year, the number of years
@@ -396,8 +387,8 @@ quadratic forms of the continuous covariates. We can fit this as</p>
 <span><span class="co">#&gt;                         Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
 <span><span class="co">#&gt; (Intercept)           -1.6586176  4.3137734  -0.384 0.700666    </span></span>
 <span><span class="co">#&gt; qsmk                   3.4626218  0.4384543   7.897 5.36e-15 ***</span></span>
-<span><span class="co">#&gt; sex                   -1.4650496  0.4683410  -3.128 0.001792 ** </span></span>
-<span><span class="co">#&gt; race                   0.5864117  0.5816949   1.008 0.313560    </span></span>
+<span><span class="co">#&gt; sex1                  -1.4650496  0.4683410  -3.128 0.001792 ** </span></span>
+<span><span class="co">#&gt; race1                  0.5864117  0.5816949   1.008 0.313560    </span></span>
 <span><span class="co">#&gt; age                    0.3626624  0.1633431   2.220 0.026546 *  </span></span>
 <span><span class="co">#&gt; I(age^2)              -0.0061377  0.0017263  -3.555 0.000389 ***</span></span>
 <span><span class="co">#&gt; as.factor(education)2  0.8185263  0.6067815   1.349 0.177546    </span></span>
@@ -484,7 +475,7 @@ a tidy data frame, suitable for saving as a data table or using in
 downstream analyses or reports, we provide the <code>tidy</code>
 function:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">m2</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">m2</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">tidy_m2</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95   contrast transform</span></span>
 <span><span class="co">#&gt; 1    0 1.747216 0.2174047   1.321111   2.173322       none  identity</span></span>
 <span><span class="co">#&gt; 2    1 5.209838 0.4199393   4.386772   6.032904       none  identity</span></span>
@@ -538,7 +529,300 @@ model.</p>
 <span><span class="co">#&gt; Contrast:  ratio </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0     1.00     0.000        1.0       1.00</span></span>
-<span><span class="co">#&gt; 2    1     2.94     0.431        2.1       3.79</span></span></code></pre></div>
+<span><span class="co">#&gt; 2    1     2.94     0.431        2.1       3.79</span></span>
+<span></span>
+<span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">m2_dr</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">tidy_m2_dr</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95   contrast transform</span></span>
+<span><span class="co">#&gt; 1    0 1.762981 0.2176810   1.336334   2.189628       none  identity</span></span>
+<span><span class="co">#&gt; 2    1 5.186772 0.4378466   4.328609   6.044936       none  identity</span></span>
+<span><span class="co">#&gt; 3    0 0.000000 0.0000000   0.000000   0.000000 difference  identity</span></span>
+<span><span class="co">#&gt; 4    1 3.423792 0.4804026   2.482220   4.365363 difference  identity</span></span>
+<span><span class="co">#&gt; 5    0 1.000000 0.0000000   1.000000   1.000000      ratio  identity</span></span>
+<span><span class="co">#&gt; 6    1 2.942047 0.4310190   2.097265   3.786829      ratio  identity</span></span></code></pre></div>
+<p>Based on these results, we can report that the estimated effect of
+smoking on average weight change as measured by the difference in
+potential outcome means is 3.46 (2.55 to 4.38) and as measured by the
+ratio of potential outcome means is 2.98 (2.13 to 3.83). Using the
+doubly-robust estimation method, we obtain similarly 3.42 (2.48 to 4.37)
+and as measured by the ratio of potential outcome means is 2.94 (2.10 to
+3.79). In particular, if we believe that the necessary assumptions are
+valid, we can conclude that smoking causes an increase in weight which
+the numeric summaries indicate that smoking increases the weight change
+over 11 years by about 3.5 pounds (additive scale) or smoking increases
+the weight change over 11 years by a multiplicative factor of about
+3.</p>
+<p>The doubly-robust method requires specification of an exposure model
+in addition to the specification of the outcome model. Both of these
+estimated models can be accessed and inspected by looking at the
+<code>fit_outcome</code> and <code>fit_exposure</code> elements of the
+return object:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">m2_dr</span><span class="op">$</span><span class="va">res</span><span class="op">$</span><span class="va">fit_outcome</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:  glm(formula = formula, family = family, data = data, weights = weights)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt;           (Intercept)                   qsmk                   sex1  </span></span>
+<span><span class="co">#&gt;            -1.931e+00              3.424e+00             -1.989e+00  </span></span>
+<span><span class="co">#&gt;                 race1                    age               I(age^2)  </span></span>
+<span><span class="co">#&gt;             4.707e-01              6.207e-01             -8.678e-03  </span></span>
+<span><span class="co">#&gt; as.factor(education)2  as.factor(education)3  as.factor(education)4  </span></span>
+<span><span class="co">#&gt;             1.935e+00              8.366e-01              2.564e+00  </span></span>
+<span><span class="co">#&gt; as.factor(education)5         smokeintensity    I(smokeintensity^2)  </span></span>
+<span><span class="co">#&gt;             8.339e-01              1.130e-01             -2.240e-03  </span></span>
+<span><span class="co">#&gt;              smokeyrs          I(smokeyrs^2)   as.factor(exercise)1  </span></span>
+<span><span class="co">#&gt;             1.034e-01             -1.473e-03              7.865e-01  </span></span>
+<span><span class="co">#&gt;  as.factor(exercise)2     as.factor(active)1     as.factor(active)2  </span></span>
+<span><span class="co">#&gt;             1.231e+00             -8.251e-01             -4.576e-01  </span></span>
+<span><span class="co">#&gt;                  wt71              I(wt71^2)  </span></span>
+<span><span class="co">#&gt;            -1.221e-01              8.616e-06  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Degrees of Freedom: 1565 Total (i.e. Null);  1546 Residual</span></span>
+<span><span class="co">#&gt; Null Deviance:       212700 </span></span>
+<span><span class="co">#&gt; Residual Deviance: 175100    AIC: 11030</span></span>
+<span><span class="va">m2_dr</span><span class="op">$</span><span class="va">res</span><span class="op">$</span><span class="va">fit_exposure</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:  glm(formula = formula, family = family, data = data, weights = weights)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt;           (Intercept)                   sex1                  race1  </span></span>
+<span><span class="co">#&gt;            -2.2425191             -0.5274782             -0.8392636  </span></span>
+<span><span class="co">#&gt;                   age               I(age^2)  as.factor(education)2  </span></span>
+<span><span class="co">#&gt;             0.1212052             -0.0008246             -0.0287755  </span></span>
+<span><span class="co">#&gt; as.factor(education)3  as.factor(education)4  as.factor(education)5  </span></span>
+<span><span class="co">#&gt;             0.0864318              0.0636010              0.4759606  </span></span>
+<span><span class="co">#&gt;        smokeintensity    I(smokeintensity^2)               smokeyrs  </span></span>
+<span><span class="co">#&gt;            -0.0772704              0.0010451             -0.0735966  </span></span>
+<span><span class="co">#&gt;         I(smokeyrs^2)   as.factor(exercise)1   as.factor(exercise)2  </span></span>
+<span><span class="co">#&gt;             0.0008441              0.3548405              0.3957040  </span></span>
+<span><span class="co">#&gt;    as.factor(active)1     as.factor(active)2                   wt71  </span></span>
+<span><span class="co">#&gt;             0.0319445              0.1767840             -0.0152357  </span></span>
+<span><span class="co">#&gt;             I(wt71^2)  </span></span>
+<span><span class="co">#&gt;             0.0001352  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Degrees of Freedom: 1565 Total (i.e. Null);  1547 Residual</span></span>
+<span><span class="co">#&gt; Null Deviance:       1786 </span></span>
+<span><span class="co">#&gt; Residual Deviance: 1677  AIC: 1715</span></span></code></pre></div>
+<p>This is useful when we want to inspect the distribution of the
+propensity scores by exposure status. This is an important thing to
+check in practice, we are looking for any practical violations of the
+positivity assumption.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">m2_dr</span><span class="op">$</span><span class="va">res</span><span class="op">$</span><span class="va">fit_exposure</span><span class="op">$</span><span class="va">fitted</span><span class="op">[</span><span class="va">nhefs_dat</span><span class="op">$</span><span class="va">qsmk</span> <span class="op">==</span> <span class="fl">0</span><span class="op">]</span>, </span>
+<span>    xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, main <span class="op">=</span> <span class="st">"qsmk = 0"</span>, xlab <span class="op">=</span> <span class="st">"estimated propensity"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="overview_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">m2_dr</span><span class="op">$</span><span class="va">res</span><span class="op">$</span><span class="va">fit_exposure</span><span class="op">$</span><span class="va">fitted</span><span class="op">[</span><span class="va">nhefs_dat</span><span class="op">$</span><span class="va">qsmk</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span>, </span>
+<span>    xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, main <span class="op">=</span> <span class="st">"qsmk = 1"</span>, xlab <span class="op">=</span> <span class="st">"estimated propensity"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="overview_files/figure-html/unnamed-chunk-9-2.png" width="700"></p>
+<div class="section level3">
+<h3 id="other-outcome-types">Other outcome types<a class="anchor" aria-label="anchor" href="#other-outcome-types"></a>
+</h3>
+<p>The function <code>standardize_glm</code> and its doubly-robust
+counterpart <code>standardize_glm_dr</code> support any outcome variable
+type the can be used with <code>glm</code>. This includes binary, count,
+and more. Just like in <code>glm</code>, we specify the model we would
+like to use for the outcome by specifying the <code>family</code>
+argument of <code>standardize_glm</code> or the
+<code>family_outcome</code> argument of <code>standardize_glm_dr</code>.
+By default this is <code>"gaussian"</code> which corresponds to linear
+regression. For a binary outcome we might like to use
+<code>"binomial"</code> which corresponds to logistic regression. Let us
+see how it works using the a binary outcome that we create by
+dichotomizing the weight change at 0.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">nhefs_dat</span><span class="op">$</span><span class="va">gained_weight</span> <span class="op">&lt;-</span> <span class="fl">1.0</span> <span class="op">*</span> <span class="op">(</span><span class="va">nhefs_dat</span><span class="op">$</span><span class="va">wt82_71</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_glm.html">standardize_glm</a></span><span class="op">(</span><span class="va">gained_weight</span> <span class="op">~</span> <span class="va">qsmk</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>               <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">education</span><span class="op">)</span> <span class="op">+</span> <span class="va">smokeintensity</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">smokeintensity</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>               <span class="va">smokeyrs</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">smokeyrs</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">exercise</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">active</span><span class="op">)</span> <span class="op">+</span></span>
+<span>               <span class="va">wt71</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">wt71</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>, </span>
+<span>            data <span class="op">=</span> <span class="va">nhefs_dat</span>, </span>
+<span>            family <span class="op">=</span> <span class="st">"binomial"</span>,</span>
+<span>            values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>qsmk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            contrasts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"difference"</span>, <span class="st">"ratio"</span><span class="op">)</span>,</span>
+<span>            reference <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">m3</span></span>
+<span><span class="co">#&gt; Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
+<span><span class="co">#&gt;     smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + </span></span>
+<span><span class="co">#&gt;     as.factor(exercise) + as.factor(active) + wt71 + I(wt71^2)</span></span>
+<span><span class="co">#&gt; Outcome family: quasibinomial </span></span>
+<span><span class="co">#&gt; Outcome link function: logit </span></span>
+<span><span class="co">#&gt; Exposure:  qsmk </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Tables: </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0    0.639    0.0140      0.611      0.666</span></span>
+<span><span class="co">#&gt; 2    1    0.772    0.0195      0.733      0.810</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
+<span><span class="co">#&gt; Contrast:  difference </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0    0.000    0.0000     0.0000      0.000</span></span>
+<span><span class="co">#&gt; 2    1    0.133    0.0236     0.0866      0.179</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
+<span><span class="co">#&gt; Contrast:  ratio </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0     1.00    0.0000       1.00       1.00</span></span>
+<span><span class="co">#&gt; 2    1     1.21    0.0398       1.13       1.29</span></span></code></pre></div>
+<p>Here we interpret the estimates in terms of probabilities, or the
+risk of gaining weight over 11 years. In particular, smoking causes a
+13% additive increase in the risk of gaining weight, or a 1.2 fold
+multiplicative increase in the risk of gaining weight. With binary
+outcomes, we can use tranforms to get different contrasts, and also to
+improve the performance of the ratio contrast. By using the log
+transformation combined with the difference contrast, our estimates
+become the log risk ratios. We can exponential them to get the risk
+ratios, but often it is better to construct confidence intervals of
+ratios on the log scale and back transform.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">m3_log</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_glm.html">standardize_glm</a></span><span class="op">(</span><span class="va">gained_weight</span> <span class="op">~</span> <span class="va">qsmk</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>               <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">education</span><span class="op">)</span> <span class="op">+</span> <span class="va">smokeintensity</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">smokeintensity</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>               <span class="va">smokeyrs</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">smokeyrs</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">exercise</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">active</span><span class="op">)</span> <span class="op">+</span></span>
+<span>               <span class="va">wt71</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">wt71</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>, </span>
+<span>            data <span class="op">=</span> <span class="va">nhefs_dat</span>, </span>
+<span>            family <span class="op">=</span> <span class="st">"binomial"</span>,</span>
+<span>            values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>qsmk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            contrasts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"difference"</span><span class="op">)</span>,</span>
+<span>            transforms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"log"</span><span class="op">)</span>,</span>
+<span>            reference <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">m3_log</span></span>
+<span><span class="co">#&gt; Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
+<span><span class="co">#&gt;     smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + </span></span>
+<span><span class="co">#&gt;     as.factor(exercise) + as.factor(active) + wt71 + I(wt71^2)</span></span>
+<span><span class="co">#&gt; Outcome family: quasibinomial </span></span>
+<span><span class="co">#&gt; Outcome link function: logit </span></span>
+<span><span class="co">#&gt; Exposure:  qsmk </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Tables: </span></span>
+<span><span class="co">#&gt; Transform:  </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0   -0.448    0.0220     -0.492     -0.405</span></span>
+<span><span class="co">#&gt; 2    1   -0.259    0.0253     -0.309     -0.210</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Transform:  </span></span>
+<span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
+<span><span class="co">#&gt; Contrast:  difference </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0    0.000    0.0000      0.000      0.000</span></span>
+<span><span class="co">#&gt; 2    1    0.189    0.0329      0.125      0.254</span></span></code></pre></div>
+<p>The estimates reported in the table are log risk ratios, which we now
+back transform by exponentiating and compare to the ratios estimated
+previously.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tm3_log</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">m3_log</span><span class="op">)</span></span>
+<span><span class="va">tm3_log</span><span class="op">$</span><span class="va">rr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">tm3_log</span><span class="op">$</span><span class="va">Estimate</span><span class="op">)</span></span>
+<span><span class="va">tm3_log</span><span class="op">$</span><span class="va">rr.lower</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">tm3_log</span><span class="op">$</span><span class="va">lower.0.95</span><span class="op">)</span></span>
+<span><span class="va">tm3_log</span><span class="op">$</span><span class="va">rr.upper</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">tm3_log</span><span class="op">$</span><span class="va">upper.0.95</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">tm3_log</span>, <span class="va">contrast</span> <span class="op">==</span> <span class="st">"difference"</span> <span class="op">&amp;</span> <span class="va">qsmk</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   qsmk  Estimate  Std.Error lower.0.95 upper.0.95   contrast transform       rr</span></span>
+<span><span class="co">#&gt; 4    1 0.1890909 0.03292713  0.1245549  0.2536269 difference       log 1.208151</span></span>
+<span><span class="co">#&gt;   rr.lower rr.upper</span></span>
+<span><span class="co">#&gt; 4 1.132644 1.288691</span></span>
+<span><span class="va">m3</span></span>
+<span><span class="co">#&gt; Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
+<span><span class="co">#&gt;     smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + </span></span>
+<span><span class="co">#&gt;     as.factor(exercise) + as.factor(active) + wt71 + I(wt71^2)</span></span>
+<span><span class="co">#&gt; Outcome family: quasibinomial </span></span>
+<span><span class="co">#&gt; Outcome link function: logit </span></span>
+<span><span class="co">#&gt; Exposure:  qsmk </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Tables: </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0    0.639    0.0140      0.611      0.666</span></span>
+<span><span class="co">#&gt; 2    1    0.772    0.0195      0.733      0.810</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
+<span><span class="co">#&gt; Contrast:  difference </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0    0.000    0.0000     0.0000      0.000</span></span>
+<span><span class="co">#&gt; 2    1    0.133    0.0236     0.0866      0.179</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
+<span><span class="co">#&gt; Contrast:  ratio </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0     1.00    0.0000       1.00       1.00</span></span>
+<span><span class="co">#&gt; 2    1     1.21    0.0398       1.13       1.29</span></span></code></pre></div>
+<p>In this case, the estimates and inference using transformation are
+nearly identical to those without transformation.</p>
+<p>Other available transformations include the odds, and logit (log
+odds). These can be used to estimate causal odds ratios, untransformed
+and transformed, respectively.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">m3_odds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_glm.html">standardize_glm</a></span><span class="op">(</span><span class="va">gained_weight</span> <span class="op">~</span> <span class="va">qsmk</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>               <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">education</span><span class="op">)</span> <span class="op">+</span> <span class="va">smokeintensity</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">smokeintensity</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>               <span class="va">smokeyrs</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">smokeyrs</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">exercise</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">active</span><span class="op">)</span> <span class="op">+</span></span>
+<span>               <span class="va">wt71</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">wt71</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>, </span>
+<span>            data <span class="op">=</span> <span class="va">nhefs_dat</span>, </span>
+<span>            family <span class="op">=</span> <span class="st">"binomial"</span>,</span>
+<span>            values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>qsmk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            contrasts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ratio"</span><span class="op">)</span>,</span>
+<span>            transforms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"odds"</span><span class="op">)</span>,</span>
+<span>            reference <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">m3_odds</span></span>
+<span><span class="co">#&gt; Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
+<span><span class="co">#&gt;     smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + </span></span>
+<span><span class="co">#&gt;     as.factor(exercise) + as.factor(active) + wt71 + I(wt71^2)</span></span>
+<span><span class="co">#&gt; Outcome family: quasibinomial </span></span>
+<span><span class="co">#&gt; Outcome link function: logit </span></span>
+<span><span class="co">#&gt; Exposure:  qsmk </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Tables: </span></span>
+<span><span class="co">#&gt; Transform:  </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0     1.77     0.108       1.56       1.98</span></span>
+<span><span class="co">#&gt; 2    1     3.38     0.374       2.64       4.11</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Transform:  </span></span>
+<span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
+<span><span class="co">#&gt; Contrast:  ratio </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0     1.00     0.000       1.00       1.00</span></span>
+<span><span class="co">#&gt; 2    1     1.91     0.238       1.44       2.38</span></span>
+<span></span>
+<span><span class="va">m3_logit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_glm.html">standardize_glm</a></span><span class="op">(</span><span class="va">gained_weight</span> <span class="op">~</span> <span class="va">qsmk</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>               <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">education</span><span class="op">)</span> <span class="op">+</span> <span class="va">smokeintensity</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">smokeintensity</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>               <span class="va">smokeyrs</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">smokeyrs</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">exercise</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">active</span><span class="op">)</span> <span class="op">+</span></span>
+<span>               <span class="va">wt71</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">wt71</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>, </span>
+<span>            data <span class="op">=</span> <span class="va">nhefs_dat</span>, </span>
+<span>            family <span class="op">=</span> <span class="st">"binomial"</span>,</span>
+<span>            values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>qsmk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            contrasts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"difference"</span><span class="op">)</span>,</span>
+<span>            transforms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"logit"</span><span class="op">)</span>,</span>
+<span>            reference <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">m3_logit</span></span>
+<span><span class="co">#&gt; Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
+<span><span class="co">#&gt;     smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + </span></span>
+<span><span class="co">#&gt;     as.factor(exercise) + as.factor(active) + wt71 + I(wt71^2)</span></span>
+<span><span class="co">#&gt; Outcome family: quasibinomial </span></span>
+<span><span class="co">#&gt; Outcome link function: logit </span></span>
+<span><span class="co">#&gt; Exposure:  qsmk </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Tables: </span></span>
+<span><span class="co">#&gt; Transform:  </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0    0.569    0.0609       0.45      0.689</span></span>
+<span><span class="co">#&gt; 2    1    1.217    0.1108       1.00      1.434</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Transform:  </span></span>
+<span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
+<span><span class="co">#&gt; Contrast:  difference </span></span>
+<span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1    0    0.000     0.000      0.000      0.000</span></span>
+<span><span class="co">#&gt; 2    1    0.648     0.124      0.404      0.892</span></span>
+<span></span>
+<span><span class="va">m3_logOR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">m3_logit</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">contrast</span> <span class="op">==</span> <span class="st">"difference"</span> <span class="op">&amp;</span> <span class="va">qsmk</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> </span>
+<span>  </span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.2f (%.2f to %.2f)"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">m3_logOR</span><span class="op">$</span><span class="va">Estimate</span><span class="op">)</span>, </span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">m3_logOR</span><span class="op">$</span><span class="va">lower.0.95</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">m3_logOR</span><span class="op">$</span><span class="va">upper.0.95</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "1.91 (1.50 to 2.44)"</span></span></code></pre></div>
+<p>In this case the estimate is identical, but the confidence interval
+is slightly different because it is symmetric on the odds ratio scale in
+the first case, and symmetric on the log odds ratio scale in the
+transformed case.</p>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-sjolander2016regression" class="csl-entry">
 Sjölander, Arvid. 2016. <span>“Regression Standardization with the r
@@ -554,6 +838,7 @@ r-Package stdReg.”</span> <em>European Journal of Epidemiology</em> 33:
 Witte, Janine, and Vanessa Didelez. 2019. <span>“Covariate Selection
 Strategies for Causal Inference: Classification and Comparison.”</span>
 <em>Biometrical Journal</em> 61 (5): 1270–89.
+</div>
 </div>
 </div>
 </div>

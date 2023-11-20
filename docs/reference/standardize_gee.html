@@ -42,8 +42,6 @@ details), to estimate the standardized mean
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/cond-gee.html">Conditional models for repeated measures/clustered data</a>
-    <a class="dropdown-item" href="../articles/event-history.html">Standardization with time-to-event outcomes</a>
     <a class="dropdown-item" href="../articles/overview.html">Estimation of causal effects using stdReg2</a>
   </div>
 </li>
@@ -88,7 +86,7 @@ fitted fixed effects model, with cluster-specific intercept \(a_i\) (see
 <span>  ci_type <span class="op">=</span> <span class="st">"plain"</span>,</span>
 <span>  contrasts <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
-<span>  references <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  reference <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  transforms <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -143,6 +141,13 @@ if no references are specified.</p></dd>
 <dd><p>The family argument which is used to fit the glm model for the outcome.</p></dd>
 
 
+<dt>reference</dt>
+<dd><p>A vector of reference levels in the following format:
+If <code>contrasts</code> is not <code>NULL</code>, the desired reference level(s). This
+must be a vector or list the same length as <code>contrasts</code>, and if not named,
+it is assumed that the order is as specified in contrasts.</p></dd>
+
+
 <dt>transforms</dt>
 <dd><p>A vector of transforms in the following format:
 If set to <code>"log"</code>, <code>"logit"</code>, or <code>"odds"</code>, the standardized
@@ -160,7 +165,8 @@ If the vector is <code>NULL</code>, then \(\psi(x)=\theta(x)\).</p></dd>
 This is basically a list with components estimates and covariance estimates in <code>res</code></p>
 
 
-<p>Results for transformations, contrasts, references are stored in <code>res_contrasts</code>.</p>
+<p>Results for transformations, contrasts, references are stored in <code>res_contrasts</code>.
+Obtain numeric results in a data frame with the <a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a> function.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -239,7 +245,7 @@ of confounding by cluster. <em>Biostatistics</em> doi:
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit.std</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome formula: Y ~ X + Z + I(X^2)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55640b852e88&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55644f4bbae0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome family: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome link function: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  X </span>

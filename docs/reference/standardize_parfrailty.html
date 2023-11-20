@@ -3,7 +3,7 @@
 gamma-Weibull models, at specified values of the exposure, over the sample
 covariate distribution. Let \(T\), \(X\), and \(Z\) be the survival
 outcome, the exposure, and a vector of covariates, respectively.
-standardize_parfrailty uses a fitted Cox proportional hazards model to
+standardize_parfrailty fits a parametric frailty model to
 estimate the standardized survival function
 \(\theta(t,x)=E\{S(t|X=x,Z)\}\), where \(t\) is a specific value of
 \(T\), \(x\) is a specific value of \(X\), and the expectation is over
@@ -11,7 +11,7 @@ the marginal distribution of \(Z\)."><title>Regression standardization in shared
 gamma-Weibull models, at specified values of the exposure, over the sample
 covariate distribution. Let \(T\), \(X\), and \(Z\) be the survival
 outcome, the exposure, and a vector of covariates, respectively.
-standardize_parfrailty uses a fitted Cox proportional hazards model to
+standardize_parfrailty fits a parametric frailty model to
 estimate the standardized survival function
 \(\theta(t,x)=E\{S(t|X=x,Z)\}\), where \(t\) is a specific value of
 \(T\), \(x\) is a specific value of \(X\), and the expectation is over
@@ -40,8 +40,6 @@ the marginal distribution of \(Z\)."><!-- mathjax --><script src="https://cdnjs.
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/cond-gee.html">Conditional models for repeated measures/clustered data</a>
-    <a class="dropdown-item" href="../articles/event-history.html">Standardization with time-to-event outcomes</a>
     <a class="dropdown-item" href="../articles/overview.html">Estimation of causal effects using stdReg2</a>
   </div>
 </li>
@@ -65,7 +63,7 @@ the marginal distribution of \(Z\)."><!-- mathjax --><script src="https://cdnjs.
 gamma-Weibull models, at specified values of the exposure, over the sample
 covariate distribution. Let \(T\), \(X\), and \(Z\) be the survival
 outcome, the exposure, and a vector of covariates, respectively.
-<code>standardize_parfrailty</code> uses a fitted Cox proportional hazards model to
+<code>standardize_parfrailty</code> fits a parametric frailty model to
 estimate the standardized survival function
 \(\theta(t,x)=E\{S(t|X=x,Z)\}\), where \(t\) is a specific value of
 \(T\), \(x\) is a specific value of \(X\), and the expectation is over
@@ -84,7 +82,7 @@ the marginal distribution of \(Z\).</p>
 <span>  ci_type <span class="op">=</span> <span class="st">"plain"</span>,</span>
 <span>  contrasts <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
-<span>  references <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  reference <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  transforms <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -92,7 +90,7 @@ the marginal distribution of \(Z\).</p>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>formula</dt>
-<dd><p>The formula which is used to fit the glm model for the outcome.</p></dd>
+<dd><p>The formula which is used to fit the model for the outcome.</p></dd>
 
 
 <dt>data</dt>
@@ -136,6 +134,13 @@ if no references are specified.</p></dd>
 <dd><p>The family argument which is used to fit the glm model for the outcome.</p></dd>
 
 
+<dt>reference</dt>
+<dd><p>A vector of reference levels in the following format:
+If <code>contrasts</code> is not <code>NULL</code>, the desired reference level(s). This
+must be a vector or list the same length as <code>contrasts</code>, and if not named,
+it is assumed that the order is as specified in contrasts.</p></dd>
+
+
 <dt>transforms</dt>
 <dd><p>A vector of transforms in the following format:
 If set to <code>"log"</code>, <code>"logit"</code>, or <code>"odds"</code>, the standardized
@@ -154,14 +159,16 @@ This is basically a list with components estimates and covariance estimates in <
 
 
 <p>Results for transformations, contrasts, references are stored in <code>res_contrasts</code>.
- The output contains estimates for contrasts and confidence intervals for all combinations of transforms, references</p>
+The output contains estimates for contrasts and confidence intervals for all
+combinations of transforms and reference levels.
+Obtain numeric results in a data frame with the <a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a> function.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>standardize_parfrailty</code> assumes that a shared frailty gamma-Weibull model
+    <p><code>standardize_parfrailty</code> fits a shared frailty gamma-Weibull model
 $$\lambda(t_{ij}|X_{ij},Z_{ij})=\lambda(t_{ij};\alpha,\eta)U_iexp\{h(X_{ij},Z_{ij};\beta)\}$$
-has been fitted, with parametrization as descibed in the help section for
-<code>parfrailty</code>. Integrating out the gamma frailty gives the survival
+, with parameterization as described in the help section for
+<a href="parfrailty.html">parfrailty</a>. Integrating out the gamma frailty gives the survival
 function
 $$S(t|X,Z)=[1+\phi\Lambda_0(t;\alpha,\eta)exp\{h(X,Z;\beta)\}]^{-1/\phi},$$
 where \(\Lambda_0(t;\alpha,\eta)\) is the cumulative baseline hazard
@@ -265,60 +272,60 @@ survival curves, with applications to testing for no treatement effect.
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Survival functions evaluated at t = 1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      Estimate Std. Error lower 0.95 upper 0.95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]    0.799     0.0565      0.688      0.909</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]    0.719     0.0701      0.582      0.857</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3,]    0.619     0.0858      0.451      0.787</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [4,]    0.503     0.1011      0.304      0.701</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [5,]    0.378     0.1109      0.161      0.595</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Estimate Std.Error lower.0.95 upper.0.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    0.799    0.0565      0.688      0.909</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    0.719    0.0701      0.582      0.857</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    0.619    0.0858      0.451      0.787</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    0.503    0.1011      0.304      0.701</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    0.378    0.1109      0.161      0.595</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Formula: Surv(L, T, D) ~ X</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Survival functions evaluated at t = 2 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      Estimate Std. Error lower 0.95 upper 0.95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]    0.667     0.0672      0.535      0.799</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]    0.557     0.0745      0.411      0.703</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3,]    0.435     0.0805      0.277      0.592</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [4,]    0.311     0.0822      0.150      0.473</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [5,]    0.202     0.0762      0.053      0.352</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Estimate Std.Error lower.0.95 upper.0.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    0.667    0.0672      0.535      0.799</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    0.557    0.0745      0.411      0.703</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    0.435    0.0805      0.277      0.592</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    0.311    0.0822      0.150      0.473</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    0.202    0.0762      0.053      0.352</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Formula: Surv(L, T, D) ~ X</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Survival functions evaluated at t = 3 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      Estimate Std. Error lower 0.95 upper 0.95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]    0.568     0.0693     0.4324      0.704</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]    0.446     0.0700     0.3092      0.584</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3,]    0.323     0.0686     0.1883      0.457</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [4,]    0.212     0.0632     0.0878      0.336</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [5,]    0.125     0.0526     0.0218      0.228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Estimate Std.Error lower.0.95 upper.0.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    0.568    0.0693     0.4324      0.704</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    0.446    0.0700     0.3092      0.584</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    0.323    0.0686     0.1883      0.457</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    0.212    0.0632     0.0878      0.336</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    0.125    0.0526     0.0218      0.228</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Formula: Surv(L, T, D) ~ X</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Survival functions evaluated at t = 4 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      Estimate Std. Error lower 0.95 upper 0.95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]   0.4909     0.0682    0.35727      0.625</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]   0.3663     0.0637    0.24151      0.491</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3,]   0.2491     0.0576    0.13620      0.362</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [4,]   0.1527     0.0492    0.05629      0.249</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [5,]   0.0841     0.0380    0.00958      0.159</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Estimate Std.Error lower.0.95 upper.0.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   0.4909    0.0682    0.35727      0.625</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   0.3663    0.0637    0.24151      0.491</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   0.2491    0.0576    0.13620      0.362</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   0.1527    0.0492    0.05629      0.249</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0.0841    0.0380    0.00958      0.159</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Formula: Surv(L, T, D) ~ X</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Survival functions evaluated at t = 5 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      Estimate Std. Error lower 0.95 upper 0.95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]   0.4289     0.0658     0.2998      0.558</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]   0.3061     0.0574     0.1936      0.419</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3,]   0.1978     0.0486     0.1026      0.293</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [4,]   0.1150     0.0391     0.0382      0.192</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [5,]   0.0601     0.0287     0.0039      0.116</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Estimate Std.Error lower.0.95 upper.0.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   0.4289    0.0658     0.2998      0.558</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   0.3061    0.0574     0.1936      0.419</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   0.1978    0.0486     0.1026      0.293</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   0.1150    0.0391     0.0382      0.192</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0.0601    0.0287     0.0039      0.116</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit.std</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="standardize_parfrailty-1.png" alt="" width="700" height="433"></span>

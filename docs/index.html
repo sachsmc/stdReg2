@@ -51,8 +51,6 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="articles/cond-gee.html">Conditional models for repeated measures/clustered data</a>
-    <a class="dropdown-item" href="articles/event-history.html">Standardization with time-to-event outcomes</a>
     <a class="dropdown-item" href="articles/overview.html">Estimation of causal effects using stdReg2</a>
   </div>
 </li>
@@ -126,32 +124,44 @@
 <span><span class="co">#&gt; Exposure:  X </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: </span></span>
-<span><span class="co">#&gt;   X Estimate Std. Error lower 0.95 upper 0.95</span></span>
-<span><span class="co">#&gt; 1 0    0.519     0.0615      0.399      0.640</span></span>
-<span><span class="co">#&gt; 2 1    0.391     0.0882      0.218      0.563</span></span>
+<span><span class="co">#&gt;   X Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1 0    0.519    0.0615      0.399      0.640</span></span>
+<span><span class="co">#&gt; 2 1    0.391    0.0882      0.218      0.563</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Reference level:  = 0 </span></span>
+<span><span class="co">#&gt; Reference level:  X = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  difference </span></span>
-<span><span class="co">#&gt;   Exposure Estimate Std. Error lower 0.95 upper 0.95</span></span>
-<span><span class="co">#&gt; 1        0    0.000     0.0000      0.000    0.00000</span></span>
-<span><span class="co">#&gt; 2        1   -0.129     0.0638     -0.254   -0.00353</span></span>
+<span><span class="co">#&gt;   X Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1 0    0.000    0.0000      0.000    0.00000</span></span>
+<span><span class="co">#&gt; 2 1   -0.129    0.0638     -0.254   -0.00353</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Reference level:  = 0 </span></span>
+<span><span class="co">#&gt; Reference level:  X = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  ratio </span></span>
-<span><span class="co">#&gt;   Exposure Estimate Std. Error lower 0.95 upper 0.95</span></span>
-<span><span class="co">#&gt; 1        0    1.000      0.000      1.000      1.000</span></span>
-<span><span class="co">#&gt; 2        1    0.752      0.126      0.505      0.999</span></span></code></pre></div>
+<span><span class="co">#&gt;   X Estimate Std.Error lower.0.95 upper.0.95</span></span>
+<span><span class="co">#&gt; 1 0    1.000     0.000      1.000      1.000</span></span>
+<span><span class="co">#&gt; 2 1    0.752     0.126      0.505      0.999</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-example-1.png" width="100%"></p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   X   Estimate  Std.Error lower.0.95   upper.0.95   contrast transform</span></span>
+<span><span class="co">#&gt; 1 0  0.5190639 0.06149960  0.3985269  0.639600881       none  identity</span></span>
+<span><span class="co">#&gt; 2 1  0.3905311 0.08816362  0.2177336  0.563328623       none  identity</span></span>
+<span><span class="co">#&gt; 3 0  0.0000000 0.00000000  0.0000000  0.000000000 difference  identity</span></span>
+<span><span class="co">#&gt; 4 1 -0.1285328 0.06377604 -0.2535315 -0.003534039 difference  identity</span></span>
+<span><span class="co">#&gt; 5 0  1.0000000 0.00000000  1.0000000  1.000000000      ratio  identity</span></span>
+<span><span class="co">#&gt; 6 1  0.7523758 0.12604216  0.5053377  0.999413910      ratio  identity</span></span></code></pre></div>
+<p>For more detailed examples, see the vignette “Estimation of causal effects using stdReg2”.</p>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"stdReg2"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; To cite package 'stdReg2' in publications use:</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   Sachs M, Sjölander A, Gabriel E, Ohlendorff J (2023). _stdReg2:</span></span>
 <span><span class="co">#&gt;   Regression Standardization for Causal Inference_. R package version</span></span>
-<span><span class="co">#&gt;   0.2.0.</span></span>
+<span><span class="co">#&gt;   0.3.0.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -159,7 +169,7 @@
 <span><span class="co">#&gt;     title = {stdReg2: Regression Standardization for Causal Inference},</span></span>
 <span><span class="co">#&gt;     author = {Michael C Sachs and Arvid Sjölander and Erin E Gabriel and Johan Sebastian Ohlendorff},</span></span>
 <span><span class="co">#&gt;     year = {2023},</span></span>
-<span><span class="co">#&gt;     note = {R package version 0.2.0},</span></span>
+<span><span class="co">#&gt;     note = {R package version 0.3.0},</span></span>
 <span><span class="co">#&gt;   }</span></span></code></pre></div>
 </div>
 </div>
