@@ -463,16 +463,16 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' gamma-Weibull models, at specified values of the exposure, over the sample
 #' covariate distribution. Let \eqn{T}, \eqn{X}, and \eqn{Z} be the survival
 #' outcome, the exposure, and a vector of covariates, respectively.
-#' \code{standardize_parfrailty} uses a fitted Cox proportional hazards model to
+#' \code{standardize_parfrailty} fits a parametric frailty model to
 #' estimate the standardized survival function
 #' \eqn{\theta(t,x)=E\{S(t|X=x,Z)\}}, where \eqn{t} is a specific value of
 #' \eqn{T}, \eqn{x} is a specific value of \eqn{X}, and the expectation is over
 #' the marginal distribution of \eqn{Z}.
 #'
-#' @details \code{standardize_parfrailty} assumes that a shared frailty gamma-Weibull model
+#' @details \code{standardize_parfrailty} fits a shared frailty gamma-Weibull model
 #' \deqn{\lambda(t_{ij}|X_{ij},Z_{ij})=\lambda(t_{ij};\alpha,\eta)U_iexp\{h(X_{ij},Z_{ij};\beta)\}}
-#' has been fitted, with parametrization as descibed in the help section for
-#' \code{parfrailty}. Integrating out the gamma frailty gives the survival
+#' , with parameterization as described in the help section for
+#' \link{parfrailty}. Integrating out the gamma frailty gives the survival
 #' function
 #' \deqn{S(t|X,Z)=[1+\phi\Lambda_0(t;\alpha,\eta)exp\{h(X,Z;\beta)\}]^{-1/\phi},}
 #' where \eqn{\Lambda_0(t;\alpha,\eta)} is the cumulative baseline hazard

@@ -35,11 +35,11 @@ test_that("check estimates and standard errors against older package (parfrailty
     clusterid = "id"
   )
 
-  expect_equal(unname(fit.std$res_contrast[[1]]$est.table[[1]][, 1]), c(
+  expect_equal(tidy(fit.std)$Estimate, c(
     0.568209706629598, 0.446427416102044, 0.322741943035805, 0.211677902336095,
     0.124866721293621
   ), tolerance = 1e-5)
-  expect_equal(unname(fit.std$res_contrast[[1]]$est.table[[1]][, 2]), c(
+  expect_equal(tidy(fit.std)$Std.Error, c(
     0.069294417658677, 0.0700174182939671, 0.0685777998185612,
     0.0632225540159503, 0.0525973717447175
   ), tolerance = 1e-5)

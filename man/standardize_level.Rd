@@ -13,7 +13,7 @@ standardize_level(
   B = NULL,
   ci_level = 0.95,
   contrasts = NULL,
-  references = NULL,
+  reference = NULL,
   seed = NULL,
   times = NULL,
   transforms = NULL
@@ -43,6 +43,11 @@ If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}
 or \eqn{\psi(x) / \psi(x_0)} are constructed, where \eqn{x_0} is a reference
 level specified by the \code{reference} argument. Has to be \code{NULL}
 if no references are specified.}
+
+\item{reference}{A vector of reference levels in the following format:
+If \code{contrasts} is not \code{NULL}, the desired reference level(s). This
+must be a vector or list the same length as \code{contrasts}, and if not named,
+it is assumed that the order is as specified in contrasts.}
 
 \item{seed}{The seed to use with the nonparametric bootstrap.}
 
@@ -110,17 +115,15 @@ x <- standardize_level(
   predict_fun_list = list(prob_predict.coxph, prob_predict.coxph),
   values = list(X = c(0, 1)),
   B = 100,
-  references = 0,
+  reference = 0,
   contrasts = "difference"
 )
 print(x)
-plot(x)
-plot(x, reference = 0, contrast = "difference")
 }
 \references{
 Rothman K.J., Greenland S., Lash T.L. (2008).
 \emph{Modern Epidemiology}, 3rd edition.
-Lippincott, Williams \& Wilkins.
+Lippincott, Williams & Wilkins.
 
 Sjolander A. (2016).
 Regression standardization with the R-package stdReg.

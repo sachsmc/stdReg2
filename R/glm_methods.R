@@ -1,6 +1,6 @@
 #' @title Get regression standardized estimates from a glm
 #' @param formula
-#' The formula which is used to fit the glm model for the outcome.
+#' The formula which is used to fit the model for the outcome.
 #' @param data The data.
 #' @param family
 #' The family argument which is used to fit the glm model for the outcome.
@@ -44,6 +44,7 @@
 #' @returns An object of class \code{std_glm}.
 #' This is basically a list with components estimates and covariance estimates in \code{res}
 #' Results for transformations, contrasts, references are stored in \code{res_contrasts}.
+#' Obtain numeric results in a data frame with the \link{tidy} function.
 #' @details \code{standardize_glm} performs regression standardization
 #' in generalized linear models,
 #' at specified values of the exposure, over the sample covariate distribution.
@@ -56,7 +57,7 @@
 #' and the outer expectation is over the marginal distribution of \eqn{Z}.
 #' @references Rothman K.J., Greenland S., Lash T.L. (2008).
 #' \emph{Modern Epidemiology}, 3rd edition.
-#' Lippincott, Williams \& Wilkins.
+#' Lippincott, Williams & Wilkins.
 #' @references Sjolander A. (2016).
 #' Regression standardization with the R-package stdReg.
 #' \emph{European Journal of Epidemiology} \bold{31}(6), 563-574.
@@ -116,9 +117,10 @@
 #'   family = "binomial",
 #'   data = dd, values = list(X1 = 0:1, X2 = 0:1),
 #'   contrasts = c("difference", "ratio"),
-#'   reference = "0, 0"
+#'   reference = c(X1 = 0, X2 = 0)
 #' )
 #' x
+#' tidy(x)
 #'
 #' # continuous exposure
 #' set.seed(2)
@@ -323,10 +325,11 @@ standardize_glm <- function(formula,
 #' when either the outcome regression or the exposure model is correctly specified
 #' and there is no unmeasured confounding.
 #' @references Gabriel E.E., Sachs, M.C., Martinussen T., Waernbaum I.,
-#' Goetghebeur E., Vansteelandt S., Sjolander A. (????),
+#' Goetghebeur E., Vansteelandt S., Sjolander A. (2023),
 #' Inverse probability of treatment weighting with
 #' generalized linear outcome models for doubly robust estimation.
-#' ????
+#' \emph{Statistics in Medicine}, In press.
+#'
 #' @examples
 #'
 #' # doubly robust estimator
@@ -353,7 +356,7 @@ standardize_glm <- function(formula,
 #'   formula_outcome = Y ~ X * Z, formula_exposure = X ~ Z,
 #'   family_outcome = "binomial",
 #'   data = dd,
-#'   values = list(X = 0:1), reference = c(0, 1),
+#'   values = list(X = 0:1), reference = 0,
 #'   contrasts = c("difference"), transforms = c("odds")
 #' )
 #'
@@ -411,7 +414,7 @@ standardize_glm_dr <- function(formula_outcome,
   standardized_estimate_1 <- mean(predict(fit_outcome, newdata = data_exposure_1, type = "response"))
   standardized_estimate_0 <- mean(predict(fit_outcome, newdata = data_exposure_0, type = "response"))
 
-  ## Variance estimation based on Appendix of ????
+  ## Variance estimation based on Appendix of Gabriel et al. 2023
 
   ## refit using unweighted estimating equations for variance estimation
   fit_outcome_unweighted <- glm(formula_outcome, family = family_outcome, data = data)
@@ -559,7 +562,7 @@ summary_std_glm <- function(object, ci_type = "plain", ci_level = 0.95,
       referencepos <- which(apply(sapply(1:length(object[["exposure_names"]]),
                              \(i) {
                                est_old_table[, object[["exposure_names"]]][, i] == reference[i]
-                             }), MAR = 1, FUN = \(x) all(x)))
+                             }), MARGIN = 1, FUN = \(x) all(x)))
     } else {
       referencepos <- match(reference, est_old_table[, object[["exposure_names"]]])
     }

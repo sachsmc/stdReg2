@@ -87,7 +87,7 @@ standardize_gee <- function(formula, link = "identity", data, values, clusterid,
                             ci_type = "plain",
                             contrasts = NULL,
                             family = "gaussian",
-                            references = NULL,
+                            reference = NULL,
                             transforms = NULL) {
   if (!inherits(values, c("data.frame", "list"))) {
     stop("values is not an object of class list or data.frame")
@@ -252,7 +252,7 @@ standardize_gee <- function(formula, link = "identity", data, values, clusterid,
   format_result_standardize(
     res,
     contrasts,
-    references,
+    reference,
     transforms,
     ci_type,
     ci_level,

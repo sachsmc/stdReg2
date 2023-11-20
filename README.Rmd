@@ -64,8 +64,12 @@ x <- standardize_glm(
  reference = 0
 )
 x
-
+plot(x)
+tidy(x)
 ```
+
+For more detailed examples, see the vignette "Estimation of causal effects using stdReg2".
+
 
 ## Citation
 

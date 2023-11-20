@@ -23,7 +23,7 @@ standardize_glm(
 )
 }
 \arguments{
-\item{formula}{The formula which is used to fit the glm model for the outcome.}
+\item{formula}{The formula which is used to fit the model for the outcome.}
 
 \item{data}{The data.}
 
@@ -75,6 +75,7 @@ If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 An object of class \code{std_glm}.
 This is basically a list with components estimates and covariance estimates in \code{res}
 Results for transformations, contrasts, references are stored in \code{res_contrasts}.
+Obtain numeric results in a data frame with the \link{tidy} function.
 }
 \description{
 Get regression standardized estimates from a glm
@@ -144,9 +145,10 @@ x <- standardize_glm(
   family = "binomial",
   data = dd, values = list(X1 = 0:1, X2 = 0:1),
   contrasts = c("difference", "ratio"),
-  reference = "0, 0"
+  reference = c(X1 = 0, X2 = 0)
 )
 x
+tidy(x)
 
 # continuous exposure
 set.seed(2)
@@ -171,7 +173,7 @@ plot(x, contrast = "difference", reference = 0)
 \references{
 Rothman K.J., Greenland S., Lash T.L. (2008).
 \emph{Modern Epidemiology}, 3rd edition.
-Lippincott, Williams \& Wilkins.
+Lippincott, Williams & Wilkins.
 
 Sjolander A. (2016).
 Regression standardization with the R-package stdReg.

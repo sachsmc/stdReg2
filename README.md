@@ -72,22 +72,39 @@ x
 #> Exposure:  X 
 #> 
 #> Tables: 
-#>   X Estimate Std. Error lower 0.95 upper 0.95
-#> 1 0    0.519     0.0615      0.399      0.640
-#> 2 1    0.391     0.0882      0.218      0.563
+#>   X Estimate Std.Error lower.0.95 upper.0.95
+#> 1 0    0.519    0.0615      0.399      0.640
+#> 2 1    0.391    0.0882      0.218      0.563
 #> 
-#> Reference level:  = 0 
+#> Reference level:  X = 0 
 #> Contrast:  difference 
-#>   Exposure Estimate Std. Error lower 0.95 upper 0.95
-#> 1        0    0.000     0.0000      0.000    0.00000
-#> 2        1   -0.129     0.0638     -0.254   -0.00353
+#>   X Estimate Std.Error lower.0.95 upper.0.95
+#> 1 0    0.000    0.0000      0.000    0.00000
+#> 2 1   -0.129    0.0638     -0.254   -0.00353
 #> 
-#> Reference level:  = 0 
+#> Reference level:  X = 0 
 #> Contrast:  ratio 
-#>   Exposure Estimate Std. Error lower 0.95 upper 0.95
-#> 1        0    1.000      0.000      1.000      1.000
-#> 2        1    0.752      0.126      0.505      0.999
+#>   X Estimate Std.Error lower.0.95 upper.0.95
+#> 1 0    1.000     0.000      1.000      1.000
+#> 2 1    0.752     0.126      0.505      0.999
+plot(x)
 ```
+
+<img src="man/figures/README-example-1.png" width="100%" />
+
+``` r
+tidy(x)
+#>   X   Estimate  Std.Error lower.0.95   upper.0.95   contrast transform
+#> 1 0  0.5190639 0.06149960  0.3985269  0.639600881       none  identity
+#> 2 1  0.3905311 0.08816362  0.2177336  0.563328623       none  identity
+#> 3 0  0.0000000 0.00000000  0.0000000  0.000000000 difference  identity
+#> 4 1 -0.1285328 0.06377604 -0.2535315 -0.003534039 difference  identity
+#> 5 0  1.0000000 0.00000000  1.0000000  1.000000000      ratio  identity
+#> 6 1  0.7523758 0.12604216  0.5053377  0.999413910      ratio  identity
+```
+
+For more detailed examples, see the vignette “Estimation of causal
+effects using stdReg2”.
 
 ## Citation
 
@@ -97,7 +114,7 @@ citation("stdReg2")
 #> 
 #>   Sachs M, Sjölander A, Gabriel E, Ohlendorff J (2023). _stdReg2:
 #>   Regression Standardization for Causal Inference_. R package version
-#>   0.2.0.
+#>   0.3.0.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
@@ -105,6 +122,6 @@ citation("stdReg2")
 #>     title = {stdReg2: Regression Standardization for Causal Inference},
 #>     author = {Michael C Sachs and Arvid Sjölander and Erin E Gabriel and Johan Sebastian Ohlendorff},
 #>     year = {2023},
-#>     note = {R package version 0.2.0},
+#>     note = {R package version 0.3.0},
 #>   }
 ```

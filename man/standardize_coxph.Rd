@@ -14,12 +14,12 @@ standardize_coxph(
   ci_type = "plain",
   contrasts = NULL,
   family = "gaussian",
-  references = NULL,
+  reference = NULL,
   transforms = NULL
 )
 }
 \arguments{
-\item{formula}{The formula which is used to fit the glm model for the outcome.}
+\item{formula}{The formula which is used to fit the model for the outcome.}
 
 \item{data}{The data.}
 
@@ -46,6 +46,11 @@ if no references are specified.}
 
 \item{family}{The family argument which is used to fit the glm model for the outcome.}
 
+\item{reference}{A vector of reference levels in the following format:
+If \code{contrasts} is not \code{NULL}, the desired reference level(s). This
+must be a vector or list the same length as \code{contrasts}, and if not named,
+it is assumed that the order is as specified in contrasts.}
+
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
 mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
@@ -57,21 +62,24 @@ If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 An object of class \code{std_surv}.
 This is basically a list with components estimates and covariance estimates in \code{res}
 Results for transformations, contrasts, references are stored in \code{res_contrasts}.
- The output contains estimates for contrasts and confidence intervals for all combinations of transforms, references
+The output contains estimates for contrasts and confidence intervals for all
+combinations of transforms and reference levels.
+Obtain numeric results in a data frame with the \link{tidy} function.
 }
 \description{
 \code{standardize_coxph} performs regression standardization in Cox proportional
-hazards models, at specified values of the exposure, over the sample
+hazards models at specified values of the exposure over the sample
 covariate distribution. Let \eqn{T}, \eqn{X}, and \eqn{Z} be the survival
 outcome, the exposure, and a vector of covariates, respectively.
-\code{standardize_coxph} uses a fitted Cox proportional hazards model to estimate the
+\code{standardize_coxph} fits a Cox proportional hazards model and the Breslow estimator
+of the baseline hazard in order to estimate the
 standardized survival function \eqn{\theta(t,x)=E\{S(t|X=x,Z)\}}, where
 \eqn{t} is a specific value of \eqn{T}, \eqn{x} is a specific value of
 \eqn{X}, and the expectation is over the marginal distribution of \eqn{Z}.
 }
 \details{
-\code{standardize_coxph} assumes that a Cox proportional hazards model
-\deqn{\lambda(t|X,Z)=\lambda_0(t)exp\{h(X,Z;\beta)\}} has been fitted.
+\code{standardize_coxph} fits the Cox proportional hazards model
+\deqn{\lambda(t|X,Z)=\lambda_0(t)exp\{h(X,Z;\beta)\}}.
 Breslow's estimator of the cumulative baseline hazard
 \eqn{\Lambda_0(t)=\int_0^t\lambda_0(u)du} is used together with the partial
 likelihood estimate of \eqn{\beta} to obtain estimates of the survival
@@ -131,6 +139,7 @@ fit.std <- standardize_coxph(
 )
 print(fit.std)
 plot(fit.std)
+tidy(fit.std)
 
 }
 \references{

@@ -30,6 +30,9 @@ Imports:
     generics,
     survival
 Suggests: 
+    magick,
+    pdftools,
+    causaldata,
     AF,
     knitr,
     rmarkdown,

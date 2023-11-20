@@ -15,7 +15,7 @@ standardize_gee(
   ci_type = "plain",
   contrasts = NULL,
   family = "gaussian",
-  references = NULL,
+  reference = NULL,
   transforms = NULL
 )
 }
@@ -48,6 +48,11 @@ if no references are specified.}
 
 \item{family}{The family argument which is used to fit the glm model for the outcome.}
 
+\item{reference}{A vector of reference levels in the following format:
+If \code{contrasts} is not \code{NULL}, the desired reference level(s). This
+must be a vector or list the same length as \code{contrasts}, and if not named,
+it is assumed that the order is as specified in contrasts.}
+
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
 mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
@@ -59,6 +64,7 @@ If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 An object of class \code{std_glm}.
 This is basically a list with components estimates and covariance estimates in \code{res}
 Results for transformations, contrasts, references are stored in \code{res_contrasts}.
+Obtain numeric results in a data frame with the \link{tidy} function.
 }
 \description{
 \code{standardize_gee} performs regression standardization in linear and log-linear

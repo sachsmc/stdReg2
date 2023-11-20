@@ -81,10 +81,10 @@ Recently, there seems to be a general misconception that combining an adjusted o
 
 # In practice
 
-Here we will use regression standardization to estimate the average causal effect of the exposure (quitting smoking) in the variable `qsmk` on the weight gain outcome in the variable `wt82\_71` in the `dhefs_dat` dataset that comes with the `stdReg2` package. The data was collected as part of a project by the National Center for Health Statistics and the National Institute on Aging in collaboration with other agencies of the United States Public Health Service. It was designed to investigate the relationships between clinical, nutritional, and behavioral factors and subsequent morbidity, mortality, and hospital utilization and changes in risk factors, functional limitation, and institutionalization. The dataset includes 1629 individuals and contains among others the following variables: 
+Here we will use regression standardization to estimate the average causal effect of the exposure (quitting smoking) in the variable `qsmk` on the weight gain outcome in the variable `wt82_71` in the `nhefs_complete` dataset that comes with the `causaldata` package. The data was collected as part of a project by the National Center for Health Statistics and the National Institute on Aging in collaboration with other agencies of the United States Public Health Service. It was designed to investigate the relationships between clinical, nutritional, and behavioral factors and subsequent morbidity, mortality, and hospital utilization and changes in risk factors, functional limitation, and institutionalization. The dataset includes 1566 individuals and contains among others the following variables: 
 
 - seqn: person id}
-- wt82\_71: weight gain in kilograms between 1971 and 1982
+- wt82_71: weight gain in kilograms between 1971 and 1982
 - qsmk: quit smoking between between 1st questionnaire and 1982, 1 = yes, 0 = no
 - sex: 0 = male, 1 = female
 - race: 0 = white, 1 = black or other
@@ -99,6 +99,7 @@ Here we will use regression standardization to estimate the average causal effec
 
 
 ```{r}
+nhefs_dat <- causaldata::nhefs_complete
 summary(nhefs_dat)
 ```
 

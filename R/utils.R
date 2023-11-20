@@ -275,6 +275,11 @@ Hfun <- function(fit, data, fit.detail) {
 }
 
 is.binary <- function(v) {
+  if(inherits(v, "tbl")) {
+    if(ncol(v) > 1L) return(FALSE) else{
+      v <- v[[1]]
+    }
+  }
   if (is.numeric(v) && all(v == 0 | v == 1, na.rm = TRUE)) {
     TRUE
   } else {
@@ -299,14 +304,18 @@ check_values_data <- function(values, data) {
 }
 
 get_outcome_exposure <- function(formula_outcome, data, values) {
-  outcome <- data[, as.character(formula_outcome)[[2L]]]
+  outcome <- data[[as.character(formula_outcome)[[2L]]]]
   if (!is.data.frame(values)) {
     valuesout <- expand.grid(values)
   } else {
     valuesout <- values
   }
   exposure_names <- colnames(valuesout)
-  exposure <- data[, exposure_names]
+  exposure <- if(length(exposure_names) == 1L) {
+    data[[exposure_names]]
+    } else {
+      data[, exposure_names]
+    }
   list(outcome = outcome, exposure = exposure, exposure_names = exposure_names, valuesout = valuesout)
 }
 
@@ -363,3 +372,4 @@ format_result_standardize <- function(res,
 #' @importFrom generics tidy
 #' @export
 generics::tidy
+

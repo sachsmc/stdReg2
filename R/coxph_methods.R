@@ -1,16 +1,17 @@
 #' @title Regression standardization in Cox proportional hazards models
 #'
 #' @description \code{standardize_coxph} performs regression standardization in Cox proportional
-#' hazards models, at specified values of the exposure, over the sample
+#' hazards models at specified values of the exposure over the sample
 #' covariate distribution. Let \eqn{T}, \eqn{X}, and \eqn{Z} be the survival
 #' outcome, the exposure, and a vector of covariates, respectively.
-#' \code{standardize_coxph} uses a fitted Cox proportional hazards model to estimate the
+#' \code{standardize_coxph} fits a Cox proportional hazards model and the Breslow estimator
+#' of the baseline hazard in order to estimate the
 #' standardized survival function \eqn{\theta(t,x)=E\{S(t|X=x,Z)\}}, where
 #' \eqn{t} is a specific value of \eqn{T}, \eqn{x} is a specific value of
 #' \eqn{X}, and the expectation is over the marginal distribution of \eqn{Z}.
 #'
-#' @details \code{standardize_coxph} assumes that a Cox proportional hazards model
-#' \deqn{\lambda(t|X,Z)=\lambda_0(t)exp\{h(X,Z;\beta)\}} has been fitted.
+#' @details \code{standardize_coxph} fits the Cox proportional hazards model
+#' \deqn{\lambda(t|X,Z)=\lambda_0(t)exp\{h(X,Z;\beta)\}}.
 #' Breslow's estimator of the cumulative baseline hazard
 #' \eqn{\Lambda_0(t)=\int_0^t\lambda_0(u)du} is used together with the partial
 #' likelihood estimate of \eqn{\beta} to obtain estimates of the survival
@@ -25,7 +26,9 @@
 #' @return An object of class \code{std_surv}.
 #' This is basically a list with components estimates and covariance estimates in \code{res}
 #' Results for transformations, contrasts, references are stored in \code{res_contrasts}.
-#'  The output contains estimates for contrasts and confidence intervals for all combinations of transforms, references
+#' The output contains estimates for contrasts and confidence intervals for all
+#' combinations of transforms and reference levels.
+#' Obtain numeric results in a data frame with the \link{tidy} function.
 #' @inherit standardize_glm
 #' @param times A vector containing the specific values of \eqn{T} at
 #' which to estimate the standardized survival function.
@@ -93,6 +96,7 @@
 #' )
 #' print(fit.std)
 #' plot(fit.std)
+#' tidy(fit.std)
 #'
 #' @export standardize_coxph
 standardize_coxph <- function(formula,
@@ -349,11 +353,11 @@ summary_std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
     dimnames(temp) <- list(
       object$input$x,
       c(
-        "Estimate", "Std. Error", paste("lower", ci_level),
+        "Estimate", "Std.Error", paste0("lower.", ci_level),
         paste("upper", ci_level)
       )
     )
-    est.table[[j]] <- temp
+    est.table[[j]] <- data.frame(temp)
   }
   if (is.factor(reference)) {
     reference <- as.character(reference)
@@ -361,8 +365,8 @@ summary_std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
   out <- c(
     object,
     list(
-      est.table = est.table, tsum = times, transform = transform, contrast = contrast,
-      reference = reference
+      est_table = est.table, times = times, transform = transform, contrast = contrast,
+      reference = reference, ci_type = ci_type, ci_level = ci_level
     )
   )
   return(out)
@@ -378,7 +382,7 @@ print.std_surv <- function(x, ...) {
 }
 
 print_summary_std_coxph <- function(x, ...) {
-  nt <- length(x$tsum)
+  nt <- length(x$times)
   for (j in 1:nt) {
     cat("\nFormula: ")
     print(x$input$fit$formula, showEnv = FALSE)
@@ -391,9 +395,9 @@ print_summary_std_coxph <- function(x, ...) {
       cat("Reference level: ", x$input$X, "=", x$reference, "\n")
       cat("Contrast: ", x$contrast, "\n")
     }
-    cat("Survival functions evaluated at t =", x$tsum[j], "\n")
+    cat("Survival functions evaluated at t =", x$times[j], "\n")
     cat("\n")
-    print(x$est.table[[j]], digits = 3)
+    print(x$est_table[[j]], digits = 3)
     cat("\n")
   }
 }
@@ -498,7 +502,7 @@ plot.std_surv <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
     transform = transform, contrast = contrast, reference = reference
   ))
 
-  temp <- Reduce(f = rbind, x = sum.obj$est.table)
+  temp <- Reduce(f = rbind, x = sum.obj$est_table)
   est <- matrix(temp[, 1], nrow = nt, ncol = nX, byrow = TRUE)
   lower <- matrix(temp[, 3], nrow = nt, ncol = nX, byrow = TRUE)
   upper <- matrix(temp[, 4], nrow = nt, ncol = nX, byrow = TRUE)
@@ -527,4 +531,53 @@ plot.std_surv <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
     x = legendpos, legend = legend, lty = rep(1, length(x)), col = seq_len(length(x)),
     bty = "n"
   )
+}
+
+
+
+#' Provide tidy output from a std_glm object for use in downstream computations
+#'
+#' Tidy summarizes information about the components of the standardized regression fit.
+#' @param x An object of class std_glm
+#' @param ... Not currently used
+#'
+#' @returns A data.frame
+#' @examples
+#' require(survival)
+#' set.seed(8)
+#' n <- 300
+#' Z <- rnorm(n)
+#' X <- rnorm(n, mean = Z)
+#' time <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
+#' C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
+#' U <- pmin(time, C) # time at risk
+#' D <- as.numeric(time < C) # event indicator
+#' dd <- data.frame(Z, X, U, D)
+#' x <- standardize_coxph(
+#'   formula = Surv(U, D) ~ X + Z + X * Z,
+#'   data = dd, values = list(X = seq(-1, 1, 0.5)), times = c(2,3,4)
+#' )
+#'
+#' tidy(x)
+#'
+#' @export
+tidy.std_surv <- function(x, ...) {
+
+  stopifnot(inherits(x, "std_surv"))
+
+  res_list <- lapply(x$res_contrast, \(xl) {
+
+    for(i in seq_along(xl$est_table)){
+     xl$est_table[[i]]$time <- xl$input$times[i]
+    }
+    tmpres <- do.call(rbind, xl$est_table)
+    colnames(tmpres) <- make.names(colnames(tmpres))
+    tmpres$contrast <- if(is.null(xl$contrast)) "none" else xl$contrast
+    tmpres$transform <- if(is.null(xl$transform)) "identity" else xl$transform
+    tmpres
+
+  })
+
+  do.call("rbind", res_list)
+
 }

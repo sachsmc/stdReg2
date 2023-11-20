@@ -14,12 +14,12 @@ standardize_parfrailty(
   ci_type = "plain",
   contrasts = NULL,
   family = "gaussian",
-  references = NULL,
+  reference = NULL,
   transforms = NULL
 )
 }
 \arguments{
-\item{formula}{The formula which is used to fit the glm model for the outcome.}
+\item{formula}{The formula which is used to fit the model for the outcome.}
 
 \item{data}{The data.}
 
@@ -46,6 +46,11 @@ if no references are specified.}
 
 \item{family}{The family argument which is used to fit the glm model for the outcome.}
 
+\item{reference}{A vector of reference levels in the following format:
+If \code{contrasts} is not \code{NULL}, the desired reference level(s). This
+must be a vector or list the same length as \code{contrasts}, and if not named,
+it is assumed that the order is as specified in contrasts.}
+
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
 mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
@@ -57,24 +62,26 @@ If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 An object of class \code{std_surv}.
 This is basically a list with components estimates and covariance estimates in \code{res}
 Results for transformations, contrasts, references are stored in \code{res_contrasts}.
- The output contains estimates for contrasts and confidence intervals for all combinations of transforms, references
+The output contains estimates for contrasts and confidence intervals for all
+combinations of transforms and reference levels.
+Obtain numeric results in a data frame with the \link{tidy} function.
 }
 \description{
 \code{standardize_parfrailty} performs regression standardization in shared frailty
 gamma-Weibull models, at specified values of the exposure, over the sample
 covariate distribution. Let \eqn{T}, \eqn{X}, and \eqn{Z} be the survival
 outcome, the exposure, and a vector of covariates, respectively.
-\code{standardize_parfrailty} uses a fitted Cox proportional hazards model to
+\code{standardize_parfrailty} fits a parametric frailty model to
 estimate the standardized survival function
 \eqn{\theta(t,x)=E\{S(t|X=x,Z)\}}, where \eqn{t} is a specific value of
 \eqn{T}, \eqn{x} is a specific value of \eqn{X}, and the expectation is over
 the marginal distribution of \eqn{Z}.
 }
 \details{
-\code{standardize_parfrailty} assumes that a shared frailty gamma-Weibull model
+\code{standardize_parfrailty} fits a shared frailty gamma-Weibull model
 \deqn{\lambda(t_{ij}|X_{ij},Z_{ij})=\lambda(t_{ij};\alpha,\eta)U_iexp\{h(X_{ij},Z_{ij};\beta)\}}
-has been fitted, with parametrization as descibed in the help section for
-\code{parfrailty}. Integrating out the gamma frailty gives the survival
+, with parameterization as described in the help section for
+\link{parfrailty}. Integrating out the gamma frailty gives the survival
 function
 \deqn{S(t|X,Z)=[1+\phi\Lambda_0(t;\alpha,\eta)exp\{h(X,Z;\beta)\}]^{-1/\phi},}
 where \eqn{\Lambda_0(t;\alpha,\eta)} is the cumulative baseline hazard

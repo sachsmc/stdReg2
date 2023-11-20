@@ -62,6 +62,7 @@ If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 An object of class \code{std_glm}.
 This is basically a list with components estimates and covariance estimates in \code{res}
 Results for transformations, contrasts, references are stored in \code{res_contrasts}.
+Obtain numeric results in a data frame with the \link{tidy} function.
 }
 \description{
 Get regression standardized doubly-robust estimates from a glm
@@ -99,15 +100,15 @@ x <- standardize_glm_dr(
   formula_outcome = Y ~ X * Z, formula_exposure = X ~ Z,
   family_outcome = "binomial",
   data = dd,
-  values = list(X = 0:1), reference = c(0, 1),
+  values = list(X = 0:1), reference = 0,
   contrasts = c("difference"), transforms = c("odds")
 )
 
 }
 \references{
 Gabriel E.E., Sachs, M.C., Martinussen T., Waernbaum I.,
-Goetghebeur E., Vansteelandt S., Sjolander A. (????),
+Goetghebeur E., Vansteelandt S., Sjolander A. (2023),
 Inverse probability of treatment weighting with
 generalized linear outcome models for doubly robust estimation.
-????
+\emph{Statistics in Medicine}, In press.
 }

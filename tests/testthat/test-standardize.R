@@ -76,8 +76,6 @@ test_that("standardize with survival data (no bootstrap) gives the same as stand
 
   expect_equal(fit.std$res$est, unname(t(x$res$estimates[, -1])))
 
-
-  expect_no_error(stop("Update summary methods for parfrailty, coxph, and custom"))
 })
 
 test_that("standardize generates output with survival data (single time point)", {

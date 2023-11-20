@@ -48,9 +48,6 @@
 #'   contrasts = "difference"
 #' )
 #' x
-#' plot(x)
-#' plot(x, reference = 0, contrast = "difference")
-#' plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
 #'
 #' require(survival)
 #' prob_predict.coxph <- function(object, newdata, times) {
@@ -89,9 +86,6 @@
 #'   contrasts = "difference"
 #' )
 #' x
-#' plot(x)
-#' plot(x, reference = 0, contrast = "difference")
-#' plot(x, reference = 0, contrast = "difference", plot_ci = FALSE)
 #' @export standardize
 standardize <- function(arguments,
                         data,
@@ -249,8 +243,6 @@ standardize <- function(arguments,
 #'   contrasts = "difference"
 #' )
 #' print(x)
-#' plot(x)
-#' plot(x, reference = 0, contrast = "difference")
 #' @export standardize_level
 standardize_level <- function(arguments,
                               data,
@@ -369,16 +361,7 @@ standardize_level <- function(arguments,
 
 summary_standardize <- function(object, ci_level = 0.95,
                                 transform = NULL, contrast = NULL, reference = NULL, ...) {
-  null_helper <- function(x) {
-    if (is.null(x) || x == "NULL") {
-      NULL
-    } else {
-      x
-    }
-  }
-  transform <- null_helper(transform)
-  contrast <- null_helper(contrast)
-  reference <- null_helper(reference)
+
   B <- object[["B"]]
   est_old_table <- object[["estimates"]]
   n_x_levs <- nrow(est_old_table)
@@ -427,14 +410,15 @@ summary_standardize <- function(object, ci_level = 0.95,
     if (is.null(reference)) {
       stop("When specifying contrast, reference must be specified as well")
     }
-    reference <- gsub(" ", "", reference, fixed = TRUE)
     if (length(object[["exposure_names"]]) > 1L) {
-      est_old_table[["Exposure"]] <- do.call(paste, c(est_old_table[, object[["exposure_names"]]], sep = ","))
+      referencepos <- which(apply(sapply(1:length(object[["exposure_names"]]),
+                                         \(i) {
+                                           est_old_table[, object[["exposure_names"]]][, i] == reference[i]
+                                         }), MARGIN = 1, FUN = \(x) all(x)))
     } else {
-      est_old_table[["Exposure"]] <- est_old_table[[object[["exposure_names"]]]]
+      referencepos <- match(reference, est_old_table[, object[["exposure_names"]]])
     }
 
-    referencepos <- match(reference, est_old_table[["Exposure"]])
     if (is.na(referencepos)) {
       stop("reference must be a value in x")
     }
@@ -473,7 +457,7 @@ summary_standardize <- function(object, ci_level = 0.95,
   }
   if (!is.null(contrast)) {
     exposure_name_table <- "Exposure"
-    exposure_table <- est_old_table[["Exposure"]]
+    exposure_table <- est_old_table[, object[["exposure_names"]]]
   } else {
     exposure_name_table <- object[["exposure_names"]]
     exposure_table <- est_old_table[, object[["exposure_names"]]]
@@ -497,7 +481,7 @@ summary_standardize <- function(object, ci_level = 0.95,
     colnames(est_table) <- c(exposure_name_table, "Estimate")
     if (!is.null(B)) {
       ci_boot_df <- data.frame(ci)
-      colnames(ci_boot_df) <- paste(c("lower", "upper"), ci_level)
+      colnames(ci_boot_df) <- paste0(c("lower.", "upper."), ci_level)
       est_table <- cbind(est_table, ci_boot_df)
     }
   }
@@ -521,7 +505,7 @@ print.std_custom <- function(x, ...) {
   cat("Exposure: ", toString(x[["res"]][["exposure_names"]]), "\n")
   cat("Tables: \n \n")
   for (l in seq_len(length(x[["res_contrast"]]))) {
-    temp <- x[["res_contrast"]][[paste0("V", l)]]
+    temp <- x[["res_contrast"]][[l]]
     if (!is.null(temp[["transform"]])) {
       cat("Transform: ", levels(temp[["transform"]])[[temp[["transform"]]]], "\n")
     }
@@ -566,116 +550,5 @@ fit_helper <- function(args, fitter, data) {
     stop("fitter failed with error: ", fit[["message"]])
   } else {
     fit
-  }
-}
-
-summary.plot_help <- function(object,
-                              ci_level,
-                              transform,
-                              contrast,
-                              reference,
-                              ...) {
-  times <- object$input$t
-  reference <- ifelse(is.null(reference), "NULL", as.character(reference))
-  contrast <- ifelse(is.null(contrast), "NULL", as.character(contrast))
-  transform <- ifelse(is.null(transform), "NULL", as.character(transform))
-  level_exists <- FALSE
-  for (res_cont in object[["res_contrasts"]]) {
-    res_cont[["reference"]] <- ifelse(is.null(res_cont[["reference"]]), "NULL", as.character(res_cont[["reference"]]))
-    res_cont[["contrast"]] <- ifelse(is.null(res_cont[["contrast"]]), "NULL", as.character(res_cont[["contrast"]]))
-    res_cont[["transform"]] <- ifelse(is.null(res_cont[["transform"]]), "NULL", as.character(res_cont[["transform"]]))
-
-    if ((res_cont[["ci_level"]] == ci_level || res_cont[["ci_level"]] == ci_level) &&
-      (identical(res_cont[["transform"]], transform)) &&
-      (identical(res_cont[["contrast"]], contrast)) &&
-      (identical(res_cont[["reference"]], reference))) {
-      level_exists <- TRUE
-      break
-    }
-  }
-  if (!level_exists) {
-    stop("The reference, transform or contrast could not be located in the fitted object.")
-  }
-  res_table <- res_cont[["est_table"]]
-  if (!is.null(times)) {
-    res <- list()
-    B <- object[["input"]][["B"]]
-    for (t_ind in seq_len(length(times))) {
-      if (!is.null(B)) {
-        res[[t_ind]] <- data.frame(
-          Estimate = res_table[, 3 * t_ind - 1],
-          Std.Er = NA,
-          lower = res_table[, 3 * t_ind],
-          upper = res_table[, 3 * t_ind + 1]
-        )
-      } else {
-        res[[t_ind]] <- data.frame(
-          Estimate = res_table[, t_ind + 1],
-          Std.Er = NA,
-          lower = NA,
-          upper = NA
-        )
-      }
-    }
-    list(est.table = res)
-  } else {
-    B <- object[["B"]]
-    if (is.null(B)) {
-      list(est_table = data.frame(res_table[, 1:2], Std.Er. = NA, lower = NA, upper = NA))
-    } else {
-      list(est_table = data.frame(res_table[, 1:2], Std.Er. = NA, res_table[, 3:4]))
-    }
-  }
-}
-
-#' @rdname plot
-#' @export plot.std_custom
-#' @export
-plot.std_custom <- function(x,
-                            plot_ci = TRUE,
-                            ci_level = 0.95,
-                            transform = NULL,
-                            contrast = NULL,
-                            reference = NULL, ...) {
-  times <- x[["res"]][["times"]]
-  B <- x[["res"]][["B"]]
-
-  if (length(x[["res"]][["exposure_names"]]) > 1L) {
-    stop("cannot do plot with multiple exposures")
-  }
-
-  if (!is.null(times)) {
-    obj <- list(res = list(
-      input = list(
-        valuesout = x[["res"]][["estimates"]][1],
-        times = times,
-        B = B
-      ),
-      res_contrasts = x[["res_contrast"]]
-    ))
-    class(obj) <- "plot_help"
-    plot.std_surv(
-      x = obj,
-      plot_ci = !is.null(B) && plot_ci,
-      ci_level = ci_level,
-      transform = transform,
-      reference = reference,
-      contrast = contrast,
-      summary_fun = "summary.plot_help"
-    )
-  } else {
-    temp <- x
-    temp[["res"]][["res_contrasts"]] <- x[["res_contrast"]]
-    class(temp[["res"]]) <- "plot_help"
-    ## needs summary function to be rewriten
-    plot.std_glm(
-      x = temp,
-      plot_ci = !is.null(B) && plot_ci,
-      ci_level = ci_level,
-      transform = transform,
-      reference = reference,
-      contrast = contrast,
-      summary_fun = "summary.plot_help"
-    )
   }
 }
