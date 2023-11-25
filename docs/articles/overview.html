@@ -63,6 +63,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Estimation of causal effects using stdReg2</h1>
             
+            <h4 data-toc-skip class="date">2023-11-25</h4>
       
       
       <div class="d-none name"><code>overview.Rmd</code></div>
@@ -101,11 +102,11 @@ distributions, which we will denote, e.g., <span class="math inline">\(T\{Y | X 
 <p>To quantify the effect of <span class="math inline">\(X\)</span>, we
 must also decide on a <em>contrast</em> to measure the causal effect.
 The point of the contrast is to compare the chosen summary statistic
-between the <span class="math inline">\(X = 1\)</span> and <span class="math inline">\(X = 1\)</span>. Typical choices would be the
-difference <span class="math inline">\(T\{Y(X = 1)\} - T\{Y(X =
-0)\}\)</span> or the ratio <span class="math inline">\(T\{Y(X = 1)\} /
-T\{Y(X = 0)\}\)</span>. It may also be of interest to quantify and
-report the summary statistics within each group <span class="math inline">\((T\{Y(X = 1)\}, T\{Y(X = 0)\})\)</span>.</p>
+between the <span class="math inline">\(X = 1\)</span> and <span class="math inline">\(X = 0\)</span> interventions. Typical choices
+would be the difference <span class="math inline">\(T\{Y(X = 1)\} -
+T\{Y(X = 0)\}\)</span> or the ratio <span class="math inline">\(T\{Y(X =
+1)\} / T\{Y(X = 0)\}\)</span>. It may also be of interest to quantify
+and report the summary statistics within each group <span class="math inline">\((T\{Y(X = 1)\}, T\{Y(X = 0)\})\)</span>.</p>
 <p>In observational studies, the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is likely confounded by a set of other
 variables <span class="math inline">\(\boldsymbol{Z}\)</span>. This
 means that the values of the outcome <span class="math inline">\(Y\)</span> are determined by at least a subset of
@@ -177,16 +178,12 @@ to estimate the probability that each individual <span class="math inline">\(i\)
 + \frac{1-X_i}{1-P(X_i=1|\boldsymbol{Z}_i)}\)</span>. Let <span class="math inline">\(\hat{p}_i\)</span> denote the estimated
 probability that subject <span class="math inline">\(i\)</span> received
 treatment <span class="math inline">\(1\)</span>.</p>
-<p>A Doubly robust estimator for the ATE is the Augmented inverse
-probability weighted AIPW estimator: <span class="math display">\[
-\frac{1}{n}\sum_{i = 1}^n\frac{Y_i X_i}{\hat{p}_i} - \frac{\hat{T}\{Y_i
-| X_i = 1, \boldsymbol{Z}_i\}(X_i - \hat{p}_i)}{\hat{p}_i} - \frac{Y_i
-(1 - X_i)}{1 - \hat{p}_i} - \frac{\hat{T}\{Y_i | X_i = 0,
-\boldsymbol{Z}_i\}(X_i - \hat{p}_i)}{1 - \hat{p}_i}.  
-\]</span> Any consistent estimation method can be used for the outcome
-and exposure models. As long as either the outcome model or the
-propensity score model is correctly specified for confounding, then this
-doubly robust estimator is consistent for the ATE.</p>
+<p>Any consistent estimation method can be used for the outcome and
+exposure models. As long as <em>either</em> the outcome model
+<em>or</em> the propensity score model is correctly specified for
+confounding, then a doubly robust estimator is consistent for the ATE.
+In this package, for generalized linear models, we use the estimator as
+described by <span class="citation">Gabriel et al. (2023)</span>.</p>
 <p>Recently, there seems to be a general misconception that combining an
 adjusted outcome model and a propensity score model always gives a
 doubly robust estimator. <strong>This is not true</strong> – it matters
@@ -824,6 +821,13 @@ is slightly different because it is symmetric on the odds ratio scale in
 the first case, and symmetric on the log odds ratio scale in the
 transformed case.</p>
 <div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-gabriel2023inverse" class="csl-entry">
+Gabriel, Erin E, Michael C Sachs, Torben Martinussen, Ingeborg
+Waernbaum, Els Goetghebeur, Stijn Vansteelandt, and Arvid Sjölander.
+2023. <span>“Inverse Probability of Treatment Weighting with Generalized
+Linear Outcome Models for Doubly Robust Estimation.”</span>
+<em>Statistics in Medicine</em> In press.
+</div>
 <div id="ref-sjolander2016regression" class="csl-entry">
 Sjölander, Arvid. 2016. <span>“Regression Standardization with the r
 Package stdReg.”</span> <em>European Journal of Epidemiology</em> 31:

@@ -1,5 +1,6 @@
 ---
 title: "Estimation of causal effects using stdReg2"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output: 
   rmarkdown::html_vignette: 
     highlight: "haddock"
@@ -29,7 +30,7 @@ We consider the setting where it is of interest to quantify the effect of interv
 
 To quantify the effect of $X$, we must summarize the distribution of $Y(X = x)$ with some statistic. If $Y$ is dichotomous, it is natural to use $p\{Y(X = x) = 1\}$, called the risk. If $Y$ is continuous, the mean is a natural summary statistic $E\{Y(X = x)\}$. If $Y$ is a continuous time-to-event, the probability of exceeding a particular value $t$ is a reasonable statistic: $p\{Y(X = x) > t\}$. In general, denote the summary statistic of choice as $T\{Y(X = x)\}$. The summary statistic can also be applied to conditional distributions, which we will denote, e.g., $T\{Y | X = x\}$.
 
-To quantify the effect of $X$, we must also decide on a _contrast_ to measure the causal effect. The point of the contrast is to compare the chosen summary statistic between the $X = 1$ and $X = 1$. Typical choices would be the difference $T\{Y(X = 1)\} - T\{Y(X = 0)\}$ or the ratio $T\{Y(X = 1)\} / T\{Y(X = 0)\}$. It may also be of interest to quantify and report the summary statistics within each group $(T\{Y(X = 1)\}, T\{Y(X = 0)\})$. 
+To quantify the effect of $X$, we must also decide on a _contrast_ to measure the causal effect. The point of the contrast is to compare the chosen summary statistic between the $X = 1$ and $X = 0$ interventions. Typical choices would be the difference $T\{Y(X = 1)\} - T\{Y(X = 0)\}$ or the ratio $T\{Y(X = 1)\} / T\{Y(X = 0)\}$. It may also be of interest to quantify and report the summary statistics within each group $(T\{Y(X = 1)\}, T\{Y(X = 0)\})$. 
 
 In observational studies, the relationship between $X$ and $Y$ is likely confounded by a set of other variables $\boldsymbol{Z}$. This means that the values of the outcome $Y$ are determined by at least a subset of $\boldsymbol{Z}$ and the values of the exposure $X$ are determined by a subset of $\boldsymbol{Z}$. Naively estimating the contrast would lead to biased estimates of the causal effect. 
 
@@ -69,11 +70,7 @@ _Correctly specified for confounding_ - A correctly specified model that contain
 
 If we can model $P(X=1|\boldsymbol{Z})$, and it is correctly specified and contains all confounders, then we can use that to estimate the probability that each individual $i$ received the treatment that they did $W_i = \frac{X_i}{P(X_i=1|\boldsymbol{Z}_i)} + \frac{1-X_i}{1-P(X_i=1|\boldsymbol{Z}_i)}$. Let $\hat{p}_i$ denote the estimated probability that subject $i$ received treatment $1$.
 
-A Doubly robust estimator for the ATE is the Augmented inverse probability weighted AIPW estimator: 
-\[
-\frac{1}{n}\sum_{i = 1}^n\frac{Y_i X_i}{\hat{p}_i} - \frac{\hat{T}\{Y_i | X_i = 1, \boldsymbol{Z}_i\}(X_i - \hat{p}_i)}{\hat{p}_i} - \frac{Y_i (1 - X_i)}{1 - \hat{p}_i} - \frac{\hat{T}\{Y_i | X_i = 0, \boldsymbol{Z}_i\}(X_i - \hat{p}_i)}{1 - \hat{p}_i}.  
-\]
-Any consistent estimation method can be used for the outcome and exposure models. As long as either the outcome model or the propensity score model is correctly specified for confounding, then this doubly robust estimator is consistent for the ATE. 
+Any consistent estimation method can be used for the outcome and exposure models. As long as _either_ the outcome model _or_ the propensity score model is correctly specified for confounding, then a doubly robust estimator is consistent for the ATE. In this package, for generalized linear models, we use the estimator as described by @gabriel2023inverse. 
 
 
 Recently, there seems to be a general misconception that combining an adjusted outcome model and a propensity score model always gives a doubly robust estimator. __This is not true__ -- it matters how you combine them! 
