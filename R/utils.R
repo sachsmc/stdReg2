@@ -319,6 +319,23 @@ get_outcome_exposure <- function(formula_outcome, data, values) {
   list(outcome = outcome, exposure = exposure, exposure_names = exposure_names, valuesout = valuesout)
 }
 
+rsum <- function(y, x, tmax) {  # sum of rectangles
+  keep <- which(x < tmax)
+  width <- diff(c(x[keep], tmax))
+  sum(width * y[keep])
+}
+
+
+rowcumSums <- function(x) {
+
+  addmat <- matrix(0, nrow = ncol(x), ncol = ncol(x))
+  addmat[lower.tri(addmat, diag = TRUE)] <-1
+
+  t(addmat %*% t(x))
+
+}
+
+
 format_result_standardize <- function(res,
                                       contrasts,
                                       reference,
