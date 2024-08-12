@@ -349,15 +349,14 @@ summary_std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
     se <- sqrt(var)
     conf.int <- CI(est = est, var = var, ci_type = ci_type, ci_level = ci_level)
 
-    temp <- as.matrix(cbind(est, se, conf.int), nrow = length(est), ncol = 4)
-    dimnames(temp) <- list(
-      object$input$x,
+    temp <- data.frame(object$input$valuesout, est, se, conf.int)
+    colnames(temp) <-
       c(
-        "Estimate", "Std.Error", paste0("lower.", ci_level),
+        colnames(object$input$valuesout)[1], "Estimate", "Std.Error", paste0("lower.", ci_level),
         paste("upper", ci_level)
       )
-    )
-    est.table[[j]] <- data.frame(temp)
+
+    est.table[[j]] <- temp
   }
   if (is.factor(reference)) {
     reference <- as.character(reference)
