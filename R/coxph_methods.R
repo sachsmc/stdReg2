@@ -15,7 +15,7 @@
 #' Breslow's estimator of the cumulative baseline hazard
 #' \eqn{\Lambda_0(t)=\int_0^t\lambda_0(u)du} is used together with the partial
 #' likelihood estimate of \eqn{\beta} to obtain estimates of the survival
-#' function \eqn{S(t|X=x,Z)}:
+#' function \eqn{S(t|X=x,Z)} if \code{measure = "survival"}:
 #' \deqn{\hat{S}(t|X=x,Z)=exp[-\hat{\Lambda}_0(t)exp\{h(X=x,Z;\hat{\beta})\}].}
 #' For each \eqn{t} in the \code{t} argument and for each \eqn{x} in the
 #' \code{x} argument, these estimates are averaged across all subjects (i.e.
@@ -23,6 +23,15 @@
 #' \deqn{\hat{\theta}(t,x)=\sum_{i=1}^n \hat{S}(t|X=x,Z_i)/n,} where \eqn{Z_i}
 #' is the value of \eqn{Z} for subject \eqn{i}, \eqn{i=1,...,n}.  The variance
 #' for \eqn{\hat{\theta}(t,x)} is obtained by the sandwich formula.
+#'
+#' If \code{measure = "rmean"}, then \eqn{\Lambda_0(t)=\int_0^t\lambda_0(u)du}
+#' is used together with the partial
+#' likelihood estimate of \eqn{\beta} to obtain estimates of the restricted mean survival
+#' up to time t: \eqn{\int_0^t S(t|X=x,Z) dt} for each element of \code{times}. The estimation
+#' and inference is done using the method described in Chen and Tsiatis 2001.
+#' Currently, we can only estimate the difference in RMST for a single binary
+#' exposure. Two separate Cox models are fit for each level of the exposure,
+#' which is expected to be coded as 0/1.
 #' @return An object of class \code{std_surv}.
 #' This is basically a list with components estimates and covariance estimates in \code{res}
 #' Results for transformations, contrasts, references are stored in \code{res_contrasts}.
@@ -32,6 +41,8 @@
 #' @inherit standardize_glm
 #' @param times A vector containing the specific values of \eqn{T} at
 #' which to estimate the standardized survival function.
+#' @param measure Either "survival" to estimate the survival function at times
+#' or "rmean" for the restricted mean survival up to the largest of times.
 #' @note Standardized survival functions are sometimes referred to as (direct)
 #' adjusted survival functions in the literature.
 #'
@@ -73,8 +84,10 @@
 #' Sjolander A. (2016). Regression standardization with the R-package stdReg.
 #' \emph{European Journal of Epidemiology} \bold{31}(6), 563-574.
 #'
-#' Sjolander A. (2016). Estimation of causal effect measures with the R-package
+#' Sjolander A. (2018). Estimation of causal effect measures with the R-package
 #' stdReg. \emph{European Journal of Epidemiology} \bold{33}(9), 847-858.
+#'
+#' Chen, P. Y., Tsiatis, A. A. (2001). Causal inference on the difference of the restricted mean lifetime between two groups. \emph{Biometrics}, \bold{57}(4), 1030-1038.
 #' @examples
 #'
 #'
@@ -82,20 +95,33 @@
 #' set.seed(7)
 #' n <- 300
 #' Z <- rnorm(n)
+#' Zbin <- rbinom(n, 1, .3)
 #' X <- rnorm(n, mean = Z)
 #' T <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
 #' C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
 #' U <- pmin(T, C) # time at risk
 #' D <- as.numeric(T < C) # event indicator
 #' dd <- data.frame(Z, X, U, D)
-#' fit.std <- standardize_coxph(
+#' fit.std.surv <- standardize_coxph(
 #'   formula = Surv(U, D) ~ X + Z + X * Z,
 #'   data = dd,
 #'   values = list(X = seq(-1, 1, 0.5)),
 #'   times = 1:5
 #' )
+#' print(fit.std.surv)
+#' plot(fit.std.surv)
+#' tidy(fit.std.surv)
+#'
+#' fit.std <- standardize_coxph(
+#'   formula = Surv(U, D) ~ X + Zbin + X * Zbin,
+#'   data = dd,
+#'   values = list(Zbin = 0:1),
+#'   times = 1.5,
+#'   measure = "rmean",
+#'   contrast = "difference",
+#'   reference = 0
+#' )
 #' print(fit.std)
-#' plot(fit.std)
 #' tidy(fit.std)
 #'
 #' @export standardize_coxph
@@ -103,6 +129,7 @@ standardize_coxph <- function(formula,
                               data,
                               values,
                               times,
+                              measure = c("survival", "rmean"),
                               clusterid,
                               ci_level = 0.95,
                               ci_type = "plain",
@@ -112,13 +139,13 @@ standardize_coxph <- function(formula,
                               transforms = NULL) {
   call <- match.call()
 
+  measure <- match.arg(measure)
   if (!inherits(values, c("data.frame", "list"))) {
     stop("values is not an object of class list or data.frame")
   }
 
   ## Check that the names of values appear in the data
   check_values_data(values, data)
-
   ## Set various relevant variables
   if (!is.data.frame(values)) {
     valuesout <- expand.grid(values)
@@ -126,6 +153,253 @@ standardize_coxph <- function(formula,
     valuesout <- values
   }
 
+  if(measure == "rmean") {
+    if (length(values) > 1L) {
+      stop("there has to be only one exposure
+              with the restricted mean survival estimator")
+    }
+
+    ## Check that exposure is binary
+    if (!is.binary(data[[names(values)]]) || nrow(valuesout) != 2L) {
+      stop("the exposure has to be binary (0 or 1)")
+    }
+
+    #---PREPARATION---
+    specials <- pmatch(c("strata(", "cluster(", "tt("), attr(
+      terms(formula),
+      "variables"
+    ))
+    if (any(!is.na(specials))) {
+      stop("No special terms are allowed in the formula")
+    }
+    tstar <- max(times)
+
+    if(length(times) > 1L) {
+
+      warning("Can only compute restricted mean for one time, using maximum supplied t=", max(times))
+    }
+
+    expname <- exposure_names <- names(values)[1]
+    newformula <- update(formula, reformulate(attr(drop.terms(terms(formula),
+               grep(expname, attr(terms(formula), "term.labels"))), "term.labels")))
+
+    data0 <- data[data[[expname]] == 0,]
+    data1 <- data[data[[expname]] == 1,]
+
+    coxfit0 <- tryCatch(coxph(newformula, data = data0, model = TRUE),
+                        error = function(e) e)
+    if (inherits(coxfit0, "simpleError")) {
+      stop("Cox fit in group 0 failed with error: ", coxfit0[["message"]])
+    }
+
+    coxfit1 <- tryCatch(coxph(newformula, data = data1, model = TRUE),
+                        error = function(e) e)
+    if (inherits(coxfit1, "simpleError")) {
+      stop("Cox fit in group 1 failed with error: ", coxfit1[["message"]])
+    }
+
+    m0 <- model.matrix(object = coxfit0, data = data0)
+    m1 <- model.matrix(object = coxfit1, data = data1)
+    data <- data[match(sort(c(rownames(m0), rownames(m1))), rownames(data)), ]
+    n <- nrow(data)
+
+    input <- as.list(environment())
+
+    input$expname <- NULL
+    mf <- model.frame(newformula, data)
+    survobj <- mf[,1]
+
+    input$times <- tstar
+
+    etimes <- sort(survobj[survobj[, 2] == 1,1])
+    etimes <- etimes[etimes <= tstar]
+    Ai <- data[[expname]][match(etimes, survobj[,1])]
+
+    ## get the names provided to Surv
+    ##
+    if(is.null(attr(terms(newformula), "variables")[[2]] |> names())) {
+      timename <- deparse(attr(terms(newformula), "variables")[[2]][[2]])
+      eventname <- deparse(attr(terms(newformula), "variables")[[2]][[3]])
+    } else {
+      timename <- deparse(attr(terms(newformula), "variables")[[2]][["time"]])
+      eventname <- deparse(attr(terms(newformula), "variables")[[2]][["event"]])
+    }
+
+    basedat <- do.call(rbind, lapply(etimes, \(tt) {
+      ret <- mf[, -1, drop = FALSE]
+      ret$id <- 1:nrow(ret)
+      ret[[timename]] <- tt
+      ret[[eventname]] <- 1
+      ret
+    }))
+
+    covs <- names(mf)[-1]
+
+    breslow0 <- matrix(predict(coxfit0, newdata = basedat, type = "expected"),
+                       nrow = nrow(data), ncol = length(etimes))
+    breslow1 <- matrix(predict(coxfit1, newdata = basedat, type = "expected"),
+                       nrow = nrow(data), ncol = length(etimes))
+
+    risk0 <- predict(coxfit0, newdata = data, type = "risk", reference = "zero")
+    risk1 <- predict(coxfit1, newdata = data, type = "risk", reference = "zero")
+
+    S0hat <- colMeans(exp(-breslow0))
+    S1hat <- colMeans(exp(-breslow1))
+
+    rmst0 <- rsum(c(1,S0hat), c(0,etimes), tstar)
+    rmst1 <- rsum(c(1,S1hat), c(0,etimes), tstar)
+
+    diffrmst <- rmst1 - rmst0
+
+
+    ## individual counting process
+
+    Nit <- do.call(cbind, lapply(etimes, \(tt){
+
+      ifelse(survobj[,1] <= tt & survobj[,2] == 1, 1, 0)
+
+    }))
+
+    Yit <- outer(survobj[,1], etimes, \(x,y) 1.0 * (x >= y))
+
+
+    h0hattmp <- matrix(diff(c(0, etimes, tstar)),
+                       nrow = nrow(data), ncol = length(etimes) + 1, byrow = TRUE) *
+      cbind(1,exp(-breslow0)) * matrix(risk0, nrow = nrow(data),
+                                       ncol = length(etimes)+1)
+    h0hat <- colMeans(rowcumSums(h0hattmp[, ncol(h0hattmp):1])[,ncol(h0hattmp):1])[-1]
+
+    h1hattmp <- matrix(diff(c(0, etimes, tstar)), nrow = nrow(data),
+                       ncol = length(etimes) + 1, byrow = TRUE) *
+      cbind(1,exp(-breslow1)) * matrix(risk1, nrow = nrow(data),
+                                       ncol = length(etimes)+1)
+    h1hat <- colMeans(rowcumSums(h1hattmp[, ncol(h1hattmp):1])[, ncol(h1hattmp):1])[-1]
+
+
+    SS0.t.0 <- colMeans(matrix(risk0 * (data[[expname]] == 0), nrow = nrow(data),
+                               ncol = length(etimes), byrow = FALSE) * Yit)
+
+
+    SS1.t.0 <- matrix(NA, nrow = length(etimes), ncol = length(covs))
+    SS2.t.0 <- array(NA, dim = c(length(etimes), length(covs), length(covs)))
+
+    SS0.t.1 <- colMeans(matrix(risk1 * (data[[expname]] == 1), nrow = nrow(data),
+                               ncol = length(etimes), byrow = FALSE) * Yit)
+
+
+    SS1.t.1 <- matrix(NA, nrow = length(etimes), ncol = length(covs))
+    SS2.t.1 <- array(NA, dim = c(length(etimes), length(covs), length(covs)))
+
+    Sigma0 <- Sigma1 <- matrix(0, nrow = length(covs), ncol = length(covs))
+
+    if(length(covs) > 1) {
+      dmat <- as.matrix(mf[, covs])
+
+
+    } else {
+      dmat <- as.matrix(mf[, covs, drop = FALSE])
+
+
+    }
+
+    ZZmat <-  do.call(rbind,
+                      apply(dmat, MAR = 1, FUN = \(x) c(x %*% t(x)),
+                            simplify = FALSE))
+
+    for(i in 1:length(etimes)) {
+
+      SS1.t.0[i, ] <- colMeans(matrix((data[[expname]] == 0) * risk0 * Yit[, i],
+                                      nrow = nrow(data),
+                                      ncol = length(covs)) * dmat)
+
+
+
+      SS2.t.0[i,,] <- matrix(colMeans(matrix((data[[expname]] == 0) * risk0 * Yit[, i],
+                                             nrow = nrow(data),
+                                             ncol = length(covs)^2) *
+                                        ZZmat),
+                             nrow = length(covs),
+                             ncol = length(covs))
+
+      SS1.t.1[i, ] <- colMeans(matrix((data[[expname]] == 1) * risk1 * Yit[, i],
+                                      nrow = nrow(data),
+                                      ncol = length(covs)) * dmat)
+
+
+      SS2.t.1[i,,] <- matrix(colMeans(matrix((data[[expname]] == 1) * risk1 * Yit[, i],
+                                             nrow = nrow(data),
+                                             ncol = length(covs)^2) *
+                                        ZZmat),
+                             nrow = length(covs),
+                             ncol = length(covs))
+
+
+      Sigma0 <- Sigma0 + (1 - Ai[i]) * (SS2.t.0[i,,] / SS0.t.0[i] -
+                                          (SS1.t.0[i,] / SS0.t.0[i]) %*% t(SS1.t.0[i,] / SS0.t.0[i]))
+      Sigma1 <- Sigma1 + (Ai[i]) * (SS2.t.1[i,,] / SS0.t.1[i] -
+                                      (SS1.t.1[i,] / SS0.t.1[i]) %*% t(SS1.t.1[i,] / SS0.t.1[i]))
+
+    }
+
+    Sigma0 <- Sigma0 / sum(1 - data[[expname]])
+    Sigma1 <- Sigma1 / sum(data[[expname]])
+
+
+    Zbar <- SS1.t.0 / matrix(SS0.t.0, nrow = length(SS0.t.0), ncol = ncol(SS1.t.0))
+    Zbar1 <- SS1.t.1 / matrix(SS0.t.1, nrow = length(SS0.t.1), ncol = ncol(SS1.t.1))
+
+    denom.haz0 <- colSums(matrix(risk0 * (data[[expname]] == 0),
+                                 nrow = length(risk0), ncol = ncol(Yit)) * Yit)
+    denom.haz1 <- colSums(matrix(risk1 * (data[[expname]] == 1),
+                                 nrow = length(risk1), ncol = ncol(Yit)) * Yit)
+    g0i <- g1i <- matrix(NA, nrow = nrow(data), ncol = length(covs))
+
+
+    for(i in 1:nrow(data)) {
+
+
+      inmat <- (1 - Ai) * (Zbar - dmat[replicate(nrow(Zbar), i), ]) /
+        matrix(denom.haz0, nrow = length(denom.haz0), ncol = ncol(Zbar))
+
+      inmat1 <- Ai * (Zbar1 - dmat[replicate(nrow(Zbar1), i), ]) /
+        matrix(denom.haz1, nrow = length(denom.haz1), ncol = ncol(Zbar1))
+
+      Lcurv0 <-  rbind(0, matrix(exp(-breslow0[i, ]) * risk0[i], nrow = nrow(inmat),
+                                 ncol = ncol(inmat)) *apply(inmat, MAR = 2, cumsum))
+
+      Lcurv1 <-  rbind(0, matrix(exp(-breslow1[i, ]) * risk1[i], nrow = nrow(inmat1),
+                                 ncol = ncol(inmat1)) *apply(inmat1, MAR = 2, cumsum))
+
+      g0i[i,] <- apply(Lcurv0, MAR = 2, rsum, c(0, etimes), tstar)
+      g1i[i,] <- apply(Lcurv1, MAR = 2, rsum, c(0, etimes), tstar)
+
+
+    }
+
+    g0 <- (solve(Sigma0) %*% colSums(g0i)) / sum(1 - data[[expname]])
+    g1 <- (solve(Sigma1) %*% colSums(g1i)) / sum(data[[expname]])
+
+    var0 <- c((sum(1 - data[[expname]]) / nrow(data)) * t(g0) %*% Sigma0 %*% g0) +
+      sum((1 - Ai) * (h0hat^2 / SS0.t.0) / denom.haz0) +
+      (nrow(data) - 1) / (nrow(data)) * var(apply(cbind(1,exp(-breslow0)),
+                                                  MAR = 1, rsum, c(0,etimes),tstar))
+
+    var1 <- c((sum(data[[expname]]) / nrow(data)) * t(g1) %*% Sigma1 %*% g1) +
+                sum(Ai * (h1hat^2 / SS0.t.1) / denom.haz1) +
+                (nrow(data) - 1) / (nrow(data)) * var(apply(cbind(1,exp(-breslow1)),
+                                                            MAR = 1, rsum, c(0,etimes),tstar))
+
+    covar <- (nrow(data) - 1) / (nrow(data)) * cov(apply(cbind(1,exp(-breslow1)),
+                                                         MAR = 1, rsum, c(0,etimes),tstar),
+                                                     apply(cbind(1,exp(-breslow0)),
+                                                           MAR = 1, rsum, c(0,etimes),tstar))
+
+    #var.diff <- var1 + var0 - 2 * covar
+
+    est <- rbind(c(rmst0, rmst1))
+    vcov <- list(matrix(c(var0, covar, covar, var1), nrow = 2, ncol = 2))
+
+    }  else if(measure == "survival") {
   fit <- tryCatch(
     {
       survival::coxph(formula = formula, data = data, method = "breslow", x = TRUE, y = TRUE)
@@ -157,8 +431,10 @@ standardize_coxph <- function(formula,
   m <- model.matrix(object = fit)
   data <- data[match(rownames(m), rownames(data)), ]
   n <- nrow(data)
+  exposure_names <- names(values)[1]
 
   input <- as.list(environment())
+
 
   if (is.null(fit$weights)) {
     weights <- rep(1, nrow(data))
@@ -179,7 +455,12 @@ standardize_coxph <- function(formula,
 
   # Assign value to times if missing.
   if (missing(times)) {
-    stop("You have to specify the times (t) at which to estimate the standardized survival function")
+    measure_name <- if(measure == "survival"){
+      "survival function"
+    } else if (measure == "rmean") {
+        "restricted mean survival"
+      }
+    stop(sprintf("You have to specify the times (t) at which to estimate the standardized %s", measure_name))
     # t <- fit.detail$time
   }
   input$times <- times
@@ -262,7 +543,12 @@ standardize_coxph <- function(formula,
     }
   }
 
-  out <- list(call = call, input = input, est = est, vcov = vcov)
+  } else {
+    stop("Measure ", measure, " not supported. Did you mean survival or rmean?")
+  }
+
+  out <- list(call = call, input = input, measure = measure,
+              est = est, vcov = vcov)
   class(out) <- "std_coxph"
 
   #---OUTPUT---
@@ -290,11 +576,15 @@ summary_std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
     times <- object$input$times
   }
   nt <- length(times)
-
+  measure_name <- if(object$measure == "survival"){
+    "survival function"
+  } else if (object$measure == "rmean") {
+    "restricted mean survival"
+  }
   est.table <- vector(mode = "list", length = nt)
   for (j in 1:nt) {
     if (min(abs(times[j] - object$input$times)) > sqrt(.Machine$double.eps)) {
-      stop("The standardized survival function is not estimated at times",
+      stop(sprintf("The standardized %s is not estimated at times", measure_name),
         call. = FALSE
       )
     } else {
@@ -310,10 +600,17 @@ summary_std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
         est <- log(est)
       }
       if (transform == "logit") {
+        if(out$measure == "rmean"){
+          stop("Transform logit not available for restricted mean survival.")
+        }
         dtransform.dm <- diag(1 / (est * (1 - est)), nrow = nX, ncol = nX)
         est <- logit(est)
       }
       if (transform == "odds") {
+
+        if(out$measure == "rmean"){
+          stop("Transform odds not available for restricted mean survival.")
+        }
         dtransform.dm <- diag(1 / (1 - est)^2, nrow = nX, ncol = nX)
         est <- odds(est)
       }
@@ -364,7 +661,8 @@ summary_std_coxph <- function(object, times, ci_type = "plain", ci_level = 0.95,
   out <- c(
     object,
     list(
-      est_table = est.table, times = times, transform = transform, contrast = contrast,
+      est_table = est.table, times = times, measure = object$measure,
+      transform = transform, contrast = contrast,
       reference = reference, ci_type = ci_type, ci_level = ci_level
     )
   )
@@ -384,7 +682,13 @@ print_summary_std_coxph <- function(x, ...) {
   nt <- length(x$times)
   for (j in 1:nt) {
     cat("\nFormula: ")
-    print(x$input$fit$formula, showEnv = FALSE)
+    if(x$measure == "rmean") {
+      print(x$input$newformula, showEnv = FALSE)
+      cat(" Fit separately by exposure", "\n")
+    } else {
+      print(x$input$fit$formula, showEnv = FALSE)
+    }
+
     cat("Exposure: ", x$input$exposure_names, "\n")
 
     if (!is.null(x$transform)) {
@@ -394,7 +698,9 @@ print_summary_std_coxph <- function(x, ...) {
       cat("Reference level: ", x$input$X, "=", x$reference, "\n")
       cat("Contrast: ", x$contrast, "\n")
     }
-    cat("Survival functions evaluated at t =", x$times[j], "\n")
+    measure_name <- switch(x$measure, survival = "Survival functions",
+                           rmean = "Restricted mean survival")
+    cat(sprintf("%s evaluated at t =", measure_name), x$times[j], "\n")
     cat("\n")
     print(x$est_table[[j]], digits = 3)
     cat("\n")
@@ -406,12 +712,18 @@ print_summary_std_coxph <- function(x, ...) {
 #' @export plot.std_surv
 #' @export
 plot.std_surv <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
-                          transform = NULL, contrast = NULL, reference = NULL, legendpos = "bottomleft", summary_fun = "summary_std_coxph", ...) {
+                          transform = NULL, contrast = NULL,
+                          reference = NULL, legendpos = "bottomleft",
+                          summary_fun = "summary_std_coxph", ...) {
   object <- x$res
   if (ncol(object$input$valuesout) != 1) {
     stop("multiple exposures")
   } else {
     x <- object$input$valuesout[, 1]
+  }
+
+  if(object$measure == "rmean") {
+    stop("Cannot plot restricted mean")
   }
 
   dots <- list(...)
@@ -573,6 +885,7 @@ tidy.std_surv <- function(x, ...) {
     colnames(tmpres) <- make.names(colnames(tmpres))
     tmpres$contrast <- if(is.null(xl$contrast)) "none" else xl$contrast
     tmpres$transform <- if(is.null(xl$transform)) "identity" else xl$transform
+    tmpres$measure <- xl$measure
     tmpres
 
   })

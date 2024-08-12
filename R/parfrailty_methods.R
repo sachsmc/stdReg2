@@ -689,7 +689,8 @@ standardize_parfrailty <- function(formula,
       vcov[[j]] <- V
     }
   }
-  out <- list(call = call, input = input, est = est, vcov = vcov)
+  out <- list(call = call, input = input, measure = "survival",
+              est = est, vcov = vcov)
   #---OUTPUT---
 
   class(out) <- "std_surv"

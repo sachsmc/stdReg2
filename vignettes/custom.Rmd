@@ -1,0 +1,22 @@
+---
+title: "Implementing custom and new methods for standardization"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Implementing custom and new methods for standardization}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(stdReg2)
+```
+
+
+
