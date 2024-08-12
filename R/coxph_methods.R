@@ -99,9 +99,10 @@
 #' X <- rnorm(n, mean = Z)
 #' T <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
 #' C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
+#' fact <- factor(sample(letters[1:3], n, replace = TRUE))
 #' U <- pmin(T, C) # time at risk
 #' D <- as.numeric(T < C) # event indicator
-#' dd <- data.frame(Z, X, U, D)
+#' dd <- data.frame(Z, Zbin, X, U, D, fact)
 #' fit.std.surv <- standardize_coxph(
 #'   formula = Surv(U, D) ~ X + Z + X * Z,
 #'   data = dd,
@@ -113,7 +114,7 @@
 #' tidy(fit.std.surv)
 #'
 #' fit.std <- standardize_coxph(
-#'   formula = Surv(U, D) ~ X + Zbin + X * Zbin,
+#'   formula = Surv(U, D) ~ X + Zbin + X * Zbin + fact,
 #'   data = dd,
 #'   values = list(Zbin = 0:1),
 #'   times = 1.5,
@@ -209,6 +210,10 @@ standardize_coxph <- function(formula,
     mf <- model.frame(newformula, data)
     survobj <- mf[,1]
 
+    dmat <- model.matrix(mf, data = data)[, -1, drop = FALSE]
+
+    ncovs <- ncol(dmat)
+
     input$times <- tstar
 
     etimes <- sort(survobj[survobj[, 2] == 1,1])
@@ -251,7 +256,6 @@ standardize_coxph <- function(formula,
 
     diffrmst <- rmst1 - rmst0
 
-
     ## individual counting process
 
     Nit <- do.call(cbind, lapply(etimes, \(tt){
@@ -280,58 +284,50 @@ standardize_coxph <- function(formula,
                                ncol = length(etimes), byrow = FALSE) * Yit)
 
 
-    SS1.t.0 <- matrix(NA, nrow = length(etimes), ncol = length(covs))
-    SS2.t.0 <- array(NA, dim = c(length(etimes), length(covs), length(covs)))
+    SS1.t.0 <- matrix(NA, nrow = length(etimes), ncol = ncovs)
+    SS2.t.0 <- array(NA, dim = c(length(etimes), ncovs, ncovs))
 
     SS0.t.1 <- colMeans(matrix(risk1 * (data[[expname]] == 1), nrow = nrow(data),
                                ncol = length(etimes), byrow = FALSE) * Yit)
 
 
-    SS1.t.1 <- matrix(NA, nrow = length(etimes), ncol = length(covs))
-    SS2.t.1 <- array(NA, dim = c(length(etimes), length(covs), length(covs)))
+    SS1.t.1 <- matrix(NA, nrow = length(etimes), ncol = ncovs)
+    SS2.t.1 <- array(NA, dim = c(length(etimes), ncovs, ncovs))
 
-    Sigma0 <- Sigma1 <- matrix(0, nrow = length(covs), ncol = length(covs))
+    Sigma0 <- Sigma1 <- matrix(0, nrow = ncovs, ncol = ncovs)
 
-    if(length(covs) > 1) {
-      dmat <- as.matrix(mf[, covs])
-
-
-    } else {
-      dmat <- as.matrix(mf[, covs, drop = FALSE])
-
-
-    }
 
     ZZmat <-  do.call(rbind,
                       apply(dmat, MAR = 1, FUN = \(x) c(x %*% t(x)),
                             simplify = FALSE))
 
+
     for(i in 1:length(etimes)) {
 
       SS1.t.0[i, ] <- colMeans(matrix((data[[expname]] == 0) * risk0 * Yit[, i],
                                       nrow = nrow(data),
-                                      ncol = length(covs)) * dmat)
+                                      ncol = ncovs) * dmat)
 
 
 
       SS2.t.0[i,,] <- matrix(colMeans(matrix((data[[expname]] == 0) * risk0 * Yit[, i],
                                              nrow = nrow(data),
-                                             ncol = length(covs)^2) *
+                                             ncol = ncovs^2) *
                                         ZZmat),
-                             nrow = length(covs),
-                             ncol = length(covs))
+                             nrow = ncovs,
+                             ncol = ncovs)
 
       SS1.t.1[i, ] <- colMeans(matrix((data[[expname]] == 1) * risk1 * Yit[, i],
                                       nrow = nrow(data),
-                                      ncol = length(covs)) * dmat)
+                                      ncol = ncovs) * dmat)
 
 
       SS2.t.1[i,,] <- matrix(colMeans(matrix((data[[expname]] == 1) * risk1 * Yit[, i],
                                              nrow = nrow(data),
-                                             ncol = length(covs)^2) *
+                                             ncol = ncovs^2) *
                                         ZZmat),
-                             nrow = length(covs),
-                             ncol = length(covs))
+                             nrow = ncovs,
+                             ncol = ncovs)
 
 
       Sigma0 <- Sigma0 + (1 - Ai[i]) * (SS2.t.0[i,,] / SS0.t.0[i] -
@@ -352,7 +348,7 @@ standardize_coxph <- function(formula,
                                  nrow = length(risk0), ncol = ncol(Yit)) * Yit)
     denom.haz1 <- colSums(matrix(risk1 * (data[[expname]] == 1),
                                  nrow = length(risk1), ncol = ncol(Yit)) * Yit)
-    g0i <- g1i <- matrix(NA, nrow = nrow(data), ncol = length(covs))
+    g0i <- g1i <- matrix(NA, nrow = nrow(data), ncol = ncovs)
 
 
     for(i in 1:nrow(data)) {
