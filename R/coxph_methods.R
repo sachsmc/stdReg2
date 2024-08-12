@@ -375,17 +375,19 @@ standardize_coxph <- function(formula,
     g0 <- (solve(Sigma0) %*% colSums(g0i)) / sum(1 - data[[expname]])
     g1 <- (solve(Sigma1) %*% colSums(g1i)) / sum(data[[expname]])
 
-    var0 <- c((sum(1 - data[[expname]]) / nrow(data)) * t(g0) %*% Sigma0 %*% g0) +
+    var0 <- (c((sum(1 - data[[expname]]) / nrow(data)) * t(g0) %*% Sigma0 %*% g0) +
       sum((1 - Ai) * (h0hat^2 / SS0.t.0) / denom.haz0) +
       (nrow(data) - 1) / (nrow(data)) * var(apply(cbind(1,exp(-breslow0)),
-                                                  MAR = 1, rsum, c(0,etimes),tstar))
+                                                  MAR = 1, rsum, c(0,etimes),tstar))) /
+      nrow(data)
 
-    var1 <- c((sum(data[[expname]]) / nrow(data)) * t(g1) %*% Sigma1 %*% g1) +
+    var1 <- (c((sum(data[[expname]]) / nrow(data)) * t(g1) %*% Sigma1 %*% g1) +
                 sum(Ai * (h1hat^2 / SS0.t.1) / denom.haz1) +
                 (nrow(data) - 1) / (nrow(data)) * var(apply(cbind(1,exp(-breslow1)),
-                                                            MAR = 1, rsum, c(0,etimes),tstar))
+                                                            MAR = 1, rsum, c(0,etimes),tstar))) /
+  nrow(data)
 
-    covar <- (nrow(data) - 1) / (nrow(data)) * cov(apply(cbind(1,exp(-breslow1)),
+    covar <- (nrow(data) - 1) / (nrow(data)^2) * cov(apply(cbind(1,exp(-breslow1)),
                                                          MAR = 1, rsum, c(0,etimes),tstar),
                                                      apply(cbind(1,exp(-breslow0)),
                                                            MAR = 1, rsum, c(0,etimes),tstar))
