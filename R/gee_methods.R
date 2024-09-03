@@ -18,7 +18,7 @@
 #' is used to obtain estimates of the cluster-specific means:
 #' \deqn{\hat{a}_i=\sum_{j=1}^{n_i}r_{ij}/n_i,} where
 #' \deqn{r_{ij}=Y_{ij}-h(X_{ij},Z_{ij};\hat{\beta})} if \eqn{\eta} is the
-#' identity link, and \deqn{r_{ij}=Y_{ij}exp\{-h(X_{ij},Z_{ij};\hat{\beta})\}}
+#' identity link, and \deqn{r_{ij}=Y_{ij}\exp\{-h(X_{ij},Z_{ij};\hat{\beta})\}}
 #' if \eqn{\eta} is the log link, and \eqn{(X_{ij},Z_{ij})} is the value of
 #' \eqn{(X,Z)} for subject \eqn{j} in cluster \eqn{i}, \eqn{j=1,...,n_i},
 #' \eqn{i=1,...,n}. The CGEE estimate of \eqn{\beta} and the estimate of
@@ -46,7 +46,7 @@
 #' distribution for \eqn{Z}, and thus the term
 #' \eqn{var[E\{\hat{\theta}(x)|\bar{Z}\}]} is not 0, unless one conditions on
 #' \eqn{\bar{Z}}.
-#' @author Arvid Sjolander.
+#' @author Arvid Sjölander.
 #' @references Goetgeluk S. and Vansteelandt S. (2008). Conditional generalized
 #' estimating equations for the analysis of clustered and longitudinal data.
 #' \emph{Biometrics} \bold{64}(3), 772-780.
@@ -54,7 +54,7 @@
 #' Martin R.S. (2017). Estimation of average marginal effects in multiplicative
 #' unobserved effects panel models. \emph{Economics Letters} \bold{160}, 16-19.
 #'
-#' Sjolander A. (2019). Estimation of marginal causal effects in the presence
+#' Sjölander A. (2019). Estimation of marginal causal effects in the presence
 #' of confounding by cluster. \emph{Biostatistics} doi:
 #' 10.1093/biostatistics/kxz054
 #' @examples

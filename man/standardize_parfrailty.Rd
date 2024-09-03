@@ -53,8 +53,8 @@ it is assumed that the order is as specified in contrasts.}
 
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
-mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
-\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
+\eqn{\psi(x)=\log[\theta(x)/\{1-\theta(x)\}]}, or
 \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
 If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
@@ -83,11 +83,11 @@ the marginal distribution of \eqn{Z}.
 , with parameterization as described in the help section for
 \link{parfrailty}. Integrating out the gamma frailty gives the survival
 function
-\deqn{S(t|X,Z)=[1+\phi\Lambda_0(t;\alpha,\eta)exp\{h(X,Z;\beta)\}]^{-1/\phi},}
+\deqn{S(t|X,Z)=[1+\phi\Lambda_0(t;\alpha,\eta)\exp\{h(X,Z;\beta)\}]^{-1/\phi},}
 where \eqn{\Lambda_0(t;\alpha,\eta)} is the cumulative baseline hazard
 \deqn{(t/\alpha)^{\eta}.} The ML estimates of \eqn{(\alpha,\eta,\phi,\beta)}
 are used to obtain estimates of the survival function \eqn{S(t|X=x,Z)}:
-\deqn{\hat{S}(t|X=x,Z)=[1+\hat{\phi}\Lambda_0(t;\hat{\alpha},\hat{\eta})exp\{h(X,Z;\hat{\beta})\}]^{-1/\hat{\phi}}.}
+\deqn{\hat{S}(t|X=x,Z)=[1+\hat{\phi}\Lambda_0(t;\hat{\alpha},\hat{\eta})\exp\{h(X,Z;\hat{\beta})\}]^{-1/\hat{\phi}}.}
 For each \eqn{t} in the \code{t} argument and for each \eqn{x} in the
 \code{x} argument, these estimates are averaged across all subjects (i.e.
 all observed values of \eqn{Z}) to produce estimates
@@ -169,7 +169,7 @@ Chang I.M., Gelman G., Pagano M. (1982). Corrected group prognostic curves
 and summary statistics. \emph{Journal of Chronic Diseases} \bold{35},
 669-674.
 
-Dahlqwist E., Pawitan Y., Sjolander A. (2019). Regression standardization
+Dahlqwist E., Pawitan Y., Sjölander A. (2019). Regression standardization
 and attributable fraction estimation with between-within frailty models for
 clustered survival data. \emph{Statistical Methods in Medical Research}
 \bold{28}(2), 462-485.
@@ -182,5 +182,5 @@ Makuch R.W. (1982). Adjusted survival curve estimation using covariates.
 \emph{Journal of Chronic Diseases} \bold{35}, 437-443.
 }
 \author{
-Arvid Sjolander
+Arvid Sjölander
 }

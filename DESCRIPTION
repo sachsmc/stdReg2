@@ -1,7 +1,7 @@
 Package: stdReg2
 Type: Package
 Title: Regression Standardization for Causal Inference
-Version: 0.4.0
+Version: 1.0.0
 Authors@R: 
     c(person(given = "Michael C",
              family = "Sachs",
@@ -18,13 +18,14 @@ Authors@R:
             family = "Brand", role = "aut"))
 URL: https://github.com/sachsmc/stdReg2
 BugReports: https://github.com/sachsmc/stdReg2/issues
-Date: 2024-08-07             
+Date: 2024-09-03             
 Description: Contains more modern tools for causal inference using regression 
-      standardization. Four general classes of models are allowed; generalized 
+      standardization. Four general classes of models are implemented; generalized 
       linear models, conditional generalized estimating equation models, 
-      Cox proportional hazards models and shared frailty gamma-Weibull models. 
-      Sjolander, A. (2016) <doi:10.1007/s10654-016-0157-3>. Also includes functionality
-      for doubly robust estimation for these model classes in some special cases. 
+      Cox proportional hazards models, and shared frailty gamma-Weibull models. 
+      Methodological details are described in Sjolander, A. (2016) <doi:10.1007/s10654-016-0157-3>. 
+      Also includes functionality for doubly robust estimation for generalized linear models 
+      in some special cases, and the ability to implement custom models. 
 License: AGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
@@ -34,15 +35,14 @@ Imports:
     generics,
     survival
 Suggests: 
-    magick,
-    pdftools,
     causaldata,
     AF,
     knitr,
+    nnet,
     rmarkdown,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Depends: 
     R (>= 2.10)

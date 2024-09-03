@@ -28,8 +28,8 @@
 #' @param ci_level Coverage probability of confidence intervals.
 #' @param transforms A vector of transforms in the following format:
 #' If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
-#' mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
-#' \eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+#' mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
+#' \eqn{\psi(x)=\log[\theta(x)/\{1-\theta(x)\}]}, or
 #' \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
 #' If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.
 #' @param contrasts A vector of contrasts in the following format:
@@ -42,7 +42,7 @@
 #' must be a vector or list the same length as \code{contrasts}, and if not named,
 #' it is assumed that the order is as specified in contrasts.
 #' @returns An object of class \code{std_glm}.
-#' This is basically a list with components estimates and covariance estimates in \code{res}
+#' This is basically a list with components estimates and covariance estimates in \code{res}.
 #' Results for transformations, contrasts, references are stored in \code{res_contrasts}.
 #' Obtain numeric results in a data frame with the \link{tidy} function.
 #' @details \code{standardize_glm} performs regression standardization
@@ -58,10 +58,10 @@
 #' @references Rothman K.J., Greenland S., Lash T.L. (2008).
 #' \emph{Modern Epidemiology}, 3rd edition.
 #' Lippincott, Williams & Wilkins.
-#' @references Sjolander A. (2016).
+#' @references Sjölander A. (2016).
 #' Regression standardization with the R-package stdReg.
 #' \emph{European Journal of Epidemiology} \bold{31}(6), 563-574.
-#' @references Sjolander A. (2016).
+#' @references Sjölander A. (2016).
 #' Estimation of causal effect measures with the R-package stdReg.
 #' \emph{European Journal of Epidemiology} \bold{33}(9), 847-858.
 #' @examples
@@ -86,7 +86,7 @@
 #' x
 #' # different transformations of causal effects
 #'
-#' # example from Sjolander (2016) with case-control data
+#' # example from Sjölander (2016) with case-control data
 #' # here the matching variable needs to be passed as an argument
 #' singapore <- AF::singapore
 #' Mi <- singapore$Age
@@ -223,7 +223,7 @@ standardize_glm <- function(formula,
   ## Estimates of standardized means
   estimates <- colSums(weights * predmat, na.rm = TRUE) / sum(weights)
 
-  ## Implement variance estimation according to Appendix 1 of Sjolander, A. (2016)
+  ## Implement variance estimation according to Appendix 1 of Sjölander, A. (2016)
 
   ## Get Score (U) and the Fisher information matrix (I) from the glm object
   ## NOTE: The dispersion parameter is set to 1 for the variance calculations
@@ -272,7 +272,7 @@ standardize_glm <- function(formula,
   ), sandwich_fit[["I"]])
   i_mat <- rbind(upper_i_mat, lower_i_mat)
 
-  ## Apply Equation (5) of Sjolander, A. (2016)
+  ## Apply Equation (5) of Sjölander, A. (2016)
   if (missing(clusterid)) {
     variance <- (solve(i_mat) %*% j_mat %*% t(solve(i_mat)) / n)[seq_len(nrow(valuesout)), seq_len(nrow(valuesout))]
   } else {
@@ -325,10 +325,10 @@ standardize_glm <- function(formula,
 #' when either the outcome regression or the exposure model is correctly specified
 #' and there is no unmeasured confounding.
 #' @references Gabriel E.E., Sachs, M.C., Martinussen T., Waernbaum I.,
-#' Goetghebeur E., Vansteelandt S., Sjolander A. (2023),
+#' Goetghebeur E., Vansteelandt S., Sjölander A. (2024),
 #' Inverse probability of treatment weighting with
 #' generalized linear outcome models for doubly robust estimation.
-#' \emph{Statistics in Medicine}, In press.
+#' \emph{Statistics in Medicine}, \bold{43}(3):534--547.
 #'
 #' @examples
 #'
@@ -655,8 +655,8 @@ print.std_glm <- function(x, ...) {
 #' gives untransformed intervals, or "log", which gives log-transformed intervals.
 #' @param ci_level Coverage probability of confidence intervals.
 #' @param transform  If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
-#' mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
-#' \eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+#' mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
+#' \eqn{\psi(x)=\log[\theta(x)/\{1-\theta(x)\}]}, or
 #' \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively. If left unspecified,
 #' \eqn{\psi(x)=\theta(x)}.
 #' @param contrast If set to \code{"difference"} or \code{"ratio"}, then \eqn{\psi(x)-\psi(x_0)}

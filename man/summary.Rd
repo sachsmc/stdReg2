@@ -37,5 +37,5 @@ This is a \code{summary} method for class \code{"parfrailty"}.
 \code{\link{parfrailty}}
 }
 \author{
-Arvid Sjolander and Elisabeth Dahlqwist.
+Arvid Sjölander and Elisabeth Dahlqwist.
 }

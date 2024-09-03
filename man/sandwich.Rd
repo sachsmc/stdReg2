@@ -7,7 +7,7 @@
 sandwich(fit, data, weights, t, fit.detail)
 }
 \arguments{
-\item{fit}{A fitted model object of class glm, coxph, ah, or survfit}
+\item{fit}{A fitted model object of class \link[stats]{glm}, \link[survival]{coxph}, ah, or \link[survival]{survfit}}
 
 \item{data}{The data used to fit the model}
 
@@ -15,7 +15,7 @@ sandwich(fit, data, weights, t, fit.detail)
 
 \item{t}{Optional fixed time point for survival objects}
 
-\item{fit.detail}{Additional information for survival objects, see Details}
+\item{fit.detail}{For Cox models, the result of running \link[survival]{coxph.detail} on the model fit}
 }
 \value{
 A list consisting of the Fisher information matrix (I) and the Score equations (U)

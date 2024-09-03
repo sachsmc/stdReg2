@@ -53,14 +53,14 @@ it is assumed that the order is as specified in contrasts.}
 
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
-mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
-\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
+\eqn{\psi(x)=\log[\theta(x)/\{1-\theta(x)\}]}, or
 \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
 If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
 An object of class \code{std_glm}.
-This is basically a list with components estimates and covariance estimates in \code{res}
+This is basically a list with components estimates and covariance estimates in \code{res}.
 Results for transformations, contrasts, references are stored in \code{res_contrasts}.
 Obtain numeric results in a data frame with the \link{tidy} function.
 }
@@ -107,8 +107,8 @@ x <- standardize_glm_dr(
 }
 \references{
 Gabriel E.E., Sachs, M.C., Martinussen T., Waernbaum I.,
-Goetghebeur E., Vansteelandt S., Sjolander A. (2023),
+Goetghebeur E., Vansteelandt S., Sjölander A. (2024),
 Inverse probability of treatment weighting with
 generalized linear outcome models for doubly robust estimation.
-\emph{Statistics in Medicine}, In press.
+\emph{Statistics in Medicine}, \bold{43}(3):534--547.
 }

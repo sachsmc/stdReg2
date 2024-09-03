@@ -9,6 +9,7 @@ standardize_coxph(
   data,
   values,
   times,
+  measure = c("survival", "rmean"),
   clusterid,
   ci_level = 0.95,
   ci_type = "plain",
@@ -28,6 +29,9 @@ at which marginal means of the outcome will be estimated.}
 
 \item{times}{A vector containing the specific values of \eqn{T} at
 which to estimate the standardized survival function.}
+
+\item{measure}{Either "survival" to estimate the survival function at times
+or "rmean" for the restricted mean survival up to the largest of times.}
 
 \item{clusterid}{An optional string containing the name of a cluster identification variable
 when data are clustered.}
@@ -53,8 +57,8 @@ it is assumed that the order is as specified in contrasts.}
 
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
-mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
-\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
+\eqn{\psi(x)=\log[\theta(x)/\{1-\theta(x)\}]}, or
 \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
 If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
@@ -73,24 +77,33 @@ covariate distribution. Let \eqn{T}, \eqn{X}, and \eqn{Z} be the survival
 outcome, the exposure, and a vector of covariates, respectively.
 \code{standardize_coxph} fits a Cox proportional hazards model and the Breslow estimator
 of the baseline hazard in order to estimate the
-standardized survival function \eqn{\theta(t,x)=E\{S(t|X=x,Z)\}}, where
+standardized survival function \eqn{\theta(t,x)=E\{S(t|X=x,Z)\}} when \code{measure = "survival"} or the standardized restricted mean survival up to time t \eqn{\theta(t, x) = E\{\int_0^t S(u|X = x, Z) du\}} when \code{measure = "rmean"}, where
 \eqn{t} is a specific value of \eqn{T}, \eqn{x} is a specific value of
 \eqn{X}, and the expectation is over the marginal distribution of \eqn{Z}.
 }
 \details{
 \code{standardize_coxph} fits the Cox proportional hazards model
-\deqn{\lambda(t|X,Z)=\lambda_0(t)exp\{h(X,Z;\beta)\}}.
+\deqn{\lambda(t|X,Z)=\lambda_0(t)\exp\{h(X,Z;\beta)\}.}
 Breslow's estimator of the cumulative baseline hazard
 \eqn{\Lambda_0(t)=\int_0^t\lambda_0(u)du} is used together with the partial
 likelihood estimate of \eqn{\beta} to obtain estimates of the survival
-function \eqn{S(t|X=x,Z)}:
-\deqn{\hat{S}(t|X=x,Z)=exp[-\hat{\Lambda}_0(t)exp\{h(X=x,Z;\hat{\beta})\}].}
+function \eqn{S(t|X=x,Z)} if \code{measure = "survival"}:
+\deqn{\hat{S}(t|X=x,Z)=\exp[-\hat{\Lambda}_0(t)\exp\{h(X=x,Z;\hat{\beta})\}].}
 For each \eqn{t} in the \code{t} argument and for each \eqn{x} in the
 \code{x} argument, these estimates are averaged across all subjects (i.e.
 all observed values of \eqn{Z}) to produce estimates
 \deqn{\hat{\theta}(t,x)=\sum_{i=1}^n \hat{S}(t|X=x,Z_i)/n,} where \eqn{Z_i}
 is the value of \eqn{Z} for subject \eqn{i}, \eqn{i=1,...,n}.  The variance
 for \eqn{\hat{\theta}(t,x)} is obtained by the sandwich formula.
+
+If \code{measure = "rmean"}, then \eqn{\Lambda_0(t)=\int_0^t\lambda_0(u)du}
+is used together with the partial
+likelihood estimate of \eqn{\beta} to obtain estimates of the restricted mean survival
+up to time t: \eqn{\int_0^t S(u|X=x,Z) du} for each element of \code{times}. The estimation
+and inference is done using the method described in Chen and Tsiatis 2001.
+Currently, we can only estimate the difference in RMST for a single binary
+exposure. Two separate Cox models are fit for each level of the exposure,
+which is expected to be coded as 0/1.
 }
 \note{
 Standardized survival functions are sometimes referred to as (direct)
@@ -125,20 +138,34 @@ require(survival)
 set.seed(7)
 n <- 300
 Z <- rnorm(n)
+Zbin <- rbinom(n, 1, .3)
 X <- rnorm(n, mean = Z)
 T <- rexp(n, rate = exp(X + Z + X * Z)) # survival time
 C <- rexp(n, rate = exp(X + Z + X * Z)) # censoring time
+fact <- factor(sample(letters[1:3], n, replace = TRUE))
 U <- pmin(T, C) # time at risk
 D <- as.numeric(T < C) # event indicator
-dd <- data.frame(Z, X, U, D)
-fit.std <- standardize_coxph(
+dd <- data.frame(Z, Zbin, X, U, D, fact)
+fit.std.surv <- standardize_coxph(
   formula = Surv(U, D) ~ X + Z + X * Z,
   data = dd,
   values = list(X = seq(-1, 1, 0.5)),
   times = 1:5
 )
+print(fit.std.surv)
+plot(fit.std.surv)
+tidy(fit.std.surv)
+
+fit.std <- standardize_coxph(
+  formula = Surv(U, D) ~ X + Zbin + X * Zbin + fact,
+  data = dd,
+  values = list(Zbin = 0:1),
+  times = 1.5,
+  measure = "rmean",
+  contrast = "difference",
+  reference = 0
+)
 print(fit.std)
-plot(fit.std)
 tidy(fit.std)
 
 }
@@ -154,12 +181,14 @@ survival curves, with applications to testing for no treatment effect.
 Makuch R.W. (1982). Adjusted survival curve estimation using covariates.
 \emph{Journal of Chronic Diseases} \bold{35}, 437-443.
 
-Sjolander A. (2016). Regression standardization with the R-package stdReg.
+Sjölander A. (2016). Regression standardization with the R-package stdReg.
 \emph{European Journal of Epidemiology} \bold{31}(6), 563-574.
 
-Sjolander A. (2016). Estimation of causal effect measures with the R-package
+Sjölander A. (2018). Estimation of causal effect measures with the R-package
 stdReg. \emph{European Journal of Epidemiology} \bold{33}(9), 847-858.
+
+Chen, P. Y., Tsiatis, A. A. (2001). Causal inference on the difference of the restricted mean lifetime between two groups. \emph{Biometrics}, \bold{57}(4), 1030-1038.
 }
 \author{
-Arvid Sjolander
+Arvid Sjölander, Adam Brand, Michael Sachs
 }

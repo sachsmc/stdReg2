@@ -5,10 +5,10 @@
 \title{Get standardized estimates using the g-formula with and separate models for each exposure level in the data}
 \usage{
 standardize_level(
-  arguments,
-  data,
   fitter_list,
+  arguments,
   predict_fun_list,
+  data,
   values,
   B = NULL,
   ci_level = 0.95,
@@ -20,16 +20,16 @@ standardize_level(
 )
 }
 \arguments{
-\item{arguments}{The arguments to be used in the fitter function as a \code{list}.}
-
-\item{data}{The data.}
-
 \item{fitter_list}{The function to call to fit the data (as a list).}
+
+\item{arguments}{The arguments to be used in the fitter function as a \code{list}.}
 
 \item{predict_fun_list}{The function used to predict the means/probabilities
 for a new data set on the response level. For survival data,
 this should be a matrix where each column is the time, and each
 row the data (as a list).}
+
+\item{data}{The data.}
 
 \item{values}{A named list or data.frame specifying the variables and values
 at which marginal means of the outcome will be estimated.}
@@ -55,8 +55,8 @@ it is assumed that the order is as specified in contrasts.}
 
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
-mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
-\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
+\eqn{\psi(x)=\log[\theta(x)/\{1-\theta(x)\}]}, or
 \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
 If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
@@ -95,6 +95,7 @@ U <- pmin(T, C) # time at risk
 D <- as.numeric(T < C) # event indicator
 dd <- data.frame(Z, X, U, D)
 x <- standardize_level(
+  fitter_list = list("coxph", "coxph"),
   arguments = list(
     list(
       formula = Surv(U, D) ~ X + Z + X * Z,
@@ -109,10 +110,9 @@ x <- standardize_level(
       y = TRUE
     )
   ),
-  fitter_list = list("coxph", "coxph"),
+  predict_fun_list = list(prob_predict.coxph, prob_predict.coxph),
   data = dd,
   times = seq(1, 5, 0.1),
-  predict_fun_list = list(prob_predict.coxph, prob_predict.coxph),
   values = list(X = c(0, 1)),
   B = 100,
   reference = 0,
@@ -125,11 +125,11 @@ Rothman K.J., Greenland S., Lash T.L. (2008).
 \emph{Modern Epidemiology}, 3rd edition.
 Lippincott, Williams & Wilkins.
 
-Sjolander A. (2016).
+Sjölander A. (2016).
 Regression standardization with the R-package stdReg.
 \emph{European Journal of Epidemiology} \bold{31}(6), 563-574.
 
-Sjolander A. (2016).
+Sjölander A. (2016).
 Estimation of causal effect measures with the R-package stdReg.
 \emph{European Journal of Epidemiology} \bold{33}(9), 847-858.
 }

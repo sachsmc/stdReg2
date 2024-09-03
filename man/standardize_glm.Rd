@@ -66,14 +66,14 @@ it is assumed that the order is as specified in contrasts.}
 
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
-mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
-\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
+\eqn{\psi(x)=\log[\theta(x)/\{1-\theta(x)\}]}, or
 \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
 If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
 An object of class \code{std_glm}.
-This is basically a list with components estimates and covariance estimates in \code{res}
+This is basically a list with components estimates and covariance estimates in \code{res}.
 Results for transformations, contrasts, references are stored in \code{res_contrasts}.
 Obtain numeric results in a data frame with the \link{tidy} function.
 }
@@ -114,7 +114,7 @@ x <- standardize_glm(
 x
 # different transformations of causal effects
 
-# example from Sjolander (2016) with case-control data
+# example from Sjölander (2016) with case-control data
 # here the matching variable needs to be passed as an argument
 singapore <- AF::singapore
 Mi <- singapore$Age
@@ -175,11 +175,11 @@ Rothman K.J., Greenland S., Lash T.L. (2008).
 \emph{Modern Epidemiology}, 3rd edition.
 Lippincott, Williams & Wilkins.
 
-Sjolander A. (2016).
+Sjölander A. (2016).
 Regression standardization with the R-package stdReg.
 \emph{European Journal of Epidemiology} \bold{31}(6), 563-574.
 
-Sjolander A. (2016).
+Sjölander A. (2016).
 Estimation of causal effect measures with the R-package stdReg.
 \emph{European Journal of Epidemiology} \bold{33}(9), 847-858.
 }

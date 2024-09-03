@@ -1,10 +1,11 @@
 #' Compute the sandwich variance components from a model fit
 #'
-#' @param fit A fitted model object of class glm, coxph, ah, or survfit
+#' @param fit A fitted model object of class \link[stats]{glm}, \link[survival]{coxph}, ah, or \link[survival]{survfit}
 #' @param data The data used to fit the model
 #' @param weights Optional weights
 #' @param t Optional fixed time point for survival objects
-#' @param fit.detail Additional information for survival objects, see Details
+#' @param fit.detail For Cox models, the result of running \link[survival]{coxph.detail} on the model fit
+#'
 #'
 #' @return A list consisting of the Fisher information matrix (I) and the Score equations (U)
 #' @export sandwich
@@ -24,7 +25,7 @@ sandwich <- function(fit, data, weights, t, fit.detail) {
     ## NOTE: summary(fit)$cov.unscaled is weighted
     I <- -solve(summary(fit)$cov.unscaled) / n
   }
-  if (inherits(x = fit, what = "ah")) {
+  if (inherits(x = fit, what = "ah")) {  ## from the ivtools package?
     #---meat---
 
     # residuals are weighted
@@ -37,6 +38,7 @@ sandwich <- function(fit, data, weights, t, fit.detail) {
   if (inherits(x = fit, what = "coxph")) {
     #---meat for regression coefficients---
 
+    # fit.detail <- coxph.detail(fit)
     # score residuals are unweighted, but computed with estimated coefficients
     # from weighted model
     res <- residuals(fit, type = "score")

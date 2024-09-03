@@ -4,11 +4,14 @@ date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output: 
   rmarkdown::html_vignette: 
     highlight: "haddock"
+    self_contained: false
 vignette: >
   %\VignetteIndexEntry{Estimation of causal effects using stdReg2}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
 bibliography: references.bib
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -103,27 +106,12 @@ summary(nhefs_dat)
 
 We will assume that the set of confounders in $\boldsymbol{Z}$ includes sex, race, age, education, number of cigarettes smoked per year, the number of years smoked, level of physical activity, and baseline weight in 1971. This equivalent to assuming that the counterfactual weight gain is independent of the exposure conditional on these variables. In other words, we are assuming the following directed acyclic graph: 
 
-```{r, echo=FALSE, engine='tikz', out.width='30%', fig.ext=if (knitr:::is_latex_output()) 'pdf' else 'png'}
-\begin{tikzpicture}[->,>=stealth,shorten >=2pt,auto,node distance=2.5cm,
-                    thick,main node/.style={circle,fill=black,inner sep=0pt,minimum size=6pt},
-                    grey node/.style={circle,fill=gray!50,inner sep=0pt,minimum size=6pt}]
-  % Nodes
-  \node[main node] (1) at (0,0) {};
-  \node[main node] (2) at (2,0) {};
-  \node[main node] (3) at (1,1) {};
-
-  \node[below] at (1) {X};
-  \node[below] at (2) {Y};
-  \node[above] at (3) {$\boldsymbol{Z}$};
-
-  % Edges
-  \path[every node/.style={font=\sffamily\small}]
-    (1) edge[->, line width=1.2pt] (2);
-  \path[every node/.style={font=\sffamily\small}]
-    (3) edge[->, line width=1.2pt] (1);
-  \path[every node/.style={font=\sffamily\small}]
-    (3) edge[->, line width=1.2pt] (2);        
-\end{tikzpicture}
+```{r, echo=FALSE, out.width='30%'}
+library(survival)
+states <- c("X", "Z", "Y")
+connect <- matrix(0, 3, 3, dimnames = list(states, states))
+connect[cbind(c(1, 2, 2), c(3, 1, 3))] <- 1
+statefig(cbind(c(.2, .5, .8), c(.3, .6, .3)), connect)
 ```
 
 For the specific forms of the conditional expectations required in the outcome we assume a linear regression model with both linear and quadratic forms of the continuous covariates. We can fit this as

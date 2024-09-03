@@ -5,7 +5,7 @@
 #' performs regression standardization in shared frailty gamma-Weibull models.
 #'
 #' @details \code{parfrailty} fits the shared frailty gamma-Weibull model
-#' \deqn{\lambda(t_{ij}|C_{ij})=\lambda(t_{ij};\alpha,\eta)U_iexp\{h(C_{ij};\beta)\},}
+#' \deqn{\lambda(t_{ij}|C_{ij})=\lambda(t_{ij};\alpha,\eta)U_i\exp\{h(C_{ij};\beta)\},}
 #' where \eqn{t_{ij}} and \eqn{C_{ij}} are the survival time and covariate
 #' vector for subject \eqn{j} in cluster \eqn{i}, respectively.
 #' \eqn{\lambda(t;\alpha,\eta)} is the Weibull baseline hazard function
@@ -15,28 +15,28 @@
 #' gamma distribution with scale = 1/shape = \eqn{\phi}. \eqn{h(X;\beta)} is
 #' the regression function as specified by the \code{formula} argument,
 #' parametrized by a vector \eqn{\beta}. The ML estimates
-#' \eqn{\{log(\hat{\alpha}),log(\hat{\eta}),log(\hat{\phi}),\hat{\beta}\}} are
+#' \eqn{\{\log(\hat{\alpha}),\log(\hat{\eta}),\log(\hat{\phi}),\hat{\beta}\}} are
 #' obtained by maximizing the marginal (over \eqn{U}) likelihood.
 #'
-#' @param formula an object of class "\code{formula}", on the same format as
-#' accepted by the \code{coxph} function in the \pkg{survival} package.
+#' @param formula an object of class "\code{formula}", in the same format as
+#' accepted by the \link[survival]{coxph} function.
 #' @param data a data frame containing the variables in the model.
-#' @param clusterid an string containing the name of a cluster identification
+#' @param clusterid a string containing the name of a cluster identification
 #' variable.
 #' @param init an optional vector of initial values for the model parameters.
-#' @return An object of class \code{"parfrailty"} is a list containing:
-#' \item{est}{ the ML estimates \eqn{\{log(\hat{\alpha}),log(\hat{\eta}),
-#' log(\hat{\phi}),\hat{\beta}\}}. } \item{vcov}{ the variance-covariance
+#' @return An object of class \code{"parfrailty"} which is a list containing:
+#' \item{est}{ the Maximum Likelihood (ML) estimates \eqn{\{\log(\hat{\alpha}),\log(\hat{\eta}),
+#' \log(\hat{\phi}),\hat{\beta}\}}. } \item{vcov}{ the variance-covariance
 #' vector of the ML estimates. } \item{score}{ a matrix containing the
 #' cluster-specific contributions to the ML score equations.  }
 #' @note If left truncation is present, it is assumed that it is strong left
-#' truncation.  This means that, even if the truncation time may be
+#' truncation.  This means that even if the truncation time may be
 #' subject-specific, the whole cluster is unobserved if at least one subject in
 #' the cluster dies before his/her truncation time. If all subjects in the
 #' cluster survive beyond their subject-specific truncation times, then the
 #' whole cluster is observed (Van den Berg and Drepper, 2016).
-#' @author Arvid Sjolander and Elisabeth Dahlqwist.
-#' @references Dahlqwist E., Pawitan Y., Sjolander A. (2019). Regression
+#' @author Arvid Sjölander and Elisabeth Dahlqwist.
+#' @references Dahlqwist E., Pawitan Y., Sjölander A. (2019). Regression
 #' standardization and attributable fraction estimation with between-within
 #' frailty models for clustered survival data. \emph{Statistical Methods in
 #' Medical Research} \bold{28}(2), 462-485.
@@ -402,7 +402,7 @@ parfrailty <- function(formula, data, clusterid, init) {
 #' decimal form.
 #' @param digits the number of significant digits to use when printing..
 #' @param \dots not used.
-#' @author Arvid Sjolander and Elisabeth Dahlqwist.
+#' @author Arvid Sjölander and Elisabeth Dahlqwist.
 #' @seealso \code{\link{parfrailty}}
 #' @examples
 #' ## See documentation for parfrailty
@@ -439,7 +439,12 @@ summary.parfrailty <- function(object, ci_type = "plain", ci_level = 0.95,
   return(ans)
 }
 
-
+#' Print method for parametric frailty fits
+#'
+#' @param x An object of class "parfrailty"
+#' @param digits Number of digits to print
+#' @param ... Not used
+#' @export
 print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3L),
                                      ...) {
   ## Function call
@@ -474,11 +479,11 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' , with parameterization as described in the help section for
 #' \link{parfrailty}. Integrating out the gamma frailty gives the survival
 #' function
-#' \deqn{S(t|X,Z)=[1+\phi\Lambda_0(t;\alpha,\eta)exp\{h(X,Z;\beta)\}]^{-1/\phi},}
+#' \deqn{S(t|X,Z)=[1+\phi\Lambda_0(t;\alpha,\eta)\exp\{h(X,Z;\beta)\}]^{-1/\phi},}
 #' where \eqn{\Lambda_0(t;\alpha,\eta)} is the cumulative baseline hazard
 #' \deqn{(t/\alpha)^{\eta}.} The ML estimates of \eqn{(\alpha,\eta,\phi,\beta)}
 #' are used to obtain estimates of the survival function \eqn{S(t|X=x,Z)}:
-#' \deqn{\hat{S}(t|X=x,Z)=[1+\hat{\phi}\Lambda_0(t;\hat{\alpha},\hat{\eta})exp\{h(X,Z;\hat{\beta})\}]^{-1/\hat{\phi}}.}
+#' \deqn{\hat{S}(t|X=x,Z)=[1+\hat{\phi}\Lambda_0(t;\hat{\alpha},\hat{\eta})\exp\{h(X,Z;\hat{\beta})\}]^{-1/\hat{\phi}}.}
 #' For each \eqn{t} in the \code{t} argument and for each \eqn{x} in the
 #' \code{x} argument, these estimates are averaged across all subjects (i.e.
 #' all observed values of \eqn{Z}) to produce estimates
@@ -486,14 +491,14 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' \eqn{\hat{\theta}(t,x)} is obtained by the sandwich formula.
 #'
 #' @inherit standardize_coxph
-#' @author Arvid Sjolander
+#' @author Arvid Sjölander
 #' @references
 #'
 #' Chang I.M., Gelman G., Pagano M. (1982). Corrected group prognostic curves
 #' and summary statistics. \emph{Journal of Chronic Diseases} \bold{35},
 #' 669-674.
 #'
-#' Dahlqwist E., Pawitan Y., Sjolander A. (2019). Regression standardization
+#' Dahlqwist E., Pawitan Y., Sjölander A. (2019). Regression standardization
 #' and attributable fraction estimation with between-within frailty models for
 #' clustered survival data. \emph{Statistical Methods in Medical Research}
 #' \bold{28}(2), 462-485.

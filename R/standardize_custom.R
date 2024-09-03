@@ -1,8 +1,8 @@
 #' @title Get standardized estimates using the g-formula with a custom model
 #' @inherit standardize_glm
+#' @param fitter The function to call to fit the data.
 #' @param arguments
 #' The arguments to be used in the fitter function as a \code{list}.
-#' @param fitter The function to call to fit the data.
 #' @param predict_fun The function used to predict the means/probabilities
 #' for a new data set on the response level. For survival data,
 #' this should be a matrix where each column is the time, and each
@@ -35,12 +35,12 @@
 #' prob_predict.glm <- function(...) predict.glm(..., type = "response")
 #'
 #' x <- standardize(
+#'   fitter = "glm",
 #'   arguments = list(
 #'     formula = Y ~ X * Z,
 #'     family = "binomial"
 #'   ),
 #'   predict_fun = prob_predict.glm,
-#'   fitter = "glm",
 #'   data = dd,
 #'   values = list(X = seq(-1, 1, 0.1)),
 #'   B = 100,
@@ -70,16 +70,16 @@
 #' D <- as.numeric(T < C) # event indicator
 #' dd <- data.frame(Z, X, U, D)
 #' x <- standardize(
+#' fitter = "coxph",
 #'   arguments = list(
 #'     formula = Surv(U, D) ~ X + Z + X * Z,
 #'     method = "breslow",
 #'     x = TRUE,
 #'     y = TRUE
 #'   ),
-#'   fitter = "coxph",
+#'   predict_fun = prob_predict.coxph,
 #'   data = dd,
 #'   times = 1:5,
-#'   predict_fun = prob_predict.coxph,
 #'   values = list(X = c(-1, 0, 1)),
 #'   B = 100,
 #'   reference = 0,
@@ -87,10 +87,10 @@
 #' )
 #' x
 #' @export standardize
-standardize <- function(arguments,
-                        data,
-                        fitter,
+standardize <- function(fitter,
+                        arguments,
                         predict_fun,
+                        data,
                         values,
                         B = NULL,
                         ci_level = 0.95,
@@ -219,6 +219,7 @@ standardize <- function(arguments,
 #' D <- as.numeric(T < C) # event indicator
 #' dd <- data.frame(Z, X, U, D)
 #' x <- standardize_level(
+#'   fitter_list = list("coxph", "coxph"),
 #'   arguments = list(
 #'     list(
 #'       formula = Surv(U, D) ~ X + Z + X * Z,
@@ -233,10 +234,9 @@ standardize <- function(arguments,
 #'       y = TRUE
 #'     )
 #'   ),
-#'   fitter_list = list("coxph", "coxph"),
+#'   predict_fun_list = list(prob_predict.coxph, prob_predict.coxph),
 #'   data = dd,
 #'   times = seq(1, 5, 0.1),
-#'   predict_fun_list = list(prob_predict.coxph, prob_predict.coxph),
 #'   values = list(X = c(0, 1)),
 #'   B = 100,
 #'   reference = 0,
@@ -244,18 +244,19 @@ standardize <- function(arguments,
 #' )
 #' print(x)
 #' @export standardize_level
-standardize_level <- function(arguments,
-                              data,
-                              fitter_list,
-                              predict_fun_list,
-                              values,
-                              B = NULL,
-                              ci_level = 0.95,
-                              contrasts = NULL,
-                              reference = NULL,
-                              seed = NULL,
-                              times = NULL,
-                              transforms = NULL) {
+standardize_level <- function(
+    fitter_list,
+    arguments,
+    predict_fun_list,
+    data,
+    values,
+    B = NULL,
+    ci_level = 0.95,
+    contrasts = NULL,
+    reference = NULL,
+    seed = NULL,
+    times = NULL,
+    transforms = NULL) {
   ## Preparation and various checks
   n <- nrow(data)
 

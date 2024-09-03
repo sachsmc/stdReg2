@@ -2,12 +2,12 @@
 % Please edit documentation in R/coxph_methods.R
 \name{tidy.std_surv}
 \alias{tidy.std_surv}
-\title{Provide tidy output from a std_glm object for use in downstream computations}
+\title{Provide tidy output from a std_surv object for use in downstream computations}
 \usage{
 \method{tidy}{std_surv}(x, ...)
 }
 \arguments{
-\item{x}{An object of class std_glm}
+\item{x}{An object of class std_surv}
 
 \item{...}{Not currently used}
 }
@@ -15,7 +15,7 @@
 A data.frame
 }
 \description{
-Tidy summarizes information about the components of the standardized regression fit.
+Tidy summarizes information about the components of the standardized model fit.
 }
 \examples{
 require(survival)

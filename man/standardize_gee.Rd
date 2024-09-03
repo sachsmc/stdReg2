@@ -55,14 +55,14 @@ it is assumed that the order is as specified in contrasts.}
 
 \item{transforms}{A vector of transforms in the following format:
 If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
-mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
-\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
+\eqn{\psi(x)=\log[\theta(x)/\{1-\theta(x)\}]}, or
 \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
 If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
 An object of class \code{std_glm}.
-This is basically a list with components estimates and covariance estimates in \code{res}
+This is basically a list with components estimates and covariance estimates in \code{res}.
 Results for transformations, contrasts, references are stored in \code{res_contrasts}.
 Obtain numeric results in a data frame with the \link{tidy} function.
 }
@@ -86,7 +86,7 @@ conditional generalized estimating equation (CGGE) estimate of \eqn{\beta}
 is used to obtain estimates of the cluster-specific means:
 \deqn{\hat{a}_i=\sum_{j=1}^{n_i}r_{ij}/n_i,} where
 \deqn{r_{ij}=Y_{ij}-h(X_{ij},Z_{ij};\hat{\beta})} if \eqn{\eta} is the
-identity link, and \deqn{r_{ij}=Y_{ij}exp\{-h(X_{ij},Z_{ij};\hat{\beta})\}}
+identity link, and \deqn{r_{ij}=Y_{ij}\exp\{-h(X_{ij},Z_{ij};\hat{\beta})\}}
 if \eqn{\eta} is the log link, and \eqn{(X_{ij},Z_{ij})} is the value of
 \eqn{(X,Z)} for subject \eqn{j} in cluster \eqn{i}, \eqn{j=1,...,n_i},
 \eqn{i=1,...,n}. The CGEE estimate of \eqn{\beta} and the estimate of
@@ -145,10 +145,10 @@ estimating equations for the analysis of clustered and longitudinal data.
 Martin R.S. (2017). Estimation of average marginal effects in multiplicative
 unobserved effects panel models. \emph{Economics Letters} \bold{160}, 16-19.
 
-Sjolander A. (2019). Estimation of marginal causal effects in the presence
+Sjölander A. (2019). Estimation of marginal causal effects in the presence
 of confounding by cluster. \emph{Biostatistics} doi:
 10.1093/biostatistics/kxz054
 }
 \author{
-Arvid Sjolander.
+Arvid Sjölander.
 }

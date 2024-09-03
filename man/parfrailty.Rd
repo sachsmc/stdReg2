@@ -7,20 +7,20 @@
 parfrailty(formula, data, clusterid, init)
 }
 \arguments{
-\item{formula}{an object of class "\code{formula}", on the same format as
-accepted by the \code{coxph} function in the \pkg{survival} package.}
+\item{formula}{an object of class "\code{formula}", in the same format as
+accepted by the \link[survival]{coxph} function.}
 
 \item{data}{a data frame containing the variables in the model.}
 
-\item{clusterid}{an string containing the name of a cluster identification
+\item{clusterid}{a string containing the name of a cluster identification
 variable.}
 
 \item{init}{an optional vector of initial values for the model parameters.}
 }
 \value{
-An object of class \code{"parfrailty"} is a list containing:
-\item{est}{ the ML estimates \eqn{\{log(\hat{\alpha}),log(\hat{\eta}),
-log(\hat{\phi}),\hat{\beta}\}}. } \item{vcov}{ the variance-covariance
+An object of class \code{"parfrailty"} which is a list containing:
+\item{est}{ the Maximum Likelihood (ML) estimates \eqn{\{\log(\hat{\alpha}),\log(\hat{\eta}),
+\log(\hat{\phi}),\hat{\beta}\}}. } \item{vcov}{ the variance-covariance
 vector of the ML estimates. } \item{score}{ a matrix containing the
 cluster-specific contributions to the ML score equations.  }
 }
@@ -31,7 +31,7 @@ performs regression standardization in shared frailty gamma-Weibull models.
 }
 \details{
 \code{parfrailty} fits the shared frailty gamma-Weibull model
-\deqn{\lambda(t_{ij}|C_{ij})=\lambda(t_{ij};\alpha,\eta)U_iexp\{h(C_{ij};\beta)\},}
+\deqn{\lambda(t_{ij}|C_{ij})=\lambda(t_{ij};\alpha,\eta)U_i\exp\{h(C_{ij};\beta)\},}
 where \eqn{t_{ij}} and \eqn{C_{ij}} are the survival time and covariate
 vector for subject \eqn{j} in cluster \eqn{i}, respectively.
 \eqn{\lambda(t;\alpha,\eta)} is the Weibull baseline hazard function
@@ -41,12 +41,12 @@ unobserved frailty term for cluster \eqn{i}, which is assumed to have a
 gamma distribution with scale = 1/shape = \eqn{\phi}. \eqn{h(X;\beta)} is
 the regression function as specified by the \code{formula} argument,
 parametrized by a vector \eqn{\beta}. The ML estimates
-\eqn{\{log(\hat{\alpha}),log(\hat{\eta}),log(\hat{\phi}),\hat{\beta}\}} are
+\eqn{\{\log(\hat{\alpha}),\log(\hat{\eta}),\log(\hat{\phi}),\hat{\beta}\}} are
 obtained by maximizing the marginal (over \eqn{U}) likelihood.
 }
 \note{
 If left truncation is present, it is assumed that it is strong left
-truncation.  This means that, even if the truncation time may be
+truncation.  This means that even if the truncation time may be
 subject-specific, the whole cluster is unobserved if at least one subject in
 the cluster dies before his/her truncation time. If all subjects in the
 cluster survive beyond their subject-specific truncation times, then the
@@ -88,7 +88,7 @@ fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
 print(fit)
 }
 \references{
-Dahlqwist E., Pawitan Y., Sjolander A. (2019). Regression
+Dahlqwist E., Pawitan Y., Sjölander A. (2019). Regression
 standardization and attributable fraction estimation with between-within
 frailty models for clustered survival data. \emph{Statistical Methods in
 Medical Research} \bold{28}(2), 462-485.
@@ -98,5 +98,5 @@ models with left-truncated data. \emph{Econometric Reviews}, 35(6),
 1075-1098.
 }
 \author{
-Arvid Sjolander and Elisabeth Dahlqwist.
+Arvid Sjölander and Elisabeth Dahlqwist.
 }

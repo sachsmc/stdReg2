@@ -41,8 +41,8 @@ gives untransformed intervals, or "log", which gives log-transformed intervals.}
 \item{ci_level}{Coverage probability of confidence intervals.}
 
 \item{transform}{If set to \code{"log"}, \code{"logit"}, or \code{"odds"}, the standardized
-mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=log\{\theta(x)\}},
-\eqn{\psi(x)=log[\theta(x)/\{1-\theta(x)\}]}, or
+mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
+\eqn{\psi(x)=\log[\theta(x)/\{1-\theta(x)\}]}, or
 \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively. If left unspecified,
 \eqn{\psi(x)=\theta(x)}.}
 
@@ -53,7 +53,7 @@ If not \code{NULL}, a doubly robust estimator of the standardized estimator is u
 
 \item{reference}{If \code{contrast} is specified, the desired reference level.}
 
-\item{legendpos}{position of the legend; see help for \code{legend}.}
+\item{legendpos}{position of the legend; see \link[graphics]{legend}.}
 
 \item{summary_fun}{For internal use only. Do not change.}
 

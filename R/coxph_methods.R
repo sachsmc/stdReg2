@@ -6,17 +6,17 @@
 #' outcome, the exposure, and a vector of covariates, respectively.
 #' \code{standardize_coxph} fits a Cox proportional hazards model and the Breslow estimator
 #' of the baseline hazard in order to estimate the
-#' standardized survival function \eqn{\theta(t,x)=E\{S(t|X=x,Z)\}}, where
+#' standardized survival function \eqn{\theta(t,x)=E\{S(t|X=x,Z)\}} when \code{measure = "survival"} or the standardized restricted mean survival up to time t \eqn{\theta(t, x) = E\{\int_0^t S(u|X = x, Z) du\}} when \code{measure = "rmean"}, where
 #' \eqn{t} is a specific value of \eqn{T}, \eqn{x} is a specific value of
 #' \eqn{X}, and the expectation is over the marginal distribution of \eqn{Z}.
 #'
 #' @details \code{standardize_coxph} fits the Cox proportional hazards model
-#' \deqn{\lambda(t|X,Z)=\lambda_0(t)exp\{h(X,Z;\beta)\}}.
+#' \deqn{\lambda(t|X,Z)=\lambda_0(t)\exp\{h(X,Z;\beta)\}.}
 #' Breslow's estimator of the cumulative baseline hazard
 #' \eqn{\Lambda_0(t)=\int_0^t\lambda_0(u)du} is used together with the partial
 #' likelihood estimate of \eqn{\beta} to obtain estimates of the survival
 #' function \eqn{S(t|X=x,Z)} if \code{measure = "survival"}:
-#' \deqn{\hat{S}(t|X=x,Z)=exp[-\hat{\Lambda}_0(t)exp\{h(X=x,Z;\hat{\beta})\}].}
+#' \deqn{\hat{S}(t|X=x,Z)=\exp[-\hat{\Lambda}_0(t)\exp\{h(X=x,Z;\hat{\beta})\}].}
 #' For each \eqn{t} in the \code{t} argument and for each \eqn{x} in the
 #' \code{x} argument, these estimates are averaged across all subjects (i.e.
 #' all observed values of \eqn{Z}) to produce estimates
@@ -27,7 +27,7 @@
 #' If \code{measure = "rmean"}, then \eqn{\Lambda_0(t)=\int_0^t\lambda_0(u)du}
 #' is used together with the partial
 #' likelihood estimate of \eqn{\beta} to obtain estimates of the restricted mean survival
-#' up to time t: \eqn{\int_0^t S(t|X=x,Z) dt} for each element of \code{times}. The estimation
+#' up to time t: \eqn{\int_0^t S(u|X=x,Z) du} for each element of \code{times}. The estimation
 #' and inference is done using the method described in Chen and Tsiatis 2001.
 #' Currently, we can only estimate the difference in RMST for a single binary
 #' exposure. Two separate Cox models are fit for each level of the exposure,
@@ -67,7 +67,7 @@
 #' \eqn{var[E\{\hat{\theta}(t,x)|\bar{Z}\}]} is not 0, unless one conditions on
 #' \eqn{\bar{Z}}. The variance calculation by Gail and Byar (1986) ignores this
 #' term, and thus effectively conditions on \eqn{\bar{Z}}.
-#' @author Arvid Sjolander
+#' @author Arvid Sjölander, Adam Brand, Michael Sachs
 #' @references
 #'
 #' Chang I.M., Gelman G., Pagano M. (1982). Corrected group prognostic curves
@@ -81,10 +81,10 @@
 #' Makuch R.W. (1982). Adjusted survival curve estimation using covariates.
 #' \emph{Journal of Chronic Diseases} \bold{35}, 437-443.
 #'
-#' Sjolander A. (2016). Regression standardization with the R-package stdReg.
+#' Sjölander A. (2016). Regression standardization with the R-package stdReg.
 #' \emph{European Journal of Epidemiology} \bold{31}(6), 563-574.
 #'
-#' Sjolander A. (2018). Estimation of causal effect measures with the R-package
+#' Sjölander A. (2018). Estimation of causal effect measures with the R-package
 #' stdReg. \emph{European Journal of Epidemiology} \bold{33}(9), 847-858.
 #'
 #' Chen, P. Y., Tsiatis, A. A. (2001). Causal inference on the difference of the restricted mean lifetime between two groups. \emph{Biometrics}, \bold{57}(4), 1030-1038.
@@ -298,7 +298,7 @@ standardize_coxph <- function(formula,
 
 
     ZZmat <-  do.call(rbind,
-                      apply(dmat, MAR = 1, FUN = \(x) c(x %*% t(x)),
+                      apply(dmat, MARGIN = 1, FUN = \(x) c(x %*% t(x)),
                             simplify = FALSE))
 
 
@@ -361,13 +361,13 @@ standardize_coxph <- function(formula,
         matrix(denom.haz1, nrow = length(denom.haz1), ncol = ncol(Zbar1))
 
       Lcurv0 <-  rbind(0, matrix(exp(-breslow0[i, ]) * risk0[i], nrow = nrow(inmat),
-                                 ncol = ncol(inmat)) *apply(inmat, MAR = 2, cumsum))
+                                 ncol = ncol(inmat)) *apply(inmat, MARGIN = 2, cumsum))
 
       Lcurv1 <-  rbind(0, matrix(exp(-breslow1[i, ]) * risk1[i], nrow = nrow(inmat1),
-                                 ncol = ncol(inmat1)) *apply(inmat1, MAR = 2, cumsum))
+                                 ncol = ncol(inmat1)) *apply(inmat1, MARGIN = 2, cumsum))
 
-      g0i[i,] <- apply(Lcurv0, MAR = 2, rsum, c(0, etimes), tstar)
-      g1i[i,] <- apply(Lcurv1, MAR = 2, rsum, c(0, etimes), tstar)
+      g0i[i,] <- apply(Lcurv0, MARGIN = 2, rsum, c(0, etimes), tstar)
+      g1i[i,] <- apply(Lcurv1, MARGIN = 2, rsum, c(0, etimes), tstar)
 
 
     }
@@ -378,19 +378,19 @@ standardize_coxph <- function(formula,
     var0 <- (c((sum(1 - data[[expname]]) / nrow(data)) * t(g0) %*% Sigma0 %*% g0) +
       sum((1 - Ai) * (h0hat^2 / SS0.t.0) / denom.haz0) +
       (nrow(data) - 1) / (nrow(data)) * var(apply(cbind(1,exp(-breslow0)),
-                                                  MAR = 1, rsum, c(0,etimes),tstar))) /
+                                                  MARGIN = 1, rsum, c(0,etimes),tstar))) /
       nrow(data)
 
     var1 <- (c((sum(data[[expname]]) / nrow(data)) * t(g1) %*% Sigma1 %*% g1) +
                 sum(Ai * (h1hat^2 / SS0.t.1) / denom.haz1) +
                 (nrow(data) - 1) / (nrow(data)) * var(apply(cbind(1,exp(-breslow1)),
-                                                            MAR = 1, rsum, c(0,etimes),tstar))) /
+                                                            MARGIN = 1, rsum, c(0,etimes),tstar))) /
   nrow(data)
 
     covar <- (nrow(data) - 1) / (nrow(data)^2) * cov(apply(cbind(1,exp(-breslow1)),
-                                                         MAR = 1, rsum, c(0,etimes),tstar),
+                                                         MARGIN = 1, rsum, c(0,etimes),tstar),
                                                      apply(cbind(1,exp(-breslow0)),
-                                                           MAR = 1, rsum, c(0,etimes),tstar))
+                                                           MARGIN = 1, rsum, c(0,etimes),tstar))
 
     #var.diff <- var1 + var0 - 2 * covar
 
@@ -705,7 +705,7 @@ print_summary_std_coxph <- function(x, ...) {
   }
 }
 
-#' @param legendpos position of the legend; see help for \code{legend}.
+#' @param legendpos position of the legend; see \link[graphics]{legend}.
 #' @rdname plot
 #' @export plot.std_surv
 #' @export
@@ -844,10 +844,10 @@ plot.std_surv <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
 
 
 
-#' Provide tidy output from a std_glm object for use in downstream computations
+#' Provide tidy output from a std_surv object for use in downstream computations
 #'
-#' Tidy summarizes information about the components of the standardized regression fit.
-#' @param x An object of class std_glm
+#' Tidy summarizes information about the components of the standardized model fit.
+#' @param x An object of class std_surv
 #' @param ... Not currently used
 #'
 #' @returns A data.frame

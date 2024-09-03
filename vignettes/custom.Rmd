@@ -3,8 +3,10 @@ title: "Implementing custom and new methods for standardization"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Implementing custom and new methods for standardization}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -16,7 +18,60 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(stdReg2)
+library(nnet)
 ```
 
 
+## General implementation
+
+The `stdReg2` package provides functionality for implementing regression standardization for an arbitrary model. As long as the user can provide a function to estimate the model, and another function to produce predictions of the desired summary statistic for a given set of confounders from the model, regression standardization can be applied to produce estimates of a causal effect. 
+
+Here we demonstrate this by implementing a polytomous logistic regression model for the outcome of activity in the nhefs data, which takes three levels: (0) very active, (1) moderately active, and (2) inactive. Inference can be done using the nonparametric bootstrap with percentile confidence intervals [@tibshirani1993introduction] by setting the argument `B` for the number of replicates, which we omit here for brevity. Note that this method only applies for point exposures; other methods are needed to produce valid effect estimates for time-varying exposures, see @robins1986new or the `gfoRmula` package [@MCGRATH2020100008]. 
+
+```{r}
+nhefs_dat <- causaldata::nhefs_complete
+# the target outcome model
+# mfit <- multinom(active ~ qsmk + sex + race + age + I(age^2) + 
+#               as.factor(education) + smokeintensity, data = nhefs_dat)
+
+## here we predict the probability of being inactive (level 3)
+predict_multinom <- function(...) {
+  predict(..., type = "probs")[, 3]
+}
+
+std_custom <- standardize(fitter = "multinom", 
+                          arguments = list(formula = active ~ qsmk + sex + 
+                                             race + age + I(age^2) + 
+               as.factor(education) + smokeintensity, trace = FALSE), 
+               predict_fun = predict_multinom, 
+               data = nhefs_dat, 
+               values = list(qsmk = 0:1))
+std_custom
+```
+
+To instruct `standardize` how to fit the target outcome model, we tell it the name of the function to use in the `fitter` parameter (`"multinom"` in this case) and provide the arguments to the fitter function as a named list of `arguments`. The other required arguments are the data, the values at which the causal effects are desired, and the `predict_function`. The predict function takes as input the object returned by fitter, and outputs a vector of predicted summary statistics for each row of data. In this case we predict the probability of being inactive, which is the third column of the result of predict on a multinomial regression fit. 
+
+The output of the result is given above. We find the estimated probability of being inactive is 9% in those who did not quit smoking, while it is 11% in those who did quit smoking. 
+
+It is also possible to fit different models for each level of the exposure, using the `standardize_level` function, as in the following example: 
+
+```{r}
+
+std_custom2 <- standardize_level(fitter_list = list("multinom", "glm"),
+                          arguments = list(list(formula = active ~ qsmk + sex + 
+                                             race + age + I(age^2) + 
+               as.factor(education) + smokeintensity, trace = FALSE), 
+               list(formula = I(active == 2) ~ qsmk + sex + 
+                                             race + age  + 
+               as.factor(education) + smokeintensity, family = binomial)),
+               predict_fun_list = list(predict_multinom, 
+                                       \(...) predict.glm(..., type = "response")),
+               data = nhefs_dat, 
+               values = list(qsmk = 0:1))
+std_custom2
+
+
+```
+
+Here we provide a list of fitters, arguments, and predict functions, one for each of the desired levels of the exposure. 
 
