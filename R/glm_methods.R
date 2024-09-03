@@ -189,8 +189,8 @@ standardize_glm <- function(formula,
   } else {
     weights <- rep(1.0, n)
   }
-  data[["weights"]] <- weights
-  fit_outcome <- fit_glm(formula, family, data, "outcome")
+  #data[["weights"]] <- weights
+  fit_outcome <- fit_glm(formula, family, data, "outcome", weights = weights)
 
   ## Estimation and variance estimation
   ## In the implementation for the Score equations,
@@ -398,12 +398,12 @@ standardize_glm_dr <- function(formula_outcome,
     !is.binary(exposure) || nrow(valuesout) != 2L) {
     stop("the exposure has to be binary (0 or 1)")
   }
-  data[["weights"]] <- rep(1, n)
-  fit_exposure <- fit_glm(formula_exposure, family_exposure, data, "exposure")
+  weights <- rep(1, n)
+  fit_exposure <- fit_glm(formula_exposure, family_exposure, data, "exposure", weights = weights)
 
   g_weights <- predict(fit_exposure, type = "response")
-  data[["weights"]] <- exposure / g_weights + (1.0 - exposure) / (1.0 - g_weights)
-  fit_outcome <- fit_glm(formula_outcome, family_outcome, data, "outcome")
+  weights <- exposure / g_weights + (1.0 - exposure) / (1.0 - g_weights)
+  fit_outcome <- fit_glm(formula_outcome, family_outcome, data, "outcome", weights = weights)
 
   ## Create two data sets with every observation treated or untreated
   data_exposure_1 <- data_exposure_0 <- data
@@ -485,8 +485,8 @@ standardize_glm_dr <- function(formula_outcome,
   )
 }
 
-fit_glm <- function(formula, family, data, response) {
-  weights <- NULL
+fit_glm <- function(formula, family, data, response, weights = NULL) {
+
   ## fit with quasipoisson/quasibinomial to suppress warnings
   if (response == "outcome") {
     if ((inherits(family, "function") && identical(family, stats::binomial)) ||
@@ -501,7 +501,49 @@ fit_glm <- function(formula, family, data, response) {
   ## try fitting a glm model
   fit <- tryCatch(
     {
-      glm(formula = formula, data = data, family = family, weights = weights)
+      method <- "glm.fit"
+      cal <- match.call()
+      if (is.character(family))
+        family <- get(family, mode = "function", envir = parent.frame())
+      if (is.function(family))
+        family <- family()
+      if (is.null(family$family)) {
+        print(family)
+        stop("'family' not recognized")
+      }
+
+      mf <- stats::model.frame(formula = formula,
+                               data = data,
+                               drop.unused.levels = TRUE)
+
+      control <- glm.control()
+      mt <- attr(mf, "terms")
+      Y <- model.response(mf, "any")
+      if (length(dim(Y)) == 1L) {
+        nm <- rownames(Y)
+        dim(Y) <- NULL
+        if (!is.null(nm))
+          names(Y) <- nm
+      }
+      X <- if (!is.empty.model(mt))
+        model.matrix(mt, mf, contrasts)
+      else matrix(, NROW(Y), 0L)
+
+      fit <- eval(call(if (is.function(method)) "method" else method,
+                       x = X, y = Y, weights = weights, family = family,
+                       control = control, intercept = attr(mt, "intercept") >
+                         0L))
+
+      fit$model <- mf
+      fit$na.action <- attr(mf, "na.action")
+      fit$x <- X
+      structure(c(fit, list(call = cal, formula = formula, terms = mt,
+                            data = data, offset = NULL, control = control, method = method,
+                            contrasts = attr(X, "contrasts"), xlevels = .getXlevels(mt,
+                                                                                    mf))),
+                class = c(fit$class, c("glm", "lm")))
+
+
     },
     error = function(cond) {
       return(cond)
