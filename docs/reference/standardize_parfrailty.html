@@ -209,7 +209,7 @@ and attributable fraction estimation with between-within frailty models for
 clustered survival data. <em>Statistical Methods in Medical Research</em>
 <b>28</b>(2), 462-485.</p>
 <p>Gail M.H. and Byar D.P. (1986). Variance calculations for direct adjusted
-survival curves, with applications to testing for no treatement effect.
+survival curves, with applications to testing for no treatment effect.
 <em>Biometrical Journal</em> <b>28</b>(5), 587-599.</p>
 <p>Makuch R.W. (1982). Adjusted survival curve estimation using covariates.
 <em>Journal of Chronic Diseases</em> <b>35</b>, 437-443.</p>
@@ -237,7 +237,7 @@ survival curves, with applications to testing for no treatement effect.
 <span class="r-in"><span><span class="va">id</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n</span>, each <span class="op">=</span> <span class="va">m</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">U</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/GammaDist.html" class="external-link">rgamma</a></span><span class="op">(</span><span class="va">n</span>, shape <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="va">phi</span>, scale <span class="op">=</span> <span class="va">phi</span><span class="op">)</span>, each <span class="op">=</span> <span class="va">m</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">m</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># reparametrize scale as in rweibull function</span></span></span>
+<span class="r-in"><span><span class="co"># reparameterize scale as in rweibull function</span></span></span>
 <span class="r-in"><span><span class="va">weibull.scale</span> <span class="op">&lt;-</span> <span class="va">alpha</span> <span class="op">/</span> <span class="op">(</span><span class="va">U</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">beta</span> <span class="op">*</span> <span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="va">eta</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="cn">T</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Weibull.html" class="external-link">rweibull</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">m</span>, shape <span class="op">=</span> <span class="va">eta</span>, scale <span class="op">=</span> <span class="va">weibull.scale</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

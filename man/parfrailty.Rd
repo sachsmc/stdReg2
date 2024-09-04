@@ -40,7 +40,7 @@ parameter and \eqn{\alpha} is the scale parameter. \eqn{U_i} is the
 unobserved frailty term for cluster \eqn{i}, which is assumed to have a
 gamma distribution with scale = 1/shape = \eqn{\phi}. \eqn{h(X;\beta)} is
 the regression function as specified by the \code{formula} argument,
-parametrized by a vector \eqn{\beta}. The ML estimates
+parameterized by a vector \eqn{\beta}. The ML estimates
 \eqn{\{\log(\hat{\alpha}),\log(\hat{\eta}),\log(\hat{\phi}),\hat{\beta}\}} are
 obtained by maximizing the marginal (over \eqn{U}) likelihood.
 }
@@ -68,7 +68,7 @@ beta <- 1
 id <- rep(1:n, each = m)
 U <- rep(rgamma(n, shape = 1 / phi, scale = phi), each = m)
 X <- rnorm(n * m)
-# reparametrize scale as in rweibull function
+# reparameterize scale as in rweibull function
 weibull.scale <- alpha / (U * exp(beta * X))^(1 / eta)
 T <- rweibull(n * m, shape = eta, scale = weibull.scale)
 

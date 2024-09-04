@@ -14,7 +14,7 @@
 #' unobserved frailty term for cluster \eqn{i}, which is assumed to have a
 #' gamma distribution with scale = 1/shape = \eqn{\phi}. \eqn{h(X;\beta)} is
 #' the regression function as specified by the \code{formula} argument,
-#' parametrized by a vector \eqn{\beta}. The ML estimates
+#' parameterized by a vector \eqn{\beta}. The ML estimates
 #' \eqn{\{\log(\hat{\alpha}),\log(\hat{\eta}),\log(\hat{\phi}),\hat{\beta}\}} are
 #' obtained by maximizing the marginal (over \eqn{U}) likelihood.
 #'
@@ -60,7 +60,7 @@
 #' id <- rep(1:n, each = m)
 #' U <- rep(rgamma(n, shape = 1 / phi, scale = phi), each = m)
 #' X <- rnorm(n * m)
-#' # reparametrize scale as in rweibull function
+#' # reparameterize scale as in rweibull function
 #' weibull.scale <- alpha / (U * exp(beta * X))^(1 / eta)
 #' T <- rweibull(n * m, shape = eta, scale = weibull.scale)
 #'
@@ -504,7 +504,7 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' \bold{28}(2), 462-485.
 #'
 #' Gail M.H. and Byar D.P. (1986). Variance calculations for direct adjusted
-#' survival curves, with applications to testing for no treatement effect.
+#' survival curves, with applications to testing for no treatment effect.
 #' \emph{Biometrical Journal} \bold{28}(5), 587-599.
 #'
 #' Makuch R.W. (1982). Adjusted survival curve estimation using covariates.
@@ -526,7 +526,7 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' id <- rep(1:n, each = m)
 #' U <- rep(rgamma(n, shape = 1 / phi, scale = phi), each = m)
 #' X <- rnorm(n * m)
-#' # reparametrize scale as in rweibull function
+#' # reparameterize scale as in rweibull function
 #' weibull.scale <- alpha / (U * exp(beta * X))^(1 / eta)
 #' T <- rweibull(n * m, shape = eta, scale = weibull.scale)
 #'

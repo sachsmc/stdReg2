@@ -210,7 +210,7 @@ m3 <- standardize_glm(gained_weight ~ qsmk + sex + race + age + I(age^2) +
 m3
 ```
 
-Here we interpret the estimates in terms of probabilities, or the risk of gaining weight over 11 years. In particular, smoking causes a 13% additive increase in the risk of gaining weight, or a 1.2 fold multiplicative increase in the risk of gaining weight. With binary outcomes, we can use tranforms to get different contrasts, and also to improve the performance of the ratio contrast. By using the log transformation combined with the difference contrast, our estimates become the log risk ratios. We can exponential them to get the risk ratios, but often it is better to construct confidence intervals of ratios on the log scale and back transform. 
+Here we interpret the estimates in terms of probabilities, or the risk of gaining weight over 11 years. In particular, smoking causes a 13% additive increase in the risk of gaining weight, or a 1.2 fold multiplicative increase in the risk of gaining weight. With binary outcomes, we can use transformations to get different contrasts, and also to improve the performance of the ratio contrast. By using the log transformation combined with the difference contrast, our estimates become the log risk ratios. We can exponential them to get the risk ratios, but often it is better to construct confidence intervals of ratios on the log scale and back transform. 
 
 ```{r}
 m3_log <- standardize_glm(gained_weight ~ qsmk + sex + race + age + I(age^2) + 

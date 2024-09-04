@@ -11,3 +11,11 @@ navbar:
     left:  [intro, reference, articles, tutorials, news]
     right: [search, github]
 
+reference:
+- title: Estimation
+  description: Start with one of these for your model type.
+  contents:
+  - starts_with("standardize")
+- title: Helper functions and utilities
+  contents:
+  - -starts_with("standardize")

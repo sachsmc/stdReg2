@@ -137,7 +137,7 @@ beta <- 1
 id <- rep(1:n, each = m)
 U <- rep(rgamma(n, shape = 1 / phi, scale = phi), each = m)
 X <- rnorm(n * m)
-# reparametrize scale as in rweibull function
+# reparameterize scale as in rweibull function
 weibull.scale <- alpha / (U * exp(beta * X))^(1 / eta)
 T <- rweibull(n * m, shape = eta, scale = weibull.scale)
 
@@ -175,7 +175,7 @@ clustered survival data. \emph{Statistical Methods in Medical Research}
 \bold{28}(2), 462-485.
 
 Gail M.H. and Byar D.P. (1986). Variance calculations for direct adjusted
-survival curves, with applications to testing for no treatement effect.
+survival curves, with applications to testing for no treatment effect.
 \emph{Biometrical Journal} \bold{28}(5), 587-599.
 
 Makuch R.W. (1982). Adjusted survival curve estimation using covariates.

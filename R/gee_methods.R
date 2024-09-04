@@ -14,7 +14,7 @@
 #' @details \code{standardize_gee} assumes that a fixed effects model
 #' \deqn{\eta\{E(Y|i,X,Z)\}=a_i+h(X,Z;\beta)} has been fitted. The link
 #' function \eqn{\eta} is assumed to be the identity link or the log link. The
-#' conditional generalized estimating equation (CGGE) estimate of \eqn{\beta}
+#' conditional generalized estimating equation (CGEE) estimate of \eqn{\beta}
 #' is used to obtain estimates of the cluster-specific means:
 #' \deqn{\hat{a}_i=\sum_{j=1}^{n_i}r_{ij}/n_i,} where
 #' \deqn{r_{ij}=Y_{ij}-h(X_{ij},Z_{ij};\hat{\beta})} if \eqn{\eta} is the

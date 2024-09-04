@@ -6,13 +6,13 @@
 \alias{stdReg2-package}
 \title{stdReg2: Regression Standardization for Causal Inference}
 \description{
-Contains more modern tools for causal inference using regression standardization. Four general classes of models are implemented; generalized linear models, conditional generalized estimating equation models, Cox proportional hazards models, and shared frailty gamma-Weibull models. Methodological details are described in Sjolander, A. (2016) \doi{10.1007/s10654-016-0157-3}. Also includes functionality for doubly robust estimation for generalized linear models in some special cases, and the ability to implement custom models.
+Contains more modern tools for causal inference using regression standardization. Four general classes of models are implemented; generalized linear models, conditional generalized estimating equation models, Cox proportional hazards models, and shared frailty gamma-Weibull models. Methodological details are described in Sjölander, A. (2016) \doi{10.1007/s10654-016-0157-3}. Also includes functionality for doubly robust estimation for generalized linear models in some special cases, and the ability to implement custom models.
 }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/sachsmc/stdReg2}
-  \item Report bugs at \url{https://github.com/sachsmc/stdReg2/issues}
+  \item \url{https://sachsmc.github.io/stdReg2/}
+  \item Report bugs at \url{https://github.com/sachsmc/stdReg2/issues/}
 }
 
 }

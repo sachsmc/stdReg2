@@ -167,7 +167,7 @@ Obtain numeric results in a data frame with the <a href="https://generics.r-lib.
     <p><code>standardize_gee</code> assumes that a fixed effects model
 $$\eta\{E(Y|i,X,Z)\}=a_i+h(X,Z;\beta)$$ has been fitted. The link
 function \(\eta\) is assumed to be the identity link or the log link. The
-conditional generalized estimating equation (CGGE) estimate of \(\beta\)
+conditional generalized estimating equation (CGEE) estimate of \(\beta\)
 is used to obtain estimates of the cluster-specific means:
 $$\hat{a}_i=\sum_{j=1}^{n_i}r_{ij}/n_i,$$ where
 $$r_{ij}=Y_{ij}-h(X_{ij},Z_{ij};\hat{\beta})$$ if \(\eta\) is the
@@ -239,7 +239,7 @@ of confounding by cluster. <em>Biostatistics</em> doi:
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit.std</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome formula: Y ~ X + Z + I(X^2)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x5b084ab5bf28&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x62646e66f9d8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome family: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome link function: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  X </span>

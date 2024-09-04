@@ -101,7 +101,7 @@ parameter and \(\alpha\) is the scale parameter. \(U_i\) is the
 unobserved frailty term for cluster \(i\), which is assumed to have a
 gamma distribution with scale = 1/shape = \(\phi\). \(h(X;\beta)\) is
 the regression function as specified by the <code>formula</code> argument,
-parametrized by a vector \(\beta\). The ML estimates
+parameterized by a vector \(\beta\). The ML estimates
 \(\{\log(\hat{\alpha}),\log(\hat{\eta}),\log(\hat{\phi}),\hat{\beta}\}\) are
 obtained by maximizing the marginal (over \(U\)) likelihood.</p>
     </div>
@@ -147,7 +147,7 @@ models with left-truncated data. <em>Econometric Reviews</em>, 35(6),
 <span class="r-in"><span><span class="va">id</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n</span>, each <span class="op">=</span> <span class="va">m</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">U</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/GammaDist.html" class="external-link">rgamma</a></span><span class="op">(</span><span class="va">n</span>, shape <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="va">phi</span>, scale <span class="op">=</span> <span class="va">phi</span><span class="op">)</span>, each <span class="op">=</span> <span class="va">m</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">m</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># reparametrize scale as in rweibull function</span></span></span>
+<span class="r-in"><span><span class="co"># reparameterize scale as in rweibull function</span></span></span>
 <span class="r-in"><span><span class="va">weibull.scale</span> <span class="op">&lt;-</span> <span class="va">alpha</span> <span class="op">/</span> <span class="op">(</span><span class="va">U</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">beta</span> <span class="op">*</span> <span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="va">eta</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="cn">T</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Weibull.html" class="external-link">rweibull</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">m</span>, shape <span class="op">=</span> <span class="va">eta</span>, scale <span class="op">=</span> <span class="va">weibull.scale</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -167,7 +167,7 @@ models with left-truncated data. <em>Econometric Reviews</em>, 35(6),
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Surv(L, T, D) ~ X</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x5b0843f1eb70&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x6264682598d8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $data</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>              L          T D            X  id</span>
