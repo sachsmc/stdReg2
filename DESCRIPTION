@@ -28,7 +28,6 @@ Description: Contains more modern tools for causal inference using regression
       in some special cases, and the ability to implement custom models. 
 License: AGPL (>= 3)
 Encoding: UTF-8
-LazyData: true
 Imports:
     data.table,
     drgee,
