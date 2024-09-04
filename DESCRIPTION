@@ -16,7 +16,7 @@ Authors@R:
             family = "Ohlendorff", role = "aut"), 
       person(given = "Adam", 
             family = "Brand", role = "aut"))
-URL: https://github.com/sachsmc/stdReg2
+URL: https://sachsmc.github.io/stdReg2
 BugReports: https://github.com/sachsmc/stdReg2/issues
 Date: 2024-09-03             
 Description: Contains more modern tools for causal inference using regression 

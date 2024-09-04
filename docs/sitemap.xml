@@ -1,81 +1,32 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>/articles/cond-gee.html</loc>
-  </url>
-  <url>
-    <loc>/articles/event-history.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/overview.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/nhefs_dat.html</loc>
-  </url>
-  <url>
-    <loc>/reference/parfrailty.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.html</loc>
-  </url>
-  <url>
-    <loc>/reference/reexports.html</loc>
-  </url>
-  <url>
-    <loc>/reference/sandwich.html</loc>
-  </url>
-  <url>
-    <loc>/reference/standardize.html</loc>
-  </url>
-  <url>
-    <loc>/reference/standardize_coxph.html</loc>
-  </url>
-  <url>
-    <loc>/reference/standardize_gee.html</loc>
-  </url>
-  <url>
-    <loc>/reference/standardize_glm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/standardize_glm_dr.html</loc>
-  </url>
-  <url>
-    <loc>/reference/standardize_level.html</loc>
-  </url>
-  <url>
-    <loc>/reference/standardize_parfrailty.html</loc>
-  </url>
-  <url>
-    <loc>/reference/stdReg2-package.html</loc>
-  </url>
-  <url>
-    <loc>/reference/summary.html</loc>
-  </url>
-  <url>
-    <loc>/reference/tidy.std_glm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/tidy.std_surv.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://sachsmc.github.io/stdReg2/404.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/LICENSE.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/articles/cond-gee.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/articles/custom.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/articles/event-history.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/articles/index.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/articles/overview.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/authors.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/index.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/news/index.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/index.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/nhefs_dat.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/parfrailty.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/plot.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/print.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/print.summary.parfrailty.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/reexports.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/sandwich.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/standardize.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/standardize_coxph.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/standardize_gee.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/standardize_glm.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/standardize_glm_dr.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/standardize_level.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/standardize_parfrailty.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/stdReg2-package.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/summary.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/tidy.std_glm.html</loc></url>
+<url><loc>https://sachsmc.github.io/stdReg2/reference/tidy.std_surv.html</loc></url>
 </urlset>
+

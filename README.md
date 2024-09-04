@@ -19,7 +19,6 @@ or relative treatment effect.
     within the interface.
 4.  Robust and clear documentation with lots of examples and explanation
     of the necessary assumptions.
-5.  Demonstrate stability of package with simulations and unit tests.
 
 ## Difference between `stdReg2` and `stdReg`
 
@@ -65,6 +64,8 @@ x <- standardize_glm(
  contrasts = c("difference", "ratio"),
  reference = 0
 )
+#> Warning in model.matrix.default(mt, mf, contrasts): non-list contrasts argument
+#> ignored
 x
 #> Outcome formula: Y ~ X * Z
 #> Outcome family: quasibinomial 
@@ -112,16 +113,17 @@ effects using stdReg2”.
 citation("stdReg2")
 #> To cite package 'stdReg2' in publications use:
 #> 
-#>   Sachs M, Sjölander A, Gabriel E, Ohlendorff J (2023). _stdReg2:
-#>   Regression Standardization for Causal Inference_. R package version
-#>   0.3.0.
+#>   Sachs M, Sjölander A, Gabriel E, Ohlendorff J, Brand A (2024).
+#>   _stdReg2: Regression Standardization for Causal Inference_. R package
+#>   version 1.0.0, <https://sachsmc.github.io/stdReg2>.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
 #>     title = {stdReg2: Regression Standardization for Causal Inference},
-#>     author = {Michael C Sachs and Arvid Sjölander and Erin E Gabriel and Johan Sebastian Ohlendorff},
-#>     year = {2023},
-#>     note = {R package version 0.3.0},
+#>     author = {Michael C Sachs and Arvid Sjölander and Erin E Gabriel and Johan Sebastian Ohlendorff and Adam Brand},
+#>     year = {2024},
+#>     note = {R package version 1.0.0},
+#>     url = {https://sachsmc.github.io/stdReg2},
 #>   }
 ```

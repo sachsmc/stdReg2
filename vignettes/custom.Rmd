@@ -5,6 +5,7 @@ vignette: >
   %\VignetteIndexEntry{Implementing custom and new methods for standardization}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
+bibliography: references.bib
 editor_options: 
   chunk_output_type: console
 ---

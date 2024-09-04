@@ -4,6 +4,8 @@ template:
   bslib:
     pkgdown-nav-height: 100px
 
+url: https://sachsmc.github.io/stdReg2
+
 navbar:
   structure:
     left:  [intro, reference, articles, tutorials, news]

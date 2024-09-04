@@ -194,7 +194,7 @@ sandwich <- function(fit, data, weights, t, fit.detail) {
   return(list(I = I, U = U))
 }
 
-## copy paste from sandwich package; we don't need the entire package
+
 estfun_glm <- function(x, ...) {
   xmat <- model.matrix(x)
   xmat <- naresid(x$na.action, xmat)
