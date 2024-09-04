@@ -16,14 +16,14 @@ Authors@R:
             family = "Ohlendorff", role = "aut"), 
       person(given = "Adam", 
             family = "Brand", role = "aut"))
-URL: https://sachsmc.github.io/stdReg2
-BugReports: https://github.com/sachsmc/stdReg2/issues
+URL: https://sachsmc.github.io/stdReg2/
+BugReports: https://github.com/sachsmc/stdReg2/issues/
 Date: 2024-09-03             
 Description: Contains more modern tools for causal inference using regression 
       standardization. Four general classes of models are implemented; generalized 
       linear models, conditional generalized estimating equation models, 
       Cox proportional hazards models, and shared frailty gamma-Weibull models. 
-      Methodological details are described in Sjolander, A. (2016) <doi:10.1007/s10654-016-0157-3>. 
+      Methodological details are described in Sjölander, A. (2016) <doi:10.1007/s10654-016-0157-3>. 
       Also includes functionality for doubly robust estimation for generalized linear models 
       in some special cases, and the ability to implement custom models. 
 License: AGPL (>= 3)
