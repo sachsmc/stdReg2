@@ -16,7 +16,8 @@ standardize(
   reference = NULL,
   seed = NULL,
   times = NULL,
-  transforms = NULL
+  transforms = NULL,
+  progressbar = TRUE
 )
 }
 \arguments{
@@ -59,10 +60,12 @@ mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
 \eqn{\psi(x)=\log[\theta(x)/\{1-\theta(x)\}]}, or
 \eqn{\psi(x)=\theta(x)/\{1-\theta(x)\}}, respectively.
 If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
+
+\item{progressbar}{Logical, if TRUE will print bootstrapping progress to the console}
 }
 \value{
 An object of class \code{std_custom}.
-This is basically a list with components estimates and fit for the outcome model.
+This is a list with components estimates and fit for the outcome model.
 }
 \description{
 Get standardized estimates using the g-formula with a custom model

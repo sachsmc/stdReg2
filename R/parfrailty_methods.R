@@ -24,7 +24,7 @@
 #' @param clusterid a string containing the name of a cluster identification
 #' variable.
 #' @param init an optional vector of initial values for the model parameters.
-#' @return An object of class \code{"parfrailty"} which is a list containing:
+#' @returns An object of class \code{"parfrailty"} which is a list containing:
 #' \item{est}{ the Maximum Likelihood (ML) estimates \eqn{\{\log(\hat{\alpha}),\log(\hat{\eta}),
 #' \log(\hat{\phi}),\hat{\beta}\}}. } \item{vcov}{ the variance-covariance
 #' vector of the ML estimates. } \item{score}{ a matrix containing the
@@ -410,6 +410,7 @@ parfrailty <- function(formula, data, clusterid, init) {
 #' @rdname summary
 #' @export summary.parfrailty
 #' @export
+#' @returns An object of class "summary.parfrailty", which is a list that contains relevant summary statistics about the fitted model
 summary.parfrailty <- function(object, ci_type = "plain", ci_level = 0.95,
                                digits = max(3L, getOption("digits") - 3L), ...) {
   if (missing(ci_level)) ci_level <- 0.95
@@ -445,6 +446,7 @@ summary.parfrailty <- function(object, ci_type = "plain", ci_level = 0.95,
 #' @param digits Number of digits to print
 #' @param ... Not used
 #' @export
+#' @returns The object being printed, invisibly
 print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3L),
                                      ...) {
   ## Function call
@@ -460,6 +462,7 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
   cat("Number of observations:", x$n, "\n")
   cat("Number of clusters:", x$ncluster, "\n")
   cat("\n")
+  invisible(x)
 }
 
 #' @title Regression standardization in shared frailty gamma-Weibull models

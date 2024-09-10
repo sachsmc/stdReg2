@@ -13,6 +13,9 @@
 
 \item{...}{Not used}
 }
+\value{
+The object being printed, invisibly
+}
 \description{
 Print method for parametric frailty fits
 }

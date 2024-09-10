@@ -18,6 +18,9 @@
 
 \item{\dots}{unused}
 }
+\value{
+The object being printed, invisibly.
+}
 \description{
 Prints summary of regression standardization fit
 }

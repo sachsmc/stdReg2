@@ -537,6 +537,7 @@ print.std_custom <- function(x, ...) {
     }
     cat("\n")
   }
+  invisible(x)
 }
 
 fit_helper <- function(args, fitter, data) {

@@ -661,6 +661,7 @@ summary_std_glm <- function(object, ci_type = "plain", ci_level = 0.95,
 #' @rdname print
 #' @export print.std_glm
 #' @export
+#' @returns The object being printed, invisibly.
 print.std_glm <- function(x, ...) {
   if (!is.null(x[["res"]][["fit_exposure"]])) {
     cat("Doubly robust estimator with: \n")
@@ -687,6 +688,7 @@ print.std_glm <- function(x, ...) {
     print(temp[["est_table"]], digits = 3L)
     cat("\n")
   }
+  invisible(x)
 }
 
 #' @title Plots regression standardization fit
@@ -714,6 +716,7 @@ print.std_glm <- function(x, ...) {
 #' @rdname plot
 #' @export plot.std_glm
 #' @export
+#' @returns None. Creates a plot as a side effect
 plot.std_glm <- function(x, plot_ci = TRUE, ci_type = "plain", ci_level = 0.95,
                          transform = NULL, contrast = NULL, reference = NULL,
                          summary_fun = "summary_std_glm", ...) {

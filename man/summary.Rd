@@ -26,6 +26,9 @@ decimal form.}
 
 \item{\dots}{not used.}
 }
+\value{
+An object of class "summary.parfrailty", which is a list that contains relevant summary statistics about the fitted model
+}
 \description{
 This is a \code{summary} method for class \code{"parfrailty"}.
 }
