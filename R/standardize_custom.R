@@ -10,9 +10,10 @@
 #' @param times For use with survival data. Set to \code{NULL} otherwise.
 #' @param B Number of nonparametric bootstrap resamples. Default is \code{NULL} (no bootstrap).
 #' @param seed The seed to use with the nonparametric bootstrap.
+#' @param progressbar Logical, if TRUE will print bootstrapping progress to the console
 #' @returns
 #' An object of class \code{std_custom}.
-#' This is basically a list with components estimates and fit for the outcome model.
+#' This is a list with components estimates and fit for the outcome model.
 #' @details
 #' Let \eqn{Y}, \eqn{X}, and \eqn{Z} be the outcome, the exposure, and a
 #' vector of covariates, respectively.
@@ -98,7 +99,8 @@ standardize <- function(fitter,
                         reference = NULL,
                         seed = NULL,
                         times = NULL,
-                        transforms = NULL) {
+                        transforms = NULL,
+                        progressbar = TRUE) {
   ## Preparation and various checks
   n <- nrow(data)
 
@@ -154,9 +156,9 @@ standardize <- function(fitter,
       width = 50
     )
 
-    cat("Bootstrapping... This may take some time... \n")
+    #cat("Bootstrapping... This may take some time... \n")
     for (b in seq_len(B)) {
-      utils::setTxtProgressBar(pb, b)
+     if(progressbar) utils::setTxtProgressBar(pb, b)
       data_boot <- data[sample(seq_len(n), replace = TRUE), ]
       fit_outcome_boot <- fit_helper(arguments, fitter, data_boot)
       estimates_boot[[b]] <- estimate_fun(valuesout, times, data_boot, fit_outcome_boot)
@@ -256,7 +258,8 @@ standardize_level <- function(
     reference = NULL,
     seed = NULL,
     times = NULL,
-    transforms = NULL) {
+    transforms = NULL,
+    progressbar = TRUE) {
   ## Preparation and various checks
   n <- nrow(data)
 
@@ -326,9 +329,9 @@ standardize_level <- function(
       width = 50
     )
 
-    cat("Bootstrapping... This may take some time... \n")
+    #cat("Bootstrapping... This may take some time... \n")
     for (b in seq_len(B)) {
-      utils::setTxtProgressBar(pb, b)
+      if(progressbar) utils::setTxtProgressBar(pb, b)
       data_boot <- data[sample(seq_len(n), replace = TRUE), ]
       fit_outcome_boot <- list()
       for (i in seq_len(length(fitter_list))) {

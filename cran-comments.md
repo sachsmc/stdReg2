@@ -2,4 +2,7 @@
 
 0 errors | 0 warnings | 1 note
 
-* This is a new release. It has been checked on a local Ubuntu install with R 4.4.1, win-builder release and dev, and osx using Rhub. 
+This is a resubmission to:
+
+* add value tags to the documentation for plot, print, and summary 
+* to add the argument progressbar to standardize_custom so that messages can be suppressed.

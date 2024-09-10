@@ -1,7 +1,7 @@
 Package: stdReg2
 Type: Package
 Title: Regression Standardization for Causal Inference
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: 
     c(person(given = "Michael C",
              family = "Sachs",
@@ -18,7 +18,7 @@ Authors@R:
             family = "Brand", role = "aut"))
 URL: https://sachsmc.github.io/stdReg2/
 BugReports: https://github.com/sachsmc/stdReg2/issues/
-Date: 2024-09-03             
+Date: 2024-09-10             
 Description: Contains more modern tools for causal inference using regression 
       standardization. Four general classes of models are implemented; generalized 
       linear models, conditional generalized estimating equation models, 
