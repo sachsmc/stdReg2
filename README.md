@@ -64,8 +64,6 @@ x <- standardize_glm(
  contrasts = c("difference", "ratio"),
  reference = 0
 )
-#> Warning in model.matrix.default(mt, mf, contrasts): non-list contrasts argument
-#> ignored
 x
 #> Outcome formula: Y ~ X * Z
 #> Outcome family: quasibinomial 
@@ -115,7 +113,7 @@ citation("stdReg2")
 #> 
 #>   Sachs M, Sjölander A, Gabriel E, Ohlendorff J, Brand A (2024).
 #>   _stdReg2: Regression Standardization for Causal Inference_. R package
-#>   version 1.0.0, <https://sachsmc.github.io/stdReg2>.
+#>   version 1.0.1, <https://sachsmc.github.io/stdReg2/>.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
@@ -123,7 +121,7 @@ citation("stdReg2")
 #>     title = {stdReg2: Regression Standardization for Causal Inference},
 #>     author = {Michael C Sachs and Arvid Sjölander and Erin E Gabriel and Johan Sebastian Ohlendorff and Adam Brand},
 #>     year = {2024},
-#>     note = {R package version 1.0.0},
-#>     url = {https://sachsmc.github.io/stdReg2},
+#>     note = {R package version 1.0.1},
+#>     url = {https://sachsmc.github.io/stdReg2/},
 #>   }
 ```

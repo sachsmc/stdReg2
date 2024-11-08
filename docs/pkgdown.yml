@@ -1,10 +1,10 @@
-pandoc: 3.1.11
+pandoc: '3.2'
 pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
   custom: custom.html
   overview: overview.html
-last_built: 2024-09-10T16:46Z
+last_built: 2024-11-08T19:38Z
 urls:
   reference: https://sachsmc.github.io/stdReg2/reference
   article: https://sachsmc.github.io/stdReg2/articles

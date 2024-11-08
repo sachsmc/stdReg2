@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">stdReg2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,7 @@
 
       <h1>Estimation of causal effects using stdReg2</h1>
             
-            <h4 data-toc-skip class="date">2024-09-10</h4>
+            <h4 data-toc-skip class="date">2024-11-08</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/sachsmc/stdReg2/blob/HEAD/vignettes/overview.Rmd" class="external-link"><code>vignettes/overview.Rmd</code></a></small>
       <div class="d-none name"><code>overview.Rmd</code></div>
@@ -484,8 +484,6 @@ group-wise estimates, the difference, and the ratio.</p>
 <span>            values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>qsmk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>            contrasts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"difference"</span>, <span class="st">"ratio"</span><span class="op">)</span>,</span>
 <span>            reference <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in model.matrix.default(mt, mf, contrasts): non-list contrasts argument</span></span>
-<span><span class="co">#&gt; ignored</span></span>
 <span></span>
 <span><span class="va">m2</span></span>
 <span><span class="co">#&gt; Outcome formula: wt82_71 ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
@@ -554,10 +552,6 @@ model.</p>
 <span>            values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>qsmk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>            contrast <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"difference"</span>, <span class="st">"ratio"</span><span class="op">)</span>,</span>
 <span>            reference <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; Warning in model.matrix.default(mt, mf, contrasts): non-list contrasts argument</span></span>
-<span><span class="co">#&gt; ignored</span></span>
-<span><span class="co">#&gt; Warning in model.matrix.default(mt, mf, contrasts): non-list contrasts argument</span></span>
-<span><span class="co">#&gt; ignored</span></span>
 <span></span>
 <span><span class="va">m2_dr</span></span>
 <span><span class="co">#&gt; Doubly robust estimator with: </span></span>
@@ -702,8 +696,6 @@ dichotomizing the weight change at 0.</p>
 <span>            values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>qsmk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>            contrasts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"difference"</span>, <span class="st">"ratio"</span><span class="op">)</span>,</span>
 <span>            reference <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in model.matrix.default(mt, mf, contrasts): non-list contrasts argument</span></span>
-<span><span class="co">#&gt; ignored</span></span>
 <span></span>
 <span><span class="va">m3</span></span>
 <span><span class="co">#&gt; Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
@@ -750,8 +742,6 @@ ratios on the log scale and back transform.</p>
 <span>            contrasts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"difference"</span><span class="op">)</span>,</span>
 <span>            transforms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"log"</span><span class="op">)</span>,</span>
 <span>            reference <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in model.matrix.default(mt, mf, contrasts): non-list contrasts argument</span></span>
-<span><span class="co">#&gt; ignored</span></span>
 <span><span class="va">m3_log</span></span>
 <span><span class="co">#&gt; Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
 <span><span class="co">#&gt;     smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + </span></span>
@@ -826,8 +816,6 @@ and transformed, respectively.</p>
 <span>            contrasts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ratio"</span><span class="op">)</span>,</span>
 <span>            transforms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"odds"</span><span class="op">)</span>,</span>
 <span>            reference <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in model.matrix.default(mt, mf, contrasts): non-list contrasts argument</span></span>
-<span><span class="co">#&gt; ignored</span></span>
 <span><span class="va">m3_odds</span></span>
 <span><span class="co">#&gt; Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
 <span><span class="co">#&gt;     smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + </span></span>
@@ -859,8 +847,6 @@ and transformed, respectively.</p>
 <span>            contrasts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"difference"</span><span class="op">)</span>,</span>
 <span>            transforms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"logit"</span><span class="op">)</span>,</span>
 <span>            reference <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in model.matrix.default(mt, mf, contrasts): non-list contrasts argument</span></span>
-<span><span class="co">#&gt; ignored</span></span>
 <span><span class="va">m3_logit</span></span>
 <span><span class="co">#&gt; Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
 <span><span class="co">#&gt;     smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + </span></span>

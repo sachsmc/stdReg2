@@ -162,7 +162,7 @@ standardize_coxph <- function(formula,
 
     ## Check that exposure is binary
     if (!is.binary(data[[names(values)]]) || nrow(valuesout) != 2L) {
-      stop("the exposure has to be binary (0 or 1)")
+      stop("the exposure has to be binary and coded as 0, 1. It is currently ", class(data[[names(values)]]))
     }
 
     #---PREPARATION---

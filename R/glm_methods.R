@@ -72,16 +72,16 @@
 #' set.seed(6)
 #' n <- 100
 #' Z <- rnorm(n)
-#' X <- rnorm(n, mean = Z)
-#' Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
+#' X <- cut(rnorm(n, mean = Z), breaks = c(-Inf, 0, Inf), labels = c("low", "high"))
+#' Y <- rbinom(n, 1, prob = (1 + exp(as.numeric(X) + Z))^(-1))
 #' dd <- data.frame(Z, X, Y)
 #' x <- standardize_glm(
 #'   formula = Y ~ X * Z,
 #'   family = "binomial",
 #'   data = dd,
-#'   values = list(X = 0:1),
+#'   values = list(X = c("low", "high")),
 #'   contrasts = c("difference", "ratio"),
-#'   reference = 0
+#'   reference = "low"
 #' )
 #' x
 #' # different transformations of causal effects
@@ -282,7 +282,7 @@ standardize_glm <- function(formula,
   ## Add names to asymptotic covariance matrix
   rownames(variance) <- colnames(variance) <-
     do.call("paste", c(lapply(seq_len(ncol(valuesout)), function(i) {
-      paste(names(valuesout)[i], "=", round(valuesout[[i]], 2L))
+      paste(names(valuesout)[i], "=", valuesout[[i]])
     }), sep = "; "))
 
   valuesout[["se"]] <- sqrt(diag(variance))
@@ -350,7 +350,7 @@ standardize_glm <- function(formula,
 #' n <- 100
 #' Z <- rnorm(n)
 #' X <- rbinom(n, 1, prob = (1 + exp(Z))^(-1))
-#' Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
+#' Y <- rbinom(n, 1, prob = (1 + exp(as.numeric(X) + Z))^(-1))
 #' dd <- data.frame(Z, X, Y)
 #' x <- standardize_glm_dr(
 #'   formula_outcome = Y ~ X * Z, formula_exposure = X ~ Z,
@@ -396,7 +396,7 @@ standardize_glm_dr <- function(formula_outcome,
     !(identical(family_exposure, binomial)) ||
     (inherits(family_exposure, "character") && family_exposure != "binomial") ||
     !is.binary(exposure) || nrow(valuesout) != 2L) {
-    stop("the exposure has to be binary (0 or 1)")
+    stop("the exposure has to be binary coded as 0/1. It is currently ", class(exposure))
   }
   weights <- rep(1, n)
   fit_exposure <- fit_glm(formula_exposure, family_exposure, data, "exposure", weights = weights)
@@ -460,7 +460,7 @@ standardize_glm_dr <- function(formula_outcome,
   ## Add names to asymptotic covariance matrix
   rownames(variance) <- colnames(variance) <-
     do.call("paste", c(lapply(seq_len(ncol(valuesout)), function(i) {
-      paste(names(valuesout)[i], "=", round(valuesout[[i]], 2L))
+      paste(names(valuesout)[i], "=", valuesout[[i]])
     }), sep = "; "))
 
   valuesout[["se"]] <- sqrt(diag(variance))
@@ -526,7 +526,7 @@ fit_glm <- function(formula, family, data, response, weights = NULL) {
           names(Y) <- nm
       }
       X <- if (!is.empty.model(mt))
-        model.matrix(mt, mf, contrasts)
+        model.matrix(mt, mf)
       else matrix(, NROW(Y), 0L)
 
       fit <- eval(call(if (is.function(method)) "method" else method,
