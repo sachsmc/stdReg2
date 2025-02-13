@@ -24,3 +24,24 @@ test_that("check estimates and standard errors against older package (coxph)", {
   ), tolerance = 1e-5)
 })
 
+
+test_that("standard error for coxph with factors bug is fixed", {
+
+  library(survival)
+  set.seed(2025)
+  n <- 2000
+  trueS <- pexp(2, lower.tail = FALSE)
+  Y <- rexp(n)
+  C <- rexp(n)
+  X <- rbinom(n, 1, .5)
+  dat <- data.frame(T = pmin(Y, C), event = 1.0 * (Y <= C),
+                    X = factor(X, labels = c("1", "2")))
+  tp <- standardize_coxph(Surv(T, event) ~ X, data = dat,
+                      times = 2, values = list(X = c("1", "2"))) |> tidy()
+
+
+  expect_equal(tp$Std.Error[1]/tp$Std.Error[2], 1, tolerance = .1)
+
+
+})
+

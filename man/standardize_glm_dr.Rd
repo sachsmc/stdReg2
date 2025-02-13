@@ -94,7 +94,7 @@ set.seed(6)
 n <- 100
 Z <- rnorm(n)
 X <- rbinom(n, 1, prob = (1 + exp(Z))^(-1))
-Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
+Y <- rbinom(n, 1, prob = (1 + exp(as.numeric(X) + Z))^(-1))
 dd <- data.frame(Z, X, Y)
 x <- standardize_glm_dr(
   formula_outcome = Y ~ X * Z, formula_exposure = X ~ Z,

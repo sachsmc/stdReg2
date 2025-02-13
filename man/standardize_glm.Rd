@@ -100,16 +100,16 @@ and the outer expectation is over the marginal distribution of \eqn{Z}.
 set.seed(6)
 n <- 100
 Z <- rnorm(n)
-X <- rnorm(n, mean = Z)
-Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
+X <- cut(rnorm(n, mean = Z), breaks = c(-Inf, 0, Inf), labels = c("low", "high"))
+Y <- rbinom(n, 1, prob = (1 + exp(as.numeric(X) + Z))^(-1))
 dd <- data.frame(Z, X, Y)
 x <- standardize_glm(
   formula = Y ~ X * Z,
   family = "binomial",
   data = dd,
-  values = list(X = 0:1),
+  values = list(X = c("low", "high")),
   contrasts = c("difference", "ratio"),
-  reference = 0
+  reference = "low"
 )
 x
 # different transformations of causal effects

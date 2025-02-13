@@ -503,8 +503,8 @@ standardize_coxph <- function(formula,
         # Note: need to center at factual X, not counterfactual x,
         # since baseline is computed at mean of factual X.
         m.x <- model.matrix(object = terms(fit), data = data.x)[, -1, drop = FALSE]
-        m <- model.matrix(object = terms(fit), data = data)[, -1, drop = FALSE]
-        m <- matrix(colMeans(m), nrow = nrow(m), ncol = ncol(m), byrow = TRUE)
+        #m <- model.matrix(object = terms(fit), data = data)[, -1, drop = FALSE]
+        m <- matrix(fit$means, nrow = nrow(m), ncol = ncol(m), byrow = TRUE)
         m.x <- m.x - m
         tempmat[i, ] <- colMeans(m.x * predX * si[, i] * weights)
       }

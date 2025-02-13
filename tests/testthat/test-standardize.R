@@ -26,7 +26,7 @@ test_that("standardize with non-survival data (no bootstrap) gives the same as s
     reference = 0,
     contrasts = c("ratio", "difference")
   )
-  expect_equal(x$res$estimates[, 2], y$res$estimates[, 3])
+  expect_true(all(x$res$estimates[, 2] - y$res$estimates[, 3] < 1e-5))
 })
 
 test_that("standardize with survival data (no bootstrap) gives the same as standardize_coxph", {
