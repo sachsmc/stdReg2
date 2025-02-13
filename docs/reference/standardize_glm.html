@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">stdReg2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -187,40 +187,40 @@ Estimation of causal effect measures with the R-package stdReg.
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">100</span></span></span>
 <span class="r-in"><span><span class="va">Z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="va">Z</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, prob <span class="op">=</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">X</span> <span class="op">+</span> <span class="va">Z</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="op">(</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="va">Z</span><span class="op">)</span>, breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>, <span class="fl">0</span>, <span class="cn">Inf</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"low"</span>, <span class="st">"high"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, prob <span class="op">=</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">+</span> <span class="va">Z</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="op">(</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">dd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">Z</span>, <span class="va">X</span>, <span class="va">Y</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">standardize_glm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  formula <span class="op">=</span> <span class="va">Y</span> <span class="op">~</span> <span class="va">X</span> <span class="op">*</span> <span class="va">Z</span>,</span></span>
 <span class="r-in"><span>  family <span class="op">=</span> <span class="st">"binomial"</span>,</span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">dd</span>,</span></span>
-<span class="r-in"><span>  values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>X <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>X <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"low"</span>, <span class="st">"high"</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  contrasts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"difference"</span>, <span class="st">"ratio"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  reference <span class="op">=</span> <span class="fl">0</span></span></span>
+<span class="r-in"><span>  reference <span class="op">=</span> <span class="st">"low"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">x</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome formula: Y ~ X * Z</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x63e9486c66c0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x61b678f0f820&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome family: quasibinomial </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome link function: logit </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  X </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Tables: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   X Estimate Std.Error lower.0.95 upper.0.95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0    0.519    0.0615      0.399      0.640</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1    0.391    0.0882      0.218      0.563</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      X Estimate Std.Error lower.0.95 upper.0.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  low    0.286    0.0556    0.17676      0.395</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 high    0.198    0.1007    0.00035      0.395</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Reference level:  X = 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Reference level:  X = low </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Contrast:  difference </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   X Estimate Std.Error lower.0.95 upper.0.95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0    0.000    0.0000      0.000    0.00000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1   -0.129    0.0638     -0.254   -0.00353</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      X Estimate Std.Error lower.0.95 upper.0.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  low    0.000     0.000      0.000      0.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 high   -0.088     0.113     -0.309      0.133</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Reference level:  X = 0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Reference level:  X = low </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Contrast:  ratio </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   X Estimate Std.Error lower.0.95 upper.0.95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0    1.000     0.000      1.000      1.000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1    0.752     0.126      0.505      0.999</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      X Estimate Std.Error lower.0.95 upper.0.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  low    1.000     0.000      1.000       1.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 high    0.692     0.372     -0.037       1.42</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="co"># different transformations of causal effects</span></span></span>
 <span class="r-in"><span></span></span>
@@ -247,7 +247,7 @@ Estimation of causal effect measures with the R-package stdReg.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>case_control = TRUE may not give reasonable results for the variance with clustering</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome formula: Oesophagealcancer ~ (Everhotbev + Age + Dial + Samsu + Cigs)^2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x63e9486c66c0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x61b678f0f820&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome family: quasibinomial </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome link function: logit </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  Everhotbev </span>
@@ -275,7 +275,7 @@ Estimation of causal effect measures with the R-package stdReg.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">x</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome formula: Y ~ X1 + X2 + Z</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x63e9486c66c0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x61b678f0f820&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome family: quasibinomial </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome link function: logit </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  X1, X2 </span>
