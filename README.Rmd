@@ -33,6 +33,12 @@ Goals: create a unified interface for regression standardization to obtain estim
 
 ## Installation
 
+`stdReg2` is available on CRAN and can be installed with: 
+```r
+install.packages("stdReg2")
+```
+
+
 You can install the development version of `stdReg2` from [GitHub](https://github.com/) with:
 
 ``` r

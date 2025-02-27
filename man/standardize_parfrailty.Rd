@@ -59,12 +59,33 @@ mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
 If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
-An object of class \code{std_surv}.
-This is basically a list with components estimates and covariance estimates in \code{res}
-Results for transformations, contrasts, references are stored in \code{res_contrasts}.
-The output contains estimates for contrasts and confidence intervals for all
-combinations of transforms and reference levels.
-Obtain numeric results in a data frame with the \link{tidy} function.
+An object of class \code{std_surv}. Obtain numeric results by using \link{tidy.std_surv}.
+This is a list with the following components:
+\describe{
+ \item{res_contrast}{An unnamed list with one element for each of the requested contrasts. Each element is itself a list with the elements:
+ \describe{
+ \item{call}{The function call}
+ \item{input}{A list with components used in the estimation}
+ \item{measure}{Either "survival" or "rmean"}
+ \item{est}{Estimated counterfactual means and standard errors for each exposure level}
+ \item{vcov}{Estimated covariance matrix of counterfactual means for each time}
+ \item{est_table}{Data.frame of the estimates of the contrast with inference}
+ \item{times}{The vector of times used in the calculation}
+ \item{transform}{The transform argument used for this contrast}
+ \item{contrast}{The requested contrast type}
+ \item{reference}{The reference level of the exposure}
+ \item{ci_type}{Confidence interval type}
+ \item{ci_level}{Confidence interval level}
+}}
+\item{res}{A named list with the elements:
+ \describe{
+ \item{call}{The function call}
+ \item{input}{A list with components used in the estimation}
+ \item{measure}{Either "survival" or "rmean"}
+ \item{est}{Estimated counterfactual means and standard errors for each exposure level}
+ \item{vcov}{Estimated covariance matrix of counterfactual means for each time}
+}
+}}
 }
 \description{
 \code{standardize_parfrailty} performs regression standardization in shared frailty

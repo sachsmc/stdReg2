@@ -30,6 +30,12 @@ and mainly to make maintenance and updating easier.
 
 ## Installation
 
+`stdReg2` is available on CRAN and can be installed with:
+
+``` r
+install.packages("stdReg2")
+```
+
 You can install the development version of `stdReg2` from
 [GitHub](https://github.com/) with:
 
@@ -111,17 +117,17 @@ effects using stdReg2”.
 citation("stdReg2")
 #> To cite package 'stdReg2' in publications use:
 #> 
-#>   Sachs M, Sjölander A, Gabriel E, Ohlendorff J, Brand A (2024).
+#>   Sachs M, Sjölander A, Gabriel E, Ohlendorff J, Brand A (2025).
 #>   _stdReg2: Regression Standardization for Causal Inference_. R package
-#>   version 1.0.1, <https://sachsmc.github.io/stdReg2/>.
+#>   version 1.0.3, <https://sachsmc.github.io/stdReg2/>.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
 #>     title = {stdReg2: Regression Standardization for Causal Inference},
 #>     author = {Michael C Sachs and Arvid Sjölander and Erin E Gabriel and Johan Sebastian Ohlendorff and Adam Brand},
-#>     year = {2024},
-#>     note = {R package version 1.0.1},
+#>     year = {2025},
+#>     note = {R package version 1.0.3},
 #>     url = {https://sachsmc.github.io/stdReg2/},
 #>   }
 ```

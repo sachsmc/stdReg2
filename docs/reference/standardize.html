@@ -135,9 +135,67 @@ If the vector is <code>NULL</code>, then \(\psi(x)=\theta(x)\).</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of class <code>std_custom</code>.
-This is a list with components estimates and fit for the outcome model.</p>
-    </div>
+    <p>An object of class <code>std_custom</code>. Obtain numeric results using <a href="tidy.std_custom.html">tidy.std_custom</a>.
+This is a list with the following components:</p><dl><dt>res_contrast</dt>
+<dd><p>An unnamed list with one element for each of the requested contrasts. Each element is itself a list with the elements:</p><dl><dt>B</dt>
+<dd><p>The number of bootstrap replicates</p></dd>
+
+ <dt>estimates</dt>
+<dd><p>Estimated counterfactual means and standard errors for each exposure level</p></dd>
+
+ <dt>fit_outcome</dt>
+<dd><p>The estimated regression model for the outcome</p></dd>
+
+ <dt>estimates_boot</dt>
+<dd><p>A list of estimates, one for each bootstrap resample</p></dd>
+
+ <dt>exposure_names</dt>
+<dd><p>A character vector of the exposure variable names</p></dd>
+
+ <dt>times</dt>
+<dd><p>The vector of times at which the calculation is done, if relevant</p></dd>
+
+ <dt>est_table</dt>
+<dd><p>Data.frame of the estimates of the contrast with inference</p></dd>
+
+ <dt>transform</dt>
+<dd><p>The transform argument used for this contrast</p></dd>
+
+ <dt>contrast</dt>
+<dd><p>The requested contrast type</p></dd>
+
+ <dt>reference</dt>
+<dd><p>The reference level of the exposure</p></dd>
+
+ <dt>ci_level</dt>
+<dd><p>Confidence interval level</p></dd>
+
+
+</dl></dd>
+
+<dt>res</dt>
+<dd><p>A named list with the elements:</p><dl><dt>B</dt>
+<dd><p>The number of bootstrap replicates</p></dd>
+
+ <dt>estimates</dt>
+<dd><p>Estimated counterfactual means and standard errors for each exposure level</p></dd>
+
+ <dt>fit_outcome</dt>
+<dd><p>The estimated regression model for the outcome</p></dd>
+
+ <dt>estimates_boot</dt>
+<dd><p>A list of estimates, one for each bootstrap resample</p></dd>
+
+ <dt>exposure_names</dt>
+<dd><p>A character vector of the exposure variable names</p></dd>
+
+ <dt>times</dt>
+<dd><p>The vector of times at which the calculation is done, if relevant</p></dd>
+
+
+</dl></dd>
+
+</dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Let \(Y\), \(X\), and \(Z\) be the outcome, the exposure, and a
@@ -221,28 +279,28 @@ Estimation of causal effect measures with the R-package stdReg.
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Reference level:  = 0 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Contrast:  difference </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Exposure Estimate lower.0.95 upper.0.95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      -1.0   0.1697    0.04037    0.30879</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      -0.9   0.1516    0.03562    0.28505</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      -0.8   0.1335    0.03104    0.25348</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      -0.7   0.1156    0.02663    0.22134</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      -0.6   0.0980    0.02238    0.19201</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      -0.5   0.0807    0.01829    0.16211</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7      -0.4   0.0637    0.01435    0.13054</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8      -0.3   0.0472    0.01056    0.09810</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9      -0.2   0.0310    0.00691    0.06525</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10     -0.1   0.0153    0.00339    0.03243</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11      0.0   0.0000    0.00000    0.00000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12      0.1  -0.0148   -0.03177   -0.00326</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13      0.2  -0.0292   -0.06286   -0.00641</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14      0.3  -0.0432   -0.09365   -0.00944</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15      0.4  -0.0566   -0.12370   -0.01237</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16      0.5  -0.0697   -0.15192   -0.01519</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17      0.6  -0.0823   -0.17663   -0.01791</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18      0.7  -0.0945   -0.19954   -0.02054</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19      0.8  -0.1062   -0.22074   -0.02308</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20      0.9  -0.1176   -0.24033   -0.02553</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21      1.0  -0.1285   -0.25891   -0.02790</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       X Estimate lower.0.95 upper.0.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  -1.0   0.1697    0.04037    0.30879</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  -0.9   0.1516    0.03562    0.28505</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  -0.8   0.1335    0.03104    0.25348</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  -0.7   0.1156    0.02663    0.22134</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  -0.6   0.0980    0.02238    0.19201</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  -0.5   0.0807    0.01829    0.16211</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  -0.4   0.0637    0.01435    0.13054</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  -0.3   0.0472    0.01056    0.09810</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  -0.2   0.0310    0.00691    0.06525</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 -0.1   0.0153    0.00339    0.03243</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11  0.0   0.0000    0.00000    0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12  0.1  -0.0148   -0.03177   -0.00326</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13  0.2  -0.0292   -0.06286   -0.00641</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14  0.3  -0.0432   -0.09365   -0.00944</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15  0.4  -0.0566   -0.12370   -0.01237</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16  0.5  -0.0697   -0.15192   -0.01519</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17  0.6  -0.0823   -0.17663   -0.01791</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18  0.7  -0.0945   -0.19954   -0.02054</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19  0.8  -0.1062   -0.22074   -0.02308</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20  0.9  -0.1176   -0.24033   -0.02553</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21  1.0  -0.1285   -0.25891   -0.02790</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span></span>
@@ -323,34 +381,34 @@ Estimation of causal effect measures with the R-package stdReg.
 <span class="r-out co"><span class="r-pr">#&gt;</span> Reference level:  = 0 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Contrast:  difference </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Time:  1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Exposure   estimate      lower       upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       -1  0.3058918  0.2515877  0.35267464</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        0  0.0000000  0.0000000  0.00000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 -0.1166259 -0.1534746 -0.08540127</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    X   estimate      lower       upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -1  0.3058918  0.2515877  0.35267464</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0  0.0000000  0.0000000  0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  1 -0.1166259 -0.1534746 -0.08540127</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Time:  2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Exposure    estimate       lower       upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       -1  0.25407801  0.18502799  0.33076959</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        0  0.00000000  0.00000000  0.00000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 -0.04794719 -0.07480939 -0.02350433</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    X    estimate       lower       upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -1  0.25407801  0.18502799  0.33076959</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0  0.00000000  0.00000000  0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  1 -0.04794719 -0.07480939 -0.02350433</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Time:  3 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Exposure    estimate       lower       upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       -1  0.19845364  0.12283854 0.284032243</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        0  0.00000000  0.00000000 0.000000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 -0.02054638 -0.04719901 0.001297897</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    X    estimate       lower       upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -1  0.19845364  0.12283854 0.284032243</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0  0.00000000  0.00000000 0.000000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  1 -0.02054638 -0.04719901 0.001297897</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Time:  4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Exposure     estimate       lower      upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       -1  0.144522281  0.04976681 0.22983546</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        0  0.000000000  0.00000000 0.00000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 -0.003191768 -0.02345454 0.01911037</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    X     estimate       lower      upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -1  0.144522281  0.04976681 0.22983546</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0  0.000000000  0.00000000 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  1 -0.003191768 -0.02345454 0.01911037</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Time:  5 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Exposure    estimate        lower      upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       -1 0.088293936  0.018981386 0.17857030</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        0 0.000000000  0.000000000 0.00000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 0.009761965 -0.009490497 0.02585953</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    X    estimate        lower      upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -1 0.088293936  0.018981386 0.17857030</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0 0.000000000  0.000000000 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  1 0.009761965 -0.009490497 0.02585953</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>

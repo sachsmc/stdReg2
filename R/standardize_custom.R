@@ -12,8 +12,33 @@
 #' @param seed The seed to use with the nonparametric bootstrap.
 #' @param progressbar Logical, if TRUE will print bootstrapping progress to the console
 #' @returns
-#' An object of class \code{std_custom}.
-#' This is a list with components estimates and fit for the outcome model.
+#' An object of class \code{std_custom}. Obtain numeric results using \link{tidy.std_custom}.
+#' This is a list with the following components:
+#' \describe{
+#'  \item{res_contrast}{An unnamed list with one element for each of the requested contrasts. Each element is itself a list with the elements:
+#'  \describe{
+#'  \item{B}{The number of bootstrap replicates}
+#'  \item{estimates}{Estimated counterfactual means and standard errors for each exposure level}
+#'  \item{fit_outcome}{The estimated regression model for the outcome}
+#'  \item{estimates_boot}{A list of estimates, one for each bootstrap resample}
+#'  \item{exposure_names}{A character vector of the exposure variable names}
+#'  \item{times}{The vector of times at which the calculation is done, if relevant}
+#'  \item{est_table}{Data.frame of the estimates of the contrast with inference}
+#'  \item{transform}{The transform argument used for this contrast}
+#'  \item{contrast}{The requested contrast type}
+#'  \item{reference}{The reference level of the exposure}
+#'  \item{ci_level}{Confidence interval level}
+#' }}
+#' \item{res}{A named list with the elements:
+#'  \describe{
+#'  \item{B}{The number of bootstrap replicates}
+#'  \item{estimates}{Estimated counterfactual means and standard errors for each exposure level}
+#'  \item{fit_outcome}{The estimated regression model for the outcome}
+#'  \item{estimates_boot}{A list of estimates, one for each bootstrap resample}
+#'  \item{exposure_names}{A character vector of the exposure variable names}
+#'  \item{times}{The vector of times at which the calculation is done, if relevant}
+#' }
+#' }}
 #' @details
 #' Let \eqn{Y}, \eqn{X}, and \eqn{Z} be the outcome, the exposure, and a
 #' vector of covariates, respectively.
@@ -460,12 +485,13 @@ summary_standardize <- function(object, ci_level = 0.95,
     reference <- as.character(reference)
   }
   if (!is.null(contrast)) {
-    exposure_name_table <- "Exposure"
+    exposure_name_table <- object[["exposure_names"]]
     exposure_table <- est_old_table[, object[["exposure_names"]]]
   } else {
     exposure_name_table <- object[["exposure_names"]]
     exposure_table <- est_old_table[, object[["exposure_names"]]]
   }
+
   if (length(times) > 1) {
     if (is.null(B)) {
       est_table <- cbind(exposure_table, est)
@@ -557,3 +583,57 @@ fit_helper <- function(args, fitter, data) {
     fit
   }
 }
+
+
+
+#' Provide tidy output from a std_custom object for use in downstream computations
+#'
+#' Tidy summarizes information about the components of the standardized regression fit.
+#' @param x An object of class std_custom
+#' @param ... Not currently used
+#'
+#' @returns A data.frame
+#' @examples
+#' set.seed(6)
+#' n <- 100
+#' Z <- rnorm(n)
+#' X <- rnorm(n, mean = Z)
+#' Y <- rbinom(n, 1, prob = (1 + exp(X + Z))^(-1))
+#' dd <- data.frame(Z, X, Y)
+#' prob_predict.glm <- function(...) predict.glm(..., type = "response")
+#'
+#' x <- standardize(
+#'   fitter = "glm",
+#'   arguments = list(
+#'     formula = Y ~ X * Z,
+#'     family = "binomial"
+#'   ),
+#'   predict_fun = prob_predict.glm,
+#'   data = dd,
+#'   values = list(X = seq(-1, 1, 0.1)),
+#'   B = 100,
+#'   reference = 0,
+#'   contrasts = "difference"
+#' )
+#' tidy(x)
+#'
+#' @export
+tidy.std_custom <- function(x, ...) {
+
+  stopifnot(inherits(x, "std_custom"))
+
+  res_list <- lapply(x$res_contrast, \(xl) {
+
+    tmpres <- as.data.frame(xl$est_table)
+    colnames(tmpres) <- make.names(colnames(tmpres))
+    tmpres$contrast <- if(is.null(xl$contrast)) "none" else xl$contrast
+    tmpres$transform <- if(is.null(xl$transform)) "identity" else xl$transform
+    tmpres
+
+  })
+
+  do.call("rbind", res_list)
+
+}
+
+

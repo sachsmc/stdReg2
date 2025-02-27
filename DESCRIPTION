@@ -18,7 +18,7 @@ Authors@R:
             family = "Brand", role = "aut"))
 URL: https://sachsmc.github.io/stdReg2/
 BugReports: https://github.com/sachsmc/stdReg2/issues/
-Date: 2025-02-13             
+Date: 2025-02-27             
 Description: Contains more modern tools for causal inference using regression 
       standardization. Four general classes of models are implemented; generalized 
       linear models, conditional generalized estimating equation models, 

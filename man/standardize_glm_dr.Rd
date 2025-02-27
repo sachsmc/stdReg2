@@ -59,10 +59,32 @@ mean \eqn{\theta(x)} is transformed into \eqn{\psi(x)=\log\{\theta(x)\}},
 If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 }
 \value{
-An object of class \code{std_glm}.
-This is basically a list with components estimates and covariance estimates in \code{res}.
-Results for transformations, contrasts, references are stored in \code{res_contrasts}.
-Obtain numeric results in a data frame with the \link{tidy} function.
+An object of class \code{std_glm}. Obtain numeric results in a data frame with the \link{tidy.std_glm} function.
+This is a list with the following components:
+\describe{
+ \item{res_contrast}{An unnamed list with one element for each of the requested contrasts. Each element is itself a list with the elements:
+ \describe{
+ \item{estimates}{Estimated counterfactual means and standard errors for each exposure level}
+ \item{covariance}{Estimated covariance matrix of counterfactual means}
+ \item{fit_outcome}{The estimated regression model for the outcome}
+ \item{fit_exposure}{The estimated exposure model}
+ \item{exposure_names}{A character vector of the exposure variable names}
+ \item{est_table}{Data.frame of the estimates of the contrast with inference}
+ \item{transform}{The transform argument used for this contrast}
+ \item{contrast}{The requested contrast type}
+ \item{reference}{The reference level of the exposure}
+ \item{ci_type}{Confidence interval type}
+ \item{ci_level}{Confidence interval level}
+}}
+\item{res}{A named list with the elements:
+ \describe{
+ \item{estimates}{Estimated counterfactual means and standard errors for each exposure level}
+ \item{covariance}{Estimated covariance matrix of counterfactual means}
+ \item{fit_outcome}{The estimated regression model for the outcome}
+ \item{fit_exposure}{The estimated exposure model}
+ \item{exposure_names}{A character vector of the exposure variable names}
+}
+}}
 }
 \description{
 Get regression standardized doubly-robust estimates from a glm

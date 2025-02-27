@@ -150,13 +150,67 @@ If the vector is <code>NULL</code>, then \(\psi(x)=\theta(x)\).</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of class <code>std_surv</code>.
-This is basically a list with components estimates and covariance estimates in <code>res</code>
-Results for transformations, contrasts, references are stored in <code>res_contrasts</code>.
-The output contains estimates for contrasts and confidence intervals for all
-combinations of transforms and reference levels.
-Obtain numeric results in a data frame with the <a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a> function.</p>
-    </div>
+    <p>An object of class <code>std_surv</code>. Obtain numeric results by using <a href="tidy.std_surv.html">tidy.std_surv</a>.
+This is a list with the following components:</p><dl><dt>res_contrast</dt>
+<dd><p>An unnamed list with one element for each of the requested contrasts. Each element is itself a list with the elements:</p><dl><dt>call</dt>
+<dd><p>The function call</p></dd>
+
+ <dt>input</dt>
+<dd><p>A list with components used in the estimation</p></dd>
+
+ <dt>measure</dt>
+<dd><p>Either "survival" or "rmean"</p></dd>
+
+ <dt>est</dt>
+<dd><p>Estimated counterfactual means and standard errors for each exposure level</p></dd>
+
+ <dt>vcov</dt>
+<dd><p>Estimated covariance matrix of counterfactual means for each time</p></dd>
+
+ <dt>est_table</dt>
+<dd><p>Data.frame of the estimates of the contrast with inference</p></dd>
+
+ <dt>times</dt>
+<dd><p>The vector of times used in the calculation</p></dd>
+
+ <dt>transform</dt>
+<dd><p>The transform argument used for this contrast</p></dd>
+
+ <dt>contrast</dt>
+<dd><p>The requested contrast type</p></dd>
+
+ <dt>reference</dt>
+<dd><p>The reference level of the exposure</p></dd>
+
+ <dt>ci_type</dt>
+<dd><p>Confidence interval type</p></dd>
+
+ <dt>ci_level</dt>
+<dd><p>Confidence interval level</p></dd>
+
+
+</dl></dd>
+
+<dt>res</dt>
+<dd><p>A named list with the elements:</p><dl><dt>call</dt>
+<dd><p>The function call</p></dd>
+
+ <dt>input</dt>
+<dd><p>A list with components used in the estimation</p></dd>
+
+ <dt>measure</dt>
+<dd><p>Either "survival" or "rmean"</p></dd>
+
+ <dt>est</dt>
+<dd><p>Estimated counterfactual means and standard errors for each exposure level</p></dd>
+
+ <dt>vcov</dt>
+<dd><p>Estimated covariance matrix of counterfactual means for each time</p></dd>
+
+
+</dl></dd>
+
+</dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>standardize_parfrailty</code> fits a shared frailty gamma-Weibull model

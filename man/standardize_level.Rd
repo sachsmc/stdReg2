@@ -64,8 +64,33 @@ If the vector is \code{NULL}, then \eqn{\psi(x)=\theta(x)}.}
 \item{progressbar}{Logical, if TRUE will print bootstrapping progress to the console}
 }
 \value{
-An object of class \code{std_custom}.
-This is a list with components estimates and fit for the outcome model.
+An object of class \code{std_custom}. Obtain numeric results using \link{tidy.std_custom}.
+This is a list with the following components:
+\describe{
+ \item{res_contrast}{An unnamed list with one element for each of the requested contrasts. Each element is itself a list with the elements:
+ \describe{
+ \item{B}{The number of bootstrap replicates}
+ \item{estimates}{Estimated counterfactual means and standard errors for each exposure level}
+ \item{fit_outcome}{The estimated regression model for the outcome}
+ \item{estimates_boot}{A list of estimates, one for each bootstrap resample}
+ \item{exposure_names}{A character vector of the exposure variable names}
+ \item{times}{The vector of times at which the calculation is done, if relevant}
+ \item{est_table}{Data.frame of the estimates of the contrast with inference}
+ \item{transform}{The transform argument used for this contrast}
+ \item{contrast}{The requested contrast type}
+ \item{reference}{The reference level of the exposure}
+ \item{ci_level}{Confidence interval level}
+}}
+\item{res}{A named list with the elements:
+ \describe{
+ \item{B}{The number of bootstrap replicates}
+ \item{estimates}{Estimated counterfactual means and standard errors for each exposure level}
+ \item{fit_outcome}{The estimated regression model for the outcome}
+ \item{estimates_boot}{A list of estimates, one for each bootstrap resample}
+ \item{exposure_names}{A character vector of the exposure variable names}
+ \item{times}{The vector of times at which the calculation is done, if relevant}
+}
+}}
 }
 \description{
 Get standardized estimates using the g-formula with and separate models for each exposure level in the data

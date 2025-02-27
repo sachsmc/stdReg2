@@ -147,11 +147,64 @@ If the vector is <code>NULL</code>, then \(\psi(x)=\theta(x)\).</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of class <code>std_glm</code>.
-This is basically a list with components estimates and covariance estimates in <code>res</code>.
-Results for transformations, contrasts, references are stored in <code>res_contrasts</code>.
-Obtain numeric results in a data frame with the <a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a> function.</p>
-    </div>
+    <p>An object of class <code>std_glm</code>. Obtain numeric results in a data frame with the <a href="tidy.std_glm.html">tidy.std_glm</a> function.
+This is a list with the following components:</p><dl><dt>res_contrast</dt>
+<dd><p>An unnamed list with one element for each of the requested contrasts. Each element is itself a list with the elements:</p><dl><dt>estimates</dt>
+<dd><p>Estimated counterfactual means and standard errors for each exposure level</p></dd>
+
+ <dt>covariance</dt>
+<dd><p>Estimated covariance matrix of counterfactual means</p></dd>
+
+ <dt>fit_outcome</dt>
+<dd><p>The estimated regression model for the outcome</p></dd>
+
+ <dt>fit_exposure</dt>
+<dd><p>The estimated exposure model</p></dd>
+
+ <dt>exposure_names</dt>
+<dd><p>A character vector of the exposure variable names</p></dd>
+
+ <dt>est_table</dt>
+<dd><p>Data.frame of the estimates of the contrast with inference</p></dd>
+
+ <dt>transform</dt>
+<dd><p>The transform argument used for this contrast</p></dd>
+
+ <dt>contrast</dt>
+<dd><p>The requested contrast type</p></dd>
+
+ <dt>reference</dt>
+<dd><p>The reference level of the exposure</p></dd>
+
+ <dt>ci_type</dt>
+<dd><p>Confidence interval type</p></dd>
+
+ <dt>ci_level</dt>
+<dd><p>Confidence interval level</p></dd>
+
+
+</dl></dd>
+
+<dt>res</dt>
+<dd><p>A named list with the elements:</p><dl><dt>estimates</dt>
+<dd><p>Estimated counterfactual means and standard errors for each exposure level</p></dd>
+
+ <dt>covariance</dt>
+<dd><p>Estimated covariance matrix of counterfactual means</p></dd>
+
+ <dt>fit_outcome</dt>
+<dd><p>The estimated regression model for the outcome</p></dd>
+
+ <dt>fit_exposure</dt>
+<dd><p>The estimated exposure model</p></dd>
+
+ <dt>exposure_names</dt>
+<dd><p>A character vector of the exposure variable names</p></dd>
+
+
+</dl></dd>
+
+</dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>standardize_glm</code> performs regression standardization
@@ -200,7 +253,7 @@ Estimation of causal effect measures with the R-package stdReg.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">x</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome formula: Y ~ X * Z</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x61b678f0f820&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x568fb7674738&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome family: quasibinomial </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome link function: logit </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  X </span>
@@ -247,7 +300,7 @@ Estimation of causal effect measures with the R-package stdReg.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>case_control = TRUE may not give reasonable results for the variance with clustering</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome formula: Oesophagealcancer ~ (Everhotbev + Age + Dial + Samsu + Cigs)^2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x61b678f0f820&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x568fb7674738&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome family: quasibinomial </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome link function: logit </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  Everhotbev </span>
@@ -275,7 +328,7 @@ Estimation of causal effect measures with the R-package stdReg.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">x</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome formula: Y ~ X1 + X2 + Z</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x61b678f0f820&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x568fb7674738&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome family: quasibinomial </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Outcome link function: logit </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Exposure:  X1, X2 </span>
