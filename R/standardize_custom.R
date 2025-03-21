@@ -50,6 +50,9 @@
 #' With survival data, \eqn{Y=I(T > t)},
 #' and a vector of different time points \code{times} (\eqn{t}) can be given,
 #' where \eqn{T} is the uncensored survival time.
+#'
+#' Note that the nonparametric bootstrap may not provide valid inference if the outcome model is data-adaptive, e.g., based on machine learning algorithms. In such situations alternative inference methods may be required.
+#'
 #' @examples
 #'
 #' set.seed(6)

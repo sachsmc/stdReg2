@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">stdReg2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -208,6 +208,7 @@ and the outer expectation is over the marginal distribution of \(Z\).
 With survival data, \(Y=I(T &gt; t)\),
 and a vector of different time points <code>times</code> (\(t\)) can be given,
 where \(T\) is the uncensored survival time.</p>
+<p>Note that the nonparametric bootstrap may not provide valid inference if the outcome model is data-adaptive, e.g., based on machine learning algorithms. In such situations alternative inference methods may be required.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

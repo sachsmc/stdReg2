@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">stdReg2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -87,7 +87,12 @@ Efron 1993)</span> by setting the argument <code>B</code> for the number
 of replicates, which we omit here for brevity. Note that this method
 only applies for point exposures; other methods are needed to produce
 valid effect estimates for time-varying exposures, see <span class="citation">Robins (1986)</span> or the <code>gfoRmula</code>
-package <span class="citation">(McGrath et al. 2020)</span>.</p>
+package <span class="citation">(McGrath et al. 2020)</span>. Also note
+that the nonparametric bootstrap may not provide valid inference if the
+outcome model is data-adaptive, e.g., based on machine learning
+algorithms. In such situations alternative inference methods may be
+required <span class="citation">(Naimi, Mishler, and Kennedy 2021;
+Zivich and Breskin 2021)</span>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nhefs_dat</span> <span class="op">&lt;-</span> <span class="fu">causaldata</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/causaldata/man/nhefs_complete.html" class="external-link">nhefs_complete</a></span></span>
 <span><span class="co"># the target outcome model</span></span>
@@ -160,6 +165,12 @@ r Package for Estimating the Effects of Sustained Treatment Strategies
 via the Parametric g-Formula.”</span> <em>Patterns</em> 1 (3): 100008.
 https://doi.org/<a href="https://doi.org/10.1016/j.patter.2020.100008" class="external-link">https://doi.org/10.1016/j.patter.2020.100008</a>.
 </div>
+<div id="ref-naimi2021challenges" class="csl-entry">
+Naimi, Ashley I, Alan E Mishler, and Edward H Kennedy. 2021.
+<span>“Challenges in Obtaining Valid Causal Effect Estimates with
+Machine Learning Algorithms.”</span> <em>American Journal of
+Epidemiology</em> 192 (9): 1536–44. <a href="https://doi.org/10.1093/aje/kwab201" class="external-link">https://doi.org/10.1093/aje/kwab201</a>.
+</div>
 <div id="ref-robins1986new" class="csl-entry">
 Robins, James. 1986. <span>“A New Approach to Causal Inference in
 Mortality Studies with a Sustained Exposure Period—Application to
@@ -170,6 +181,11 @@ Modelling</em> 7 (9-12): 1393–1512.
 Tibshirani, Robert J, and Bradley Efron. 1993. <span>“An Introduction to
 the Bootstrap.”</span> <em>Monographs on Statistics and Applied
 Probability</em> 57 (1): 1–436.
+</div>
+<div id="ref-zivich2021machine" class="csl-entry">
+Zivich, Paul N., and Alexander Breskin. 2021. <span>“Machine Learning
+for Causal Inference: On the Use of Cross-Fit Estimators.”</span> 32:
+393–401. <a href="https://doi.org/10.1097/EDE.0000000000001332" class="external-link">https://doi.org/10.1097/EDE.0000000000001332</a>.
 </div>
 </div>
 </div>
