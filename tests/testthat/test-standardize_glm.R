@@ -116,3 +116,16 @@ test_that("check estimates and standard errors standardize_glm (dr estimator)", 
   expect_equal(x$res_contrast[[2]]$est_table$`lower.0.95`[2], -424.6136, tolerance = 1e-5)
   expect_equal(x$res_contrast[[2]]$est_table$`upper.0.95`[2], -22.7335, tolerance = 1e-5)
 })
+
+
+test_that("variance is correct for noncanonical glms", {
+
+  ncanon <- standardize_glm(weight ~ Time*Diet, family = Gamma(link = "log"),
+                  data = ChickWeight, values = list("Diet" = levels(ChickWeight$Diet)))
+  canon <- standardize_glm(weight ~ Time*Diet, family = "Gamma",
+                  data = ChickWeight, values = list("Diet" = levels(ChickWeight$Diet)))
+
+  expect_true(sum(abs(ncanon$res_contrast[[1]]$estimates$se -
+    canon$res_contrast[[1]]$estimates$se)) < 10)
+
+})

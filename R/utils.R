@@ -19,11 +19,12 @@ sandwich <- function(fit, data, weights, t, fit.detail) {
     ## Dispersion parameter = 1. Why?
     m <- expand(model.matrix(fit), rownames(data))
     res <- expand(residuals(fit, type = "response"), rownames(data))
-    U <- weights * m * res
+    #U <- weights * m * res
+    U <- sandwich::estfun(fit)
     U[is.na(U)] <- 0
     ## Derive Fisher information matrix from asymptotic covariance matrix (MLE theory)
     ## NOTE: summary(fit)$cov.unscaled is weighted
-    I <- -solve(summary(fit)$cov.unscaled) / n
+    I <- sandwich::meat(fit)#-solve(summary(fit)$cov.unscaled) / n
   }
   if (inherits(x = fit, what = "ah")) {  ## from the ivtools package?
     #---meat---
