@@ -1,3 +1,6 @@
+# stdReg2 1.0.5
+* Switch to sandwich package for calculation of estimating equations for glms. Was giving incorrect results for noncanonical link functions. Thanks @snhansen
+
 # stdReg2 1.0.4
 * minor tweak to documentation 
 
