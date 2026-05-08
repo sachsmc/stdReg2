@@ -30,7 +30,7 @@ test_that("multiple exposure gives error when using the doubly robust estimator"
 })
 
 test_that("check that it fails with p_population unspecified", {
-  singapore <- AF::singapore
+
   mi <- singapore$Age
   m <- mean(mi)
   s <- sd(mi)
@@ -61,13 +61,13 @@ test_that("non-valid transformation does not work", {
 })
 
 test_that("warning occurs when reference has been specified but not contrast", {
-  data <- AF::clslowbwt
+
   expect_warning(standardize_glm_dr(
     formula_outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),
     formula_exposure = smoker ~ race * age * lwt + I(age^2) + I(lwt^2),
     family_outcome = gaussian,
     family_exposure = binomial,
-    data = data,
+    data = clslowbwt,
     values = list(smoker = c(0, 1)), reference = 0
   ))
 })
@@ -85,7 +85,7 @@ test_that("check estimates and standard errors standardize_glm (simple estimator
 })
 
 test_that("check estimates and standard errors standardize_glm (case-control estimator)", {
-  singapore <- AF::singapore
+
   mi <- singapore$Age
   m <- mean(mi)
   s <- sd(mi)
@@ -103,13 +103,13 @@ test_that("check estimates and standard errors standardize_glm (case-control est
 })
 
 test_that("check estimates and standard errors standardize_glm (dr estimator)", {
-  data <- AF::clslowbwt
+
   x <- standardize_glm_dr(
     formula_outcome = bwt ~ smoker * (race + age + lwt) + I(age^2) + I(lwt^2),
     formula_exposure = smoker ~ race * age * lwt + I(age^2) + I(lwt^2),
     family_outcome = gaussian,
     family_exposure = binomial,
-    data = data,
+    data = clslowbwt,
     values = list(smoker = c(0, 1)), contrasts = "difference", reference = 0
   )
   expect_equal(x$res_contrast[[2]]$est_table$Estimate[2], -223.6736, tolerance = 1e-5)

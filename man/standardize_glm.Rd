@@ -138,7 +138,6 @@ x
 
 # example from Sjölander (2016) with case-control data
 # here the matching variable needs to be passed as an argument
-singapore <- AF::singapore
 Mi <- singapore$Age
 m <- mean(Mi)
 s <- sd(Mi)

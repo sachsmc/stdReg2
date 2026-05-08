@@ -1,3 +1,7 @@
+# stdReg2 1.0.6
+* Remove dependence on AF for example dataset
+
+
 # stdReg2 1.0.5
 * Switch to sandwich package for calculation of estimating equations for glms. Was giving incorrect results for noncanonical link functions. Thanks @snhansen
 

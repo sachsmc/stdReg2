@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">stdReg2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -208,13 +208,12 @@ generalized linear outcome models for doubly robust estimation.
 <span class="r-in"><span><span class="co"># needs to correctly specify either the outcome model or the exposure model</span></span></span>
 <span class="r-in"><span><span class="co"># for confounding</span></span></span>
 <span class="r-in"><span><span class="co"># NOTE: only works with binary exposures</span></span></span>
-<span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">AF</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/AF/man/clslowbwt.html" class="external-link">clslowbwt</a></span></span></span>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">standardize_glm_dr</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  formula_outcome <span class="op">=</span> <span class="va">bwt</span> <span class="op">~</span> <span class="va">smoker</span> <span class="op">*</span> <span class="op">(</span><span class="va">race</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">lwt</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">lwt</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  formula_exposure <span class="op">=</span> <span class="va">smoker</span> <span class="op">~</span> <span class="va">race</span> <span class="op">*</span> <span class="va">age</span> <span class="op">*</span> <span class="va">lwt</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">lwt</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  family_outcome <span class="op">=</span> <span class="st">"gaussian"</span>,</span></span>
 <span class="r-in"><span>  family_exposure <span class="op">=</span> <span class="st">"binomial"</span>,</span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">data</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">clslowbwt</span>,</span></span>
 <span class="r-in"><span>  values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>smoker <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>, contrasts <span class="op">=</span> <span class="st">"difference"</span>, reference <span class="op">=</span> <span class="fl">0</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -243,7 +242,7 @@ generalized linear outcome models for doubly robust estimation.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

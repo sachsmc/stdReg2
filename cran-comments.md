@@ -2,11 +2,9 @@
 
 0 errors | 0 warnings | 0 notes
 
-This is a resubmission that includes:
+This is a resubmission that addresses the error on the CRAN checks:
 
-* fix notes on CRAN checks about missing dependency on R 4.1.0
-* improve documentation
-* minor bugfixes
+* Remove the AF package from suggests, instead include dataset as part of this package
 
 
 It has been checked on all major platforms under release and devel
