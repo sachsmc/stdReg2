@@ -4,7 +4,6 @@
 
 This is a resubmission that addresses the error on the CRAN checks:
 
-* Remove the AF package from suggests, instead include dataset as part of this package
+* Remove the AF package from suggests, instead include datasets as part of this package
 
-
-It has been checked on all major platforms under release and devel
+It has been checked on all major platforms under release and devel.
