@@ -16,8 +16,8 @@ Authors@R:
             family = "Ohlendorff", role = "aut"), 
       person(given = "Adam", 
             family = "Brand", role = "aut"))
-URL: https://sachsmc.github.io/stdReg2/
-BugReports: https://github.com/sachsmc/stdReg2/issues/
+URL: https://sachsmc.github.io/stdReg2/, https://github.com/sachsmc/stdReg2
+BugReports: https://github.com/sachsmc/stdReg2/issues
 Date: 2026-05-08             
 Description: Contains more modern tools for causal inference using regression 
       standardization. Four general classes of models are implemented; generalized 
