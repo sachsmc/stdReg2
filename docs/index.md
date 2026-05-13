@@ -35,7 +35,7 @@ You can install the development version of `stdReg2` from
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("sachsmc/stdReg2")
+# remotes::install_github("sachsmc/stdReg2")
 ```
 
 ## Example
@@ -66,26 +66,27 @@ x <- standardize_glm(
 )
 x
 #> Outcome formula: Y ~ X * Z
+#> <environment: 0x64d9875a9fd0>
 #> Outcome family: quasibinomial 
 #> Outcome link function: logit 
 #> Exposure:  X 
 #> 
 #> Tables: 
 #>   X Estimate Std.Error lower.0.95 upper.0.95
-#> 1 0    0.519    0.0615      0.399      0.640
-#> 2 1    0.391    0.0882      0.218      0.563
+#> 1 0    0.519    0.0633      0.395      0.643
+#> 2 1    0.391    0.0916      0.211      0.570
 #> 
 #> Reference level:  X = 0 
 #> Contrast:  difference 
 #>   X Estimate Std.Error lower.0.95 upper.0.95
 #> 1 0    0.000    0.0000      0.000    0.00000
-#> 2 1   -0.129    0.0638     -0.254   -0.00353
+#> 2 1   -0.129    0.0667     -0.259    0.00222
 #> 
 #> Reference level:  X = 0 
 #> Contrast:  ratio 
 #>   X Estimate Std.Error lower.0.95 upper.0.95
-#> 1 0    1.000     0.000      1.000      1.000
-#> 2 1    0.752     0.126      0.505      0.999
+#> 1 0    1.000     0.000      1.000       1.00
+#> 2 1    0.752     0.132      0.494       1.01
 plot(x)
 ```
 
@@ -93,13 +94,13 @@ plot(x)
 
 ``` r
 tidy(x)
-#>   X   Estimate  Std.Error lower.0.95   upper.0.95   contrast transform
-#> 1 0  0.5190639 0.06149960  0.3985269  0.639600881       none  identity
-#> 2 1  0.3905311 0.08816362  0.2177336  0.563328623       none  identity
-#> 3 0  0.0000000 0.00000000  0.0000000  0.000000000 difference  identity
-#> 4 1 -0.1285328 0.06377604 -0.2535315 -0.003534039 difference  identity
-#> 5 0  1.0000000 0.00000000  1.0000000  1.000000000      ratio  identity
-#> 6 1  0.7523758 0.12604216  0.5053377  0.999413910      ratio  identity
+#>   X   Estimate  Std.Error lower.0.95  upper.0.95   contrast transform
+#> 1 0  0.5190639 0.06327946  0.3950384 0.643089345       none  identity
+#> 2 1  0.3905311 0.09158654  0.2110248 0.570037429       none  identity
+#> 3 0  0.0000000 0.00000000  0.0000000 0.000000000 difference  identity
+#> 4 1 -0.1285328 0.06671133 -0.2592846 0.002219041 difference  identity
+#> 5 0  1.0000000 0.00000000  1.0000000 1.000000000      ratio  identity
+#> 6 1  0.7523758 0.13178815  0.4940758 1.010675840      ratio  identity
 ```
 
 For more detailed examples, see the vignette “Estimation of causal
@@ -111,17 +112,22 @@ effects using stdReg2”.
 citation("stdReg2")
 #> To cite package 'stdReg2' in publications use:
 #> 
-#>   Sachs M, Sjölander A, Gabriel E, Ohlendorff J, Brand A (2025).
-#>   _stdReg2: Regression Standardization for Causal Inference_. R package
-#>   version 1.0.3, <https://sachsmc.github.io/stdReg2/>.
+#>   Sachs, C M, Ohlendorff, Sebastian J, Brand, Adam, Sj"olander, Arvid,
+#>   Gabriel, E E (2025). "The next generation of regression
+#>   standardization with the R package stdReg2." _Annals of
+#>   Epidemiology_, *105*, 66-74. doi:10.1016/j.annepidem.2025.04.002
+#>   <https://doi.org/10.1016/j.annepidem.2025.04.002>.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
-#>   @Manual{,
-#>     title = {stdReg2: Regression Standardization for Causal Inference},
-#>     author = {Michael C Sachs and Arvid Sjölander and Erin E Gabriel and Johan Sebastian Ohlendorff and Adam Brand},
+#>   @Article{,
+#>     title = {The next generation of regression standardization with the R package stdReg2},
+#>     author = {{Sachs} and Michael C and {Ohlendorff} and Johan Sebastian and {Brand} and {Adam} and {Sj{"o}lander} and {Arvid} and {Gabriel} and Erin E},
+#>     journal = {Annals of Epidemiology},
+#>     volume = {105},
+#>     pages = {66--74},
 #>     year = {2025},
-#>     note = {R package version 1.0.3},
-#>     url = {https://sachsmc.github.io/stdReg2/},
+#>     publisher = {Elsevier},
+#>     doi = {https://doi.org/10.1016/j.annepidem.2025.04.002},
 #>   }
 ```

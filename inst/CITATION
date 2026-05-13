@@ -1,0 +1,11 @@
+bibentry(
+  bibtype = "Article",
+  title="The next generation of regression standardization with the R package stdReg2",
+  author="Sachs, Michael C and Ohlendorff, Johan Sebastian and Brand, Adam and Sj{\"o}lander, Arvid and Gabriel, Erin E",
+  journal="Annals of Epidemiology",
+  volume="105",
+  pages="66--74",
+  year="2025",
+  publisher="Elsevier",
+  doi = "10.1016/j.annepidem.2025.04.002"
+)

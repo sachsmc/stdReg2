@@ -43,7 +43,7 @@ You can install the development version of `stdReg2` from [GitHub](https://githu
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("sachsmc/stdReg2")
+# remotes::install_github("sachsmc/stdReg2")
 ```
 
 ## Example

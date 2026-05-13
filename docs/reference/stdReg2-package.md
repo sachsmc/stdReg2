@@ -17,7 +17,9 @@ Useful links:
 
 - <https://sachsmc.github.io/stdReg2/>
 
-- Report bugs at <https://github.com/sachsmc/stdReg2/issues/>
+- <https://github.com/sachsmc/stdReg2>
+
+- Report bugs at <https://github.com/sachsmc/stdReg2/issues>
 
 ## Author
 

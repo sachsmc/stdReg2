@@ -12,7 +12,8 @@ Contains more modern tools for causal inference using regression standardization
 Useful links:
 \itemize{
   \item \url{https://sachsmc.github.io/stdReg2/}
-  \item Report bugs at \url{https://github.com/sachsmc/stdReg2/issues/}
+  \item \url{https://github.com/sachsmc/stdReg2}
+  \item Report bugs at \url{https://github.com/sachsmc/stdReg2/issues}
 }
 
 }
