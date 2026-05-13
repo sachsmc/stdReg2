@@ -39,6 +39,4 @@ The dataset contains data on 189 mothers who have given birth to one or several 
 }
 \references{
 Juul, Svend & Frydenberg, Morten (2010). \emph{An introduction to Stata for health researchers}, Texas, Stata press, 2010 (Third edition).
-
-\url{http://www.stata-press.com/data/ishr3.html}
 }

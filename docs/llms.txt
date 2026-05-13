@@ -151,8 +151,6 @@ Start with one of these for your model type.
 
 ## Helper functions and utilities
 
-- [`clslowbwt`](https://sachsmc.github.io/stdReg2/reference/clslowbwt.md)
-  : Birthweight data clustered on the mother.
 - [`parfrailty()`](https://sachsmc.github.io/stdReg2/reference/parfrailty.md)
   : Fits shared frailty gamma-Weibull models
 - [`plot(`*`<std_glm>`*`)`](https://sachsmc.github.io/stdReg2/reference/plot.md)
@@ -167,8 +165,6 @@ Start with one of these for your model type.
   : Print method for parametric frailty fits
 - [`sandwich()`](https://sachsmc.github.io/stdReg2/reference/sandwich.md)
   : Compute the sandwich variance components from a model fit
-- [`singapore`](https://sachsmc.github.io/stdReg2/reference/singapore.md)
-  : Case-control study on oesophageal cancer in Chinese Singapore men.
 - [`stdReg2`](https://sachsmc.github.io/stdReg2/reference/stdReg2-package.md)
   [`stdReg2-package`](https://sachsmc.github.io/stdReg2/reference/stdReg2-package.md)
   : stdReg2: Regression Standardization for Causal Inference

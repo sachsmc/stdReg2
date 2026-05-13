@@ -260,7 +260,7 @@ fit.std <- standardize_gee(
 )
 print(fit.std)
 #> Outcome formula: Y ~ X + Z + I(X^2)
-#> <environment: 0x623320491fd0>
+#> <environment: 0x62b1cd7728a0>
 #> Outcome family: 
 #> Outcome link function: 
 #> Exposure:  X 

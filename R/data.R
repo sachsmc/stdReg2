@@ -25,7 +25,7 @@
 #' \code{singapore$Everhotbev <- ifelse(singapore$Bev >= 1, 1, 0)}
 #'
 #' @references 	De Jong UW, Breslow N, Hong JG, Sridharan M, Shanmugaratnam K. (1974). Aetiological factors in oesophageal cancer in Singapore Chinese. \emph{Int J Cancer} Mar 15;13(3), 291-303.
-#' @references \url{http://faculty.washington.edu/heagerty/Courses/b513/WEB2002/datasets.html}
+
 
 NULL
 
@@ -64,7 +64,6 @@ NULL
 #' \code{clslowbwt$smoker <- as.numeric(clslowbwt$smoke == "1. Yes")}
 #'
 #' @references Juul, Svend & Frydenberg, Morten (2010). \emph{An introduction to Stata for health researchers}, Texas, Stata press, 2010 (Third edition).
-#' @references \url{http://www.stata-press.com/data/ishr3.html}
 #'
 
 NULL

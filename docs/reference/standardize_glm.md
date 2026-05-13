@@ -231,7 +231,7 @@ x <- standardize_glm(
 )
 x
 #> Outcome formula: Y ~ X * Z
-#> <environment: 0x623320af18c8>
+#> <environment: 0x62b1cefa1900>
 #> Outcome family: quasibinomial 
 #> Outcome link function: logit 
 #> Exposure:  X 
@@ -273,7 +273,7 @@ standardize_glm(
 )
 #> Warning: case_control = TRUE may not give reasonable results for the variance with clustering
 #> Outcome formula: Oesophagealcancer ~ (Everhotbev + Age + Dial + Samsu + Cigs)^2
-#> <environment: 0x623320af18c8>
+#> <environment: 0x62b1cefa1900>
 #> Outcome family: quasibinomial 
 #> Outcome link function: logit 
 #> Exposure:  Everhotbev 
@@ -301,7 +301,7 @@ x <- standardize_glm(
 )
 x
 #> Outcome formula: Y ~ X1 + X2 + Z
-#> <environment: 0x623320af18c8>
+#> <environment: 0x62b1cefa1900>
 #> Outcome family: quasibinomial 
 #> Outcome link function: logit 
 #> Exposure:  X1, X2 

@@ -2,7 +2,7 @@
 
 ## stdReg2 1.0.6
 
-- Remove dependence on AF for example dataset
+- Remove dependence on AF for example datasets
 
 ## stdReg2 1.0.5
 

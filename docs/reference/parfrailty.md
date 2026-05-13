@@ -128,7 +128,7 @@ fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
 print(fit)
 #> $formula
 #> Surv(L, T, D) ~ X
-#> <environment: 0x623318085cd8>
+#> <environment: 0x62b1c7b029a8>
 #> 
 #> $data
 #>              L          T D            X  id

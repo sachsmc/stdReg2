@@ -83,5 +83,3 @@ Frydenberg (2010):**
 
 Juul, Svend & Frydenberg, Morten (2010). *An introduction to Stata for
 health researchers*, Texas, Stata press, 2010 (Third edition).
-
-[http://www.stata-press.com/data/ishr3.html](http://www.stata-press.com/data/ishr3.md)

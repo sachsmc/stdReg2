@@ -69,5 +69,3 @@ data in De Jong UW (1974):**
 De Jong UW, Breslow N, Hong JG, Sridharan M, Shanmugaratnam K. (1974).
 Aetiological factors in oesophageal cancer in Singapore Chinese. *Int J
 Cancer* Mar 15;13(3), 291-303.
-
-[http://faculty.washington.edu/heagerty/Courses/b513/WEB2002/datasets.html](http://faculty.washington.edu/heagerty/Courses/b513/WEB2002/datasets.md)

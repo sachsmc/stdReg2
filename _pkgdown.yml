@@ -19,6 +19,8 @@ reference:
 - title: Helper functions and utilities
   contents:
   - -starts_with("standardize")
+  - -singapore
+  - -clslowbwt
 - title: Datasets
   contents:
   - singapore
