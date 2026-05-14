@@ -6,83 +6,74 @@ library(stdReg2)
 
 ### Introduction and context
 
-Suppose $`X`$ denotes an exposure of interest that takes values 0 or 1.
+Suppose \\X\\ denotes an exposure of interest that takes values 0 or 1.
 This could represent two different medical treatments, environmental
 exposures, economic policies, or genetic variants. We will most often
 use biomedical examples because we are biostatisticians.
 
 We consider the setting where it is of interest to quantify the effect
-of intervening with $`X`$ on outcome that we will denote $`Y`$. The
+of intervening with \\X\\ on outcome that we will denote \\Y\\. The
 outcome could represent some numeric value, it could be the presence or
 absence of a condition, or it could be the time between two events, such
-as time from cancer diagnosis to death. Let $`Y(X = x)`$ denote the
+as time from cancer diagnosis to death. Let \\Y(X = x)\\ denote the
 potential outcome if all subjects in the population would hypothetically
-be exposed to $`X = x`$.
+be exposed to \\X = x\\.
 
-To quantify the effect of $`X`$, we must summarize the distribution of
-$`Y(X = x)`$ with some statistic. If $`Y`$ is dichotomous, it is natural
-to use $`p\{Y(X = x) = 1\}`$, called the risk. If $`Y`$ is continuous,
-the mean is a natural summary statistic $`E\{Y(X = x)\}`$. If $`Y`$ is a
+To quantify the effect of \\X\\, we must summarize the distribution of
+\\Y(X = x)\\ with some statistic. If \\Y\\ is dichotomous, it is natural
+to use \\p\\Y(X = x) = 1\\\\, called the risk. If \\Y\\ is continuous,
+the mean is a natural summary statistic \\E\\Y(X = x)\\\\. If \\Y\\ is a
 continuous time-to-event, the probability of exceeding a particular
-value $`t`$ is a reasonable statistic: $`p\{Y(X = x) > t\}`$. In
-general, denote the summary statistic of choice as $`T\{Y(X = x)\}`$.
+value \\t\\ is a reasonable statistic: \\p\\Y(X = x) \> t\\\\. In
+general, denote the summary statistic of choice as \\T\\Y(X = x)\\\\.
 The summary statistic can also be applied to conditional distributions,
-which we will denote, e.g., $`T\{Y | X = x\}`$.
+which we will denote, e.g., \\T\\Y \| X = x\\\\.
 
-To quantify the effect of $`X`$, we must also decide on a *contrast* to
+To quantify the effect of \\X\\, we must also decide on a *contrast* to
 measure the causal effect. The point of the contrast is to compare the
-chosen summary statistic between the $`X = 1`$ and $`X = 0`$
-interventions. Typical choices would be the difference
-$`T\{Y(X = 1)\} - T\{Y(X = 0)\}`$ or the ratio
-$`T\{Y(X = 1)\} / T\{Y(X = 0)\}`$. It may also be of interest to
-quantify and report the summary statistics within each group
-$`(T\{Y(X = 1)\}, T\{Y(X = 0)\})`$.
+chosen summary statistic between the \\X = 1\\ and \\X = 0\\
+interventions. Typical choices would be the difference \\T\\Y(X = 1)\\ -
+T\\Y(X = 0)\\\\ or the ratio \\T\\Y(X = 1)\\ / T\\Y(X = 0)\\\\. It may
+also be of interest to quantify and report the summary statistics within
+each group \\(T\\Y(X = 1)\\, T\\Y(X = 0)\\)\\.
 
-In observational studies, the relationship between $`X`$ and $`Y`$ is
-likely confounded by a set of other variables $`\boldsymbol{Z}`$. This
-means that the values of the outcome $`Y`$ are determined by at least a
-subset of $`\boldsymbol{Z}`$ and the values of the exposure $`X`$ are
-determined by a subset of $`\boldsymbol{Z}`$. Naively estimating the
+In observational studies, the relationship between \\X\\ and \\Y\\ is
+likely confounded by a set of other variables \\\boldsymbol{Z}\\. This
+means that the values of the outcome \\Y\\ are determined by at least a
+subset of \\\boldsymbol{Z}\\ and the values of the exposure \\X\\ are
+determined by a subset of \\\boldsymbol{Z}\\. Naively estimating the
 contrast would lead to biased estimates of the causal effect.
 
 ### Regression standardization
 
 See Sjölander (2016) and Sjölander (2018) for more details. Suppose that
-the covariates $`\boldsymbol{Z}`$ are sufficient for confounding
+the covariates \\\boldsymbol{Z}\\ are sufficient for confounding
 control. For more information on what constitutes a sufficient
 adjustment set, see Witte and Didelez (2019). For a given summary
-statistic $`T`$, then
-``` math
-
-T\{Y(X = x)\} = E_{\boldsymbol{Z}}[T\{Y | X = x, \boldsymbol{Z}\}], 
-```
-where the expectation is taken with respect to the population
-distribution of $`\boldsymbol{Z}`$. This is also known as the
-*g-formula* or *adjustment formula*.
+statistic \\T\\, then \\ T\\Y(X = x)\\ = E\_{\boldsymbol{Z}}\[T\\Y \| X
+= x, \boldsymbol{Z}\\\], \\ where the expectation is taken with respect
+to the population distribution of \\\boldsymbol{Z}\\. This is also known
+as the *g-formula* or *adjustment formula*.
 
 In order to estimate this quantity based on an independent and
-identically distributed sample
-$`(X_1, Y_1, \boldsymbol{Z}_1), \ldots, (X_n, Y_n, \boldsymbol{Z}_n)`$,
-we proceed by
+identically distributed sample \\(X_1, Y_1, \boldsymbol{Z}\_1), \ldots,
+(X_n, Y_n, \boldsymbol{Z}\_n)\\, we proceed by
 
-1.  Specifying and estimating a regression model for $`Y`$ given $`X`$
-    and $`\boldsymbol{Z}`$.
-2.  Use the fitted model to obtain estimates of
-    $`T\{Y_i | X_i = x, \boldsymbol{Z}_i\}`$ for $`i = 1, \ldots, n`$.
-    This is done by creating a copy of the observed dataset, replacing
-    the observed $`X_i`$ with $`x`$ for each individual, and using the
-    fitted model to get predicted values for the copy of the observed
-    data. Denote these predicted values as
-    $`\hat{T}\{Y_i | X_i = x, \boldsymbol{Z}_i\}`$.
-3.  Average over the empirical distribution of $`\boldsymbol{Z}`$ to
-    obtain the estimate
-    ``` math
+1.  Specifying and estimating a regression model for \\Y\\ given \\X\\
+    and \\\boldsymbol{Z}\\.
+2.  Use the fitted model to obtain estimates of \\T\\Y_i \| X_i = x,
+    \boldsymbol{Z}\_i\\\\ for \\i = 1, \ldots, n\\. This is done by
+    creating a copy of the observed dataset, replacing the observed
+    \\X_i\\ with \\x\\ for each individual, and using the fitted model
+    to get predicted values for the copy of the observed data. Denote
+    these predicted values as \\\hat{T}\\Y_i \| X_i = x,
+    \boldsymbol{Z}\_i\\\\.
+3.  Average over the empirical distribution of \\\boldsymbol{Z}\\ to
+    obtain the estimate \\ \hat{T}\\Y(X = x)\\ = \frac{1}{n}\sum\_{i =
+    1}^n \hat{T}\\Y_i \| X_i = x, \boldsymbol{Z}\_i\\. \\
 
-    \hat{T}\{Y(X = x)\} = \frac{1}{n}\sum_{i = 1}^n \hat{T}\{Y_i | X_i = x, \boldsymbol{Z}_i\}.
-    ```
-
-One can do this for each level of $`X = 0, 1`$ and compute the desired
-contrast. Under the assumptions that 1) $`\boldsymbol{Z}`$ is sufficient
+One can do this for each level of \\X = 0, 1\\ and compute the desired
+contrast. Under the assumptions that 1) \\\boldsymbol{Z}\\ is sufficient
 for confounding control, and 2) the regression model in step 1 is
 correctly specified, then this estimator is consistent and
 asymptotically normal.
@@ -105,13 +96,12 @@ misspecified.
 *Correctly specified for confounding* - A correctly specified model that
 contains a sufficient set of confounders.
 
-If we can model $`P(X=1|\boldsymbol{Z})`$, and it is correctly specified
-and contains all confounders, then we can use that to estimate the
-probability that each individual $`i`$ received the treatment that they
-did
-$`W_i = \frac{X_i}{P(X_i=1|\boldsymbol{Z}_i)} + \frac{1-X_i}{1-P(X_i=1|\boldsymbol{Z}_i)}`$.
-Let $`\hat{p}_i`$ denote the estimated probability that subject $`i`$
-received treatment $`1`$.
+If we can model \\P(X=1\|\boldsymbol{Z})\\, and it is correctly
+specified and contains all confounders, then we can use that to estimate
+the probability that each individual \\i\\ received the treatment that
+they did \\W_i = \frac{X_i}{P(X_i=1\|\boldsymbol{Z}\_i)} +
+\frac{1-X_i}{1-P(X_i=1\|\boldsymbol{Z}\_i)}\\. Let \\\hat{p}\_i\\ denote
+the estimated probability that subject \\i\\ received treatment \\1\\.
 
 Any consistent estimation method can be used for the outcome and
 exposure models. As long as *either* the outcome model *or* the
@@ -291,7 +281,7 @@ summary(nhefs_dat)
 #> 
 ```
 
-We will assume that the set of confounders in $`\boldsymbol{Z}`$
+We will assume that the set of confounders in \\\boldsymbol{Z}\\
 includes sex, race, age, education, number of cigarettes smoked per
 year, the number of years smoked, level of physical activity, and
 baseline weight in 1971. This equivalent to assuming that the

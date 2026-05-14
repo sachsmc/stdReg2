@@ -84,7 +84,17 @@ incl <- ave(x = incl, id, FUN = sum) == m
 dd <- data.frame(L, T, D, X, id)
 dd <- dd[incl, ]
 
+\dontshow{
+  # restrict threads for CRAN compliance
+  dt_threads <- data.table::getDTthreads()
+  data.table::setDTthreads(1)
+}
 fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
+\dontshow{
+  # restore thread setting
+  data.table::setDTthreads(dt_threads)
+}
+
 print(fit)
 }
 \references{

@@ -125,10 +125,11 @@ dd <- data.frame(L, T, D, X, id)
 dd <- dd[incl, ]
 
 fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
+
 print(fit)
 #> $formula
 #> Surv(L, T, D) ~ X
-#> <environment: 0x5a154569afa0>
+#> <environment: 0x568e3db8dd10>
 #> 
 #> $data
 #>              L          T D            X  id

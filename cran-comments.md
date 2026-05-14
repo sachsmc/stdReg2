@@ -4,6 +4,6 @@
 
 This is a resubmission that addresses the error on the CRAN checks:
 
-* Remove the AF package from suggests, instead include datasets as part of this package
+* Set DTthreads in examples so that cpu time is not greater than 2.5 times elapsed time
 
 It has been checked on all major platforms under release and devel.

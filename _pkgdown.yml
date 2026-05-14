@@ -1,5 +1,6 @@
 template:
   bootstrap: 5
+  math-rendering: mathjax
   bootswatch: lux
   bslib:
     pkgdown-nav-height: 100px

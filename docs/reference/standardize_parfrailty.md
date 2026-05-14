@@ -288,6 +288,7 @@ fit.std <- standardize_parfrailty(
   times = 1:5,
   clusterid = "id"
 )
+
 print(fit.std)
 #> 
 #> Formula: Surv(L, T, D) ~ X

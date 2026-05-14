@@ -173,6 +173,11 @@ incl <- T > L
 incl <- ave(x = incl, id, FUN = sum) == m
 dd <- data.frame(L, T, D, X, id)
 dd <- dd[incl, ]
+\dontshow{
+  # restrict threads for CRAN compliance
+  dt_threads <- data.table::getDTthreads()
+  data.table::setDTthreads(1)
+}
 
 fit.std <- standardize_parfrailty(
   formula = Surv(L, T, D) ~ X,
@@ -181,6 +186,11 @@ fit.std <- standardize_parfrailty(
   times = 1:5,
   clusterid = "id"
 )
+\dontshow{
+  # restore thread setting
+  data.table::setDTthreads(dt_threads)
+}
+
 print(fit.std)
 plot(fit.std)
 

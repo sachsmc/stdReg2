@@ -76,7 +76,17 @@
 #' dd <- data.frame(L, T, D, X, id)
 #' dd <- dd[incl, ]
 #'
+#' \dontshow{
+#'   # restrict threads for CRAN compliance
+#'   dt_threads <- data.table::getDTthreads()
+#'   data.table::setDTthreads(1)
+#' }
 #' fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
+#' \dontshow{
+#'   # restore thread setting
+#'   data.table::setDTthreads(dt_threads)
+#' }
+#'
 #' print(fit)
 #' @export parfrailty
 parfrailty <- function(formula, data, clusterid, init) {
@@ -544,6 +554,11 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #' incl <- ave(x = incl, id, FUN = sum) == m
 #' dd <- data.frame(L, T, D, X, id)
 #' dd <- dd[incl, ]
+#' \dontshow{
+#'   # restrict threads for CRAN compliance
+#'   dt_threads <- data.table::getDTthreads()
+#'   data.table::setDTthreads(1)
+#' }
 #'
 #' fit.std <- standardize_parfrailty(
 #'   formula = Surv(L, T, D) ~ X,
@@ -552,6 +567,11 @@ print.summary.parfrailty <- function(x, digits = max(3L, getOption("digits") - 3
 #'   times = 1:5,
 #'   clusterid = "id"
 #' )
+#' \dontshow{
+#'   # restore thread setting
+#'   data.table::setDTthreads(dt_threads)
+#' }
+#'
 #' print(fit.std)
 #' plot(fit.std)
 #'

@@ -1,3 +1,6 @@
+# stdReg2 1.0.7
+* setDtthreads for examples
+
 # stdReg2 1.0.6
 * Remove dependence on AF for example datasets
 
