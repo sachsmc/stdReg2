@@ -120,14 +120,14 @@ citation("stdReg2")
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
-#>   @Article{,
-#>     title = {The next generation of regression standardization with the R package stdReg2},
-#>     author = {{Sachs} and Michael C and {Ohlendorff} and Johan Sebastian and {Brand} and {Adam} and {Sj{"o}lander} and {Arvid} and {Gabriel} and Erin E},
-#>     journal = {Annals of Epidemiology},
-#>     volume = {105},
-#>     pages = {66--74},
-#>     year = {2025},
-#>     publisher = {Elsevier},
-#>     doi = {https://doi.org/10.1016/j.annepidem.2025.04.002},
-#>   }
+#>    @Article{,
+#>      title = {The next generation of regression standardization with the R package stdReg2},
+#>      author = {Michael C Sachs and Johan Sebastian Ohlendorff and Adam Brand and Arvid Sj"olander and Erin E Gabriel},
+#>      journal = {Annals of Epidemiology},
+#>      volume = {105},
+#>      pages = {66--74},
+#>      year = {2025},
+#>      publisher = {Elsevier},
+#>      doi = {10.1016/j.annepidem.2025.04.002},
+#>    }
 ```
