@@ -6,17 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Implementing custom and new methods for standardization • stdReg2</title>
-<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
-  window.MathJax = {
-    chtml: {
-      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
-    }
-  };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Implementing custom and new methods for standardization">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -26,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">stdReg2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,8 +93,8 @@ package <span class="citation">(McGrath et al. 2020)</span>. Also note
 that the nonparametric bootstrap may not provide valid inference if the
 outcome model is data-adaptive, e.g., based on machine learning
 algorithms. In such situations alternative inference methods may be
-required <span class="citation">(Naimi, Mishler, and Kennedy 2021;
-Zivich and Breskin 2021)</span>.</p>
+required <span class="citation">(Naimi et al. 2021; Zivich and Breskin
+2021)</span>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nhefs_dat</span> <span class="op">&lt;-</span> <span class="fu">causaldata</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/causaldata/man/nhefs_complete.html" class="external-link">nhefs_complete</a></span></span>
 <span><span class="co"># the target outcome model</span></span>
@@ -163,13 +159,12 @@ following example:</p>
 <span><span class="co">#&gt; 2    1   0.1117</span></span></code></pre></div>
 <p>Here we provide a list of fitters, arguments, and predict functions,
 one for each of the desired levels of the exposure.</p>
-<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-MCGRATH2020100008" class="csl-entry">
-McGrath, Sean, Victoria Lin, Zilu Zhang, Lucia C. Petito, Roger W.
-Logan, Miguel A. Hernán, and Jessica G. Young. 2020. <span>“gfoRmula: An
-r Package for Estimating the Effects of Sustained Treatment Strategies
-via the Parametric g-Formula.”</span> <em>Patterns</em> 1 (3): 100008.
-https://doi.org/<a href="https://doi.org/10.1016/j.patter.2020.100008" class="external-link">https://doi.org/10.1016/j.patter.2020.100008</a>.
+McGrath, Sean, Victoria Lin, Zilu Zhang, et al. 2020. <span>“gfoRmula:
+An r Package for Estimating the Effects of Sustained Treatment
+Strategies via the Parametric g-Formula.”</span> <em>Patterns</em> 1
+(3): 100008. https://doi.org/<a href="https://doi.org/10.1016/j.patter.2020.100008" class="external-link">https://doi.org/10.1016/j.patter.2020.100008</a>.
 </div>
 <div id="ref-naimi2021challenges" class="csl-entry">
 Naimi, Ashley I, Alan E Mishler, and Edward H Kennedy. 2021.
@@ -181,7 +176,7 @@ Epidemiology</em> 192 (9): 1536–44. <a href="https://doi.org/10.1093/aje/kwab2
 Robins, James. 1986. <span>“A New Approach to Causal Inference in
 Mortality Studies with a Sustained Exposure Period—Application to
 Control of the Healthy Worker Survivor Effect.”</span> <em>Mathematical
-Modelling</em> 7 (9-12): 1393–1512.
+Modelling</em> 7 (9-12): 1393–512.
 </div>
 <div id="ref-tibshirani1993introduction" class="csl-entry">
 Tibshirani, Robert J, and Bradley Efron. 1993. <span>“An Introduction to
@@ -189,9 +184,9 @@ the Bootstrap.”</span> <em>Monographs on Statistics and Applied
 Probability</em> 57 (1): 1–436.
 </div>
 <div id="ref-zivich2021machine" class="csl-entry">
-Zivich, Paul N., and Alexander Breskin. 2021. <span>“Machine Learning
-for Causal Inference: On the Use of Cross-Fit Estimators.”</span> 32:
-393–401. <a href="https://doi.org/10.1097/EDE.0000000000001332" class="external-link">https://doi.org/10.1097/EDE.0000000000001332</a>.
+Zivich, Paul N., and Alexander Breskin. 2021. <em>Machine Learning for
+Causal Inference: On the Use of Cross-Fit Estimators.</em> (Hagerstown)
+32: 393–401. <a href="https://doi.org/10.1097/EDE.0000000000001332" class="external-link">https://doi.org/10.1097/EDE.0000000000001332</a>.
 </div>
 </div>
 </div>

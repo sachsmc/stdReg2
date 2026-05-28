@@ -252,6 +252,7 @@ Arvid Sjölander
 ``` r
 
 
+
 require(survival)
 
 # simulate data

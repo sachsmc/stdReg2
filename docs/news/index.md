@@ -1,6 +1,13 @@
 # Changelog
 
+## stdReg2 1.0.8
+
+- Bugfix: bread/meat in standardize_glm variance calculation. Thanks
+  [@lorenzoFabbri](https://github.com/lorenzoFabbri)
+
 ## stdReg2 1.0.7
+
+CRAN release: 2026-05-14
 
 - setDtthreads for examples
 

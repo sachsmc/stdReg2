@@ -42,11 +42,11 @@ x <- standardize_glm(
   reference = 0
 )
 tidy(x)
-#>   X   Estimate  Std.Error lower.0.95  upper.0.95   contrast transform
-#> 1 0  0.5190639 0.06327946  0.3950384 0.643089345       none  identity
-#> 2 1  0.3905311 0.09158654  0.2110248 0.570037429       none  identity
-#> 3 0  0.0000000 0.00000000  0.0000000 0.000000000 difference  identity
-#> 4 1 -0.1285328 0.06671133 -0.2592846 0.002219041 difference  identity
-#> 5 0  1.0000000 0.00000000  1.0000000 1.000000000      ratio  identity
-#> 6 1  0.7523758 0.13178815  0.4940758 1.010675840      ratio  identity
+#>   X   Estimate  Std.Error lower.0.95   upper.0.95   contrast transform
+#> 1 0  0.5190639 0.06219793  0.3971582  0.640969573       none  identity
+#> 2 1  0.3905311 0.09236927  0.2094907  0.571571540       none  identity
+#> 3 0  0.0000000 0.00000000  0.0000000  0.000000000 difference  identity
+#> 4 1 -0.1285328 0.06393487 -0.2538428 -0.003222729 difference  identity
+#> 5 0  1.0000000 0.00000000  1.0000000  1.000000000      ratio  identity
+#> 6 1  0.7523758 0.12876862  0.4999940  1.004757658      ratio  identity
 ```

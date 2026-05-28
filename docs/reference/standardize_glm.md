@@ -212,6 +212,7 @@ R-package stdReg. *European Journal of Epidemiology* **33**(9), 847-858.
 ## Examples
 
 ``` r
+
 # basic example
 # needs to correctly specify the outcome model and no unmeasered confounders
 # (+ standard causal assunmptions)
@@ -231,27 +232,27 @@ x <- standardize_glm(
 )
 x
 #> Outcome formula: Y ~ X * Z
-#> <environment: 0x568e4311e2b0>
+#> <environment: 0x5711634f38e8>
 #> Outcome family: quasibinomial 
 #> Outcome link function: logit 
 #> Exposure:  X 
 #> 
 #> Tables: 
 #>      X Estimate Std.Error lower.0.95 upper.0.95
-#> 1  low    0.286    0.0514     0.1850      0.386
-#> 2 high    0.198    0.1128    -0.0234      0.419
+#> 1  low    0.286    0.0579     0.1722      0.399
+#> 2 high    0.198    0.1015    -0.0012      0.397
 #> 
 #> Reference level:  X = low 
 #> Contrast:  difference 
 #>      X Estimate Std.Error lower.0.95 upper.0.95
-#> 1  low    0.000      0.00      0.000      0.000
-#> 2 high   -0.088      0.12     -0.324      0.148
+#> 1  low    0.000     0.000      0.000      0.000
+#> 2 high   -0.088     0.113     -0.309      0.133
 #> 
 #> Reference level:  X = low 
 #> Contrast:  ratio 
 #>      X Estimate Std.Error lower.0.95 upper.0.95
 #> 1  low    1.000     0.000      1.000       1.00
-#> 2 high    0.692     0.404     -0.101       1.48
+#> 2 high    0.692     0.371     -0.036       1.42
 #> 
 # different transformations of causal effects
 
@@ -273,15 +274,15 @@ standardize_glm(
 )
 #> Warning: case_control = TRUE may not give reasonable results for the variance with clustering
 #> Outcome formula: Oesophagealcancer ~ (Everhotbev + Age + Dial + Samsu + Cigs)^2
-#> <environment: 0x568e4311e2b0>
+#> <environment: 0x5711634f38e8>
 #> Outcome family: quasibinomial 
 #> Outcome link function: logit 
 #> Exposure:  Everhotbev 
 #> 
 #> Tables: 
 #>   Everhotbev Estimate Std.Error lower.0.95 upper.0.95
-#> 1          0 0.000128  2.27e-05   8.33e-05   0.000172
-#> 2          1 0.000570  2.26e-04   1.27e-04   0.001014
+#> 1          0 0.000128  2.03e-05   0.000088   0.000168
+#> 2          1 0.000570  2.29e-04   0.000121   0.001019
 #> 
 
 # multiple exposures
@@ -301,48 +302,48 @@ x <- standardize_glm(
 )
 x
 #> Outcome formula: Y ~ X1 + X2 + Z
-#> <environment: 0x568e4311e2b0>
+#> <environment: 0x5711634f38e8>
 #> Outcome family: quasibinomial 
 #> Outcome link function: logit 
 #> Exposure:  X1, X2 
 #> 
 #> Tables: 
 #>   X1 X2 Estimate Std.Error lower.0.95 upper.0.95
-#> 1  0  0    0.419    0.0599    0.30143      0.536
-#> 2  1  0    0.252    0.0745    0.10637      0.398
-#> 3  0  1    0.273    0.0734    0.12947      0.417
-#> 4  1  1    0.146    0.0719    0.00477      0.287
+#> 1  0  0    0.419    0.0574     0.3062      0.531
+#> 2  1  0    0.252    0.0747     0.1059      0.399
+#> 3  0  1    0.273    0.0698     0.1366      0.410
+#> 4  1  1    0.146    0.0639     0.0205      0.271
 #> 
 #> Reference level:  X1 = 0; X2 = 0 
 #> Contrast:  difference 
 #>   X1 X2 Estimate Std.Error lower.0.95 upper.0.95
 #> 1  0  0    0.000    0.0000      0.000     0.0000
-#> 2  1  0   -0.166    0.0704     -0.304    -0.0284
-#> 3  0  1   -0.145    0.0501     -0.244    -0.0473
-#> 4  1  1   -0.273    0.0745     -0.419    -0.1271
+#> 2  1  0   -0.166    0.0588     -0.282    -0.0511
+#> 3  0  1   -0.145    0.0457     -0.235    -0.0558
+#> 4  1  1   -0.273    0.0574     -0.386    -0.1605
 #> 
 #> Reference level:  X1 = 0; X2 = 0 
 #> Contrast:  ratio 
 #>   X1 X2 Estimate Std.Error lower.0.95 upper.0.95
 #> 1  0  0    1.000     0.000     1.0000      1.000
-#> 2  1  0    0.603     0.157     0.2946      0.911
-#> 3  0  1    0.653     0.124     0.4098      0.896
-#> 4  1  1    0.348     0.160     0.0344      0.661
+#> 2  1  0    0.603     0.142     0.3253      0.880
+#> 3  0  1    0.653     0.115     0.4280      0.878
+#> 4  1  1    0.348     0.132     0.0889      0.607
 #> 
 tidy(x)
-#>    X1 X2   Estimate  Std.Error   lower.0.95  upper.0.95   contrast transform
-#> 1   0  0  0.4187976 0.05988132  0.301432401  0.53616285       none  identity
-#> 2   1  0  0.2523918 0.07450114  0.106372210  0.39841133       none  identity
-#> 3   0  1  0.2733894 0.07342930  0.129470661  0.41730822       none  identity
-#> 4   1  1  0.1456809 0.07189265  0.004773882  0.28658788       none  identity
-#> 5   0  0  0.0000000 0.00000000  0.000000000  0.00000000 difference  identity
-#> 6   1  0 -0.1664059 0.07039483 -0.304377189 -0.02843452 difference  identity
-#> 7   0  1 -0.1454082 0.05007717 -0.243557635 -0.04725874 difference  identity
-#> 8   1  1 -0.2731167 0.07448750 -0.419109552 -0.12712394 difference  identity
-#> 9   0  0  1.0000000 0.00000000  1.000000000  1.00000000      ratio  identity
-#> 10  1  0  0.6026581 0.15718090  0.294589170  0.91072698      ratio  identity
-#> 11  0  1  0.6527961 0.12398991  0.409780305  0.89581181      ratio  identity
-#> 12  1  1  0.3478551 0.15995045  0.034357954  0.66135220      ratio  identity
+#>    X1 X2   Estimate  Std.Error  lower.0.95  upper.0.95   contrast transform
+#> 1   0  0  0.4187976 0.05744182  0.30621373  0.53138152       none  identity
+#> 2   1  0  0.2523918 0.07473167  0.10592039  0.39886315       none  identity
+#> 3   0  1  0.2733894 0.06980801  0.13656825  0.41021063       none  identity
+#> 4   1  1  0.1456809 0.06388703  0.02046461  0.27089715       none  identity
+#> 5   0  0  0.0000000 0.00000000  0.00000000  0.00000000 difference  identity
+#> 6   1  0 -0.1664059 0.05881133 -0.28167395 -0.05113776 difference  identity
+#> 7   0  1 -0.1454082 0.04570263 -0.23498369 -0.05583268 difference  identity
+#> 8   1  1 -0.2731167 0.05744211 -0.38570121 -0.16053228 difference  identity
+#> 9   0  0  1.0000000 0.00000000  1.00000000  1.00000000      ratio  identity
+#> 10  1  0  0.6026581 0.14153409  0.32525635  0.88005980      ratio  identity
+#> 11  0  1  0.6527961 0.11470428  0.42797981  0.87761231      ratio  identity
+#> 12  1  1  0.3478551 0.13210819  0.08892778  0.60678238      ratio  identity
 
 # continuous exposure
 set.seed(2)

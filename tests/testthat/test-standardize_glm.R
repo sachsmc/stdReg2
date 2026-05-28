@@ -128,4 +128,25 @@ test_that("variance is correct for noncanonical glms", {
   expect_true(sum(abs(ncanon$res_contrast[[1]]$estimates$se -
     canon$res_contrast[[1]]$estimates$se)) < 10)
 
+
+
+
 })
+
+
+test_that("variance correct for gaussian glm", {
+
+  nhefs_cc <- causaldata::nhefs_complete
+  fit <- standardize_glm(
+    wt82_71 ~ qsmk + sex + age + I(age^2) + race + factor(education) +
+      smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) +
+      factor(exercise) + factor(active) + wt71 + I(wt71^2) + qsmk:smokeintensity,
+    data   = nhefs_cc,
+    values = list(qsmk = 1:0)
+  )
+  thisse <- tidy(fit)$Std.Error[1]
+  #thisse
+  expect_true(abs(thisse - .435) < .01)
+
+})
+

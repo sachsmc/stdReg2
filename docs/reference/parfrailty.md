@@ -94,6 +94,7 @@ Arvid Sjölander and Elisabeth Dahlqwist.
 
 ``` r
 
+
 require(survival)
 #> Loading required package: survival
 
@@ -129,7 +130,7 @@ fit <- parfrailty(formula = Surv(L, T, D) ~ X, data = dd, clusterid = "id")
 print(fit)
 #> $formula
 #> Surv(L, T, D) ~ X
-#> <environment: 0x568e3db8dd10>
+#> <environment: 0x57115d5be530>
 #> 
 #> $data
 #>              L          T D            X  id

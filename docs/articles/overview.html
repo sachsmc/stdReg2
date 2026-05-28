@@ -6,17 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Estimation of causal effects using stdReg2 • stdReg2</title>
-<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
-  window.MathJax = {
-    chtml: {
-      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
-    }
-  };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Estimation of causal effects using stdReg2">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -26,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">stdReg2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +61,7 @@
 
       <h1>Estimation of causal effects using stdReg2</h1>
             
-            <h4 data-toc-skip class="date">2026-05-14</h4>
+            <h4 data-toc-skip class="date">2026-05-28</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/sachsmc/stdReg2/blob/HEAD/vignettes/overview.Rmd" class="external-link"><code>vignettes/overview.Rmd</code></a></small>
       <div class="d-none name"><code>overview.Rmd</code></div>
@@ -78,84 +74,136 @@
 <div class="section level3">
 <h3 id="introduction-and-context">Introduction and context<a class="anchor" aria-label="anchor" href="#introduction-and-context"></a>
 </h3>
-<p>Suppose <span class="math inline">\(X\)</span> denotes an exposure of
-interest that takes values 0 or 1. This could represent two different
-medical treatments, environmental exposures, economic policies, or
-genetic variants. We will most often use biomedical examples because we
-are biostatisticians.</p>
+<p>Suppose
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>
+denotes an exposure of interest that takes values 0 or 1. This could
+represent two different medical treatments, environmental exposures,
+economic policies, or genetic variants. We will most often use
+biomedical examples because we are biostatisticians.</p>
 <p>We consider the setting where it is of interest to quantify the
-effect of intervening with <span class="math inline">\(X\)</span> on
-outcome that we will denote <span class="math inline">\(Y\)</span>. The
-outcome could represent some numeric value, it could be the presence or
-absence of a condition, or it could be the time between two events, such
-as time from cancer diagnosis to death. Let <span class="math inline">\(Y(X = x)\)</span> denote the potential outcome if
-all subjects in the population would hypothetically be exposed to <span class="math inline">\(X = x\)</span>.</p>
-<p>To quantify the effect of <span class="math inline">\(X\)</span>, we
-must summarize the distribution of <span class="math inline">\(Y(X =
-x)\)</span> with some statistic. If <span class="math inline">\(Y\)</span> is dichotomous, it is natural to use
-<span class="math inline">\(p\{Y(X = x) = 1\}\)</span>, called the risk.
-If <span class="math inline">\(Y\)</span> is continuous, the mean is a
-natural summary statistic <span class="math inline">\(E\{Y(X =
-x)\}\)</span>. If <span class="math inline">\(Y\)</span> is a continuous
-time-to-event, the probability of exceeding a particular value <span class="math inline">\(t\)</span> is a reasonable statistic: <span class="math inline">\(p\{Y(X = x) &gt; t\}\)</span>. In general, denote
-the summary statistic of choice as <span class="math inline">\(T\{Y(X =
-x)\}\)</span>. The summary statistic can also be applied to conditional
-distributions, which we will denote, e.g., <span class="math inline">\(T\{Y | X = x\}\)</span>.</p>
-<p>To quantify the effect of <span class="math inline">\(X\)</span>, we
-must also decide on a <em>contrast</em> to measure the causal effect.
+effect of intervening with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>
+on outcome that we will denote
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>.
+The outcome could represent some numeric value, it could be the presence
+or absence of a condition, or it could be the time between two events,
+such as time from cancer diagnosis to death. Let
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">Y(X = x)</annotation></semantics></math>
+denote the potential outcome if all subjects in the population would
+hypothetically be exposed to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>=</mo><mi>x</mi></mrow><annotation encoding="application/x-tex">X = x</annotation></semantics></math>.</p>
+<p>To quantify the effect of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>,
+we must summarize the distribution of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">Y(X = x)</annotation></semantics></math>
+with some statistic. If
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>
+is dichotomous, it is natural to use
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>1</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">p\{Y(X = x) = 1\}</annotation></semantics></math>,
+called the risk. If
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>
+is continuous, the mean is a natural summary statistic
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">E\{Y(X = x)\}</annotation></semantics></math>.
+If
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>
+is a continuous time-to-event, the probability of exceeding a particular
+value
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+is a reasonable statistic:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>&gt;</mo><mi>t</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">p\{Y(X = x) &gt; t\}</annotation></semantics></math>.
+In general, denote the summary statistic of choice as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">T\{Y(X = x)\}</annotation></semantics></math>.
+The summary statistic can also be applied to conditional distributions,
+which we will denote, e.g.,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">|</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">T\{Y | X = x\}</annotation></semantics></math>.</p>
+<p>To quantify the effect of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>,
+we must also decide on a <em>contrast</em> to measure the causal effect.
 The point of the contrast is to compare the chosen summary statistic
-between the <span class="math inline">\(X = 1\)</span> and <span class="math inline">\(X = 0\)</span> interventions. Typical choices
-would be the difference <span class="math inline">\(T\{Y(X = 1)\} -
-T\{Y(X = 0)\}\)</span> or the ratio <span class="math inline">\(T\{Y(X =
-1)\} / T\{Y(X = 0)\}\)</span>. It may also be of interest to quantify
-and report the summary statistics within each group <span class="math inline">\((T\{Y(X = 1)\}, T\{Y(X = 0)\})\)</span>.</p>
-<p>In observational studies, the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is likely confounded by a set of other
-variables <span class="math inline">\(\boldsymbol{Z}\)</span>. This
-means that the values of the outcome <span class="math inline">\(Y\)</span> are determined by at least a subset of
-<span class="math inline">\(\boldsymbol{Z}\)</span> and the values of
-the exposure <span class="math inline">\(X\)</span> are determined by a
-subset of <span class="math inline">\(\boldsymbol{Z}\)</span>. Naively
-estimating the contrast would lead to biased estimates of the causal
-effect.</p>
+between the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">X = 1</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">X = 0</annotation></semantics></math>
+interventions. Typical choices would be the difference
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">}</mo><mo>−</mo><mi>T</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">T\{Y(X = 1)\} - T\{Y(X = 0)\}</annotation></semantics></math>
+or the ratio
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">}</mo><mi>/</mi><mi>T</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">T\{Y(X = 1)\} / T\{Y(X = 0)\}</annotation></semantics></math>.
+It may also be of interest to quantify and report the summary statistics
+within each group
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>T</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">}</mo><mo>,</mo><mi>T</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">}</mo><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(T\{Y(X = 1)\}, T\{Y(X = 0)\})</annotation></semantics></math>.</p>
+<p>In observational studies, the relationship between
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>
+is likely confounded by a set of other variables
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐙</mi><annotation encoding="application/x-tex">\boldsymbol{Z}</annotation></semantics></math>.
+This means that the values of the outcome
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>
+are determined by at least a subset of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐙</mi><annotation encoding="application/x-tex">\boldsymbol{Z}</annotation></semantics></math>
+and the values of the exposure
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>
+are determined by a subset of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐙</mi><annotation encoding="application/x-tex">\boldsymbol{Z}</annotation></semantics></math>.
+Naively estimating the contrast would lead to biased estimates of the
+causal effect.</p>
 </div>
 <div class="section level3">
 <h3 id="regression-standardization">Regression standardization<a class="anchor" aria-label="anchor" href="#regression-standardization"></a>
 </h3>
 <p>See <span class="citation">Sjölander (2016)</span> and <span class="citation">Sjölander (2018)</span> for more details. Suppose that
-the covariates <span class="math inline">\(\boldsymbol{Z}\)</span> are
-sufficient for confounding control. For more information on what
+the covariates
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐙</mi><annotation encoding="application/x-tex">\boldsymbol{Z}</annotation></semantics></math>
+are sufficient for confounding control. For more information on what
 constitutes a sufficient adjustment set, see <span class="citation">Witte and Didelez (2019)</span>. For a given summary
-statistic <span class="math inline">\(T\)</span>, then <span class="math display">\[
-T\{Y(X = x)\} = E_{\boldsymbol{Z}}[T\{Y | X = x, \boldsymbol{Z}\}],
-\]</span> where the expectation is taken with respect to the population
-distribution of <span class="math inline">\(\boldsymbol{Z}\)</span>.
+statistic
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>,
+then
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">}</mo><mo>=</mo><msub><mi>E</mi><mi>𝐙</mi></msub><mo stretchy="false" form="prefix">[</mo><mi>T</mi><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">|</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo>,</mo><mi>𝐙</mi><mo stretchy="false" form="postfix">}</mo><mo stretchy="false" form="postfix">]</mo><mo>,</mo></mrow><annotation encoding="application/x-tex">
+T\{Y(X = x)\} = E_{\boldsymbol{Z}}[T\{Y | X = x, \boldsymbol{Z}\}], 
+</annotation></semantics></math> where the expectation is taken with
+respect to the population distribution of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐙</mi><annotation encoding="application/x-tex">\boldsymbol{Z}</annotation></semantics></math>.
 This is also known as the <em>g-formula</em> or <em>adjustment
 formula</em>.</p>
 <p>In order to estimate this quantity based on an independent and
-identically distributed sample <span class="math inline">\((X_1, Y_1,
-\boldsymbol{Z}_1), \ldots, (X_n, Y_n, \boldsymbol{Z}_n)\)</span>, we
-proceed by</p>
+identically distributed sample
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>X</mi><mn>1</mn></msub><mo>,</mo><msub><mi>Y</mi><mn>1</mn></msub><mo>,</mo><msub><mi>𝐙</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mi>…</mi><mo>,</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>X</mi><mi>n</mi></msub><mo>,</mo><msub><mi>Y</mi><mi>n</mi></msub><mo>,</mo><msub><mi>𝐙</mi><mi>n</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(X_1, Y_1, \boldsymbol{Z}_1), \ldots, (X_n, Y_n, \boldsymbol{Z}_n)</annotation></semantics></math>,
+we proceed by</p>
 <ol style="list-style-type: decimal">
-<li>Specifying and estimating a regression model for <span class="math inline">\(Y\)</span> given <span class="math inline">\(X\)</span> and <span class="math inline">\(\boldsymbol{Z}\)</span>.</li>
-<li>Use the fitted model to obtain estimates of <span class="math inline">\(T\{Y_i | X_i = x, \boldsymbol{Z}_i\}\)</span> for
-<span class="math inline">\(i = 1, \ldots, n\)</span>. This is done by
-creating a copy of the observed dataset, replacing the observed <span class="math inline">\(X_i\)</span> with <span class="math inline">\(x\)</span> for each individual, and using the
-fitted model to get predicted values for the copy of the observed data.
-Denote these predicted values as <span class="math inline">\(\hat{T}\{Y_i | X_i = x,
-\boldsymbol{Z}_i\}\)</span>.</li>
-<li>Average over the empirical distribution of <span class="math inline">\(\boldsymbol{Z}\)</span> to obtain the estimate
-<span class="math display">\[
-\hat{T}\{Y(X = x)\} = \frac{1}{n}\sum_{i = 1}^n \hat{T}\{Y_i | X_i = x,
-\boldsymbol{Z}_i\}.
-\]</span>
+<li>Specifying and estimating a regression model for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>
+given
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐙</mi><annotation encoding="application/x-tex">\boldsymbol{Z}</annotation></semantics></math>.</li>
+<li>Use the fitted model to obtain estimates of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo stretchy="false" form="prefix">{</mo><msub><mi>Y</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">|</mo><msub><mi>X</mi><mi>i</mi></msub><mo>=</mo><mi>x</mi><mo>,</mo><msub><mi>𝐙</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">T\{Y_i | X_i = x, \boldsymbol{Z}_i\}</annotation></semantics></math>
+for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">i = 1, \ldots, n</annotation></semantics></math>.
+This is done by creating a copy of the observed dataset, replacing the
+observed
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>X</mi><mi>i</mi></msub><annotation encoding="application/x-tex">X_i</annotation></semantics></math>
+with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>
+for each individual, and using the fitted model to get predicted values
+for the copy of the observed data. Denote these predicted values as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>T</mi><mo accent="true">̂</mo></mover><mo stretchy="false" form="prefix">{</mo><msub><mi>Y</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">|</mo><msub><mi>X</mi><mi>i</mi></msub><mo>=</mo><mi>x</mi><mo>,</mo><msub><mi>𝐙</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\hat{T}\{Y_i | X_i = x, \boldsymbol{Z}_i\}</annotation></semantics></math>.</li>
+<li>Average over the empirical distribution of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐙</mi><annotation encoding="application/x-tex">\boldsymbol{Z}</annotation></semantics></math>
+to obtain the estimate
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>T</mi><mo accent="true">̂</mo></mover><mo stretchy="false" form="prefix">{</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">}</mo><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mover><mi>T</mi><mo accent="true">̂</mo></mover><mo stretchy="false" form="prefix">{</mo><msub><mi>Y</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">|</mo><msub><mi>X</mi><mi>i</mi></msub><mo>=</mo><mi>x</mi><mo>,</mo><msub><mi>𝐙</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">}</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\hat{T}\{Y(X = x)\} = \frac{1}{n}\sum_{i = 1}^n \hat{T}\{Y_i | X_i = x, \boldsymbol{Z}_i\}.
+</annotation></semantics></math>
 </li>
 </ol>
-<p>One can do this for each level of <span class="math inline">\(X = 0,
-1\)</span> and compute the desired contrast. Under the assumptions that
-1) <span class="math inline">\(\boldsymbol{Z}\)</span> is sufficient for
-confounding control, and 2) the regression model in step 1 is correctly
-specified, then this estimator is consistent and asymptotically
-normal.</p>
+<p>One can do this for each level of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>=</mo><mn>0</mn><mo>,</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">X = 0, 1</annotation></semantics></math>
+and compute the desired contrast. Under the assumptions that 1)
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐙</mi><annotation encoding="application/x-tex">\boldsymbol{Z}</annotation></semantics></math>
+is sufficient for confounding control, and 2) the regression model in
+step 1 is correctly specified, then this estimator is consistent and
+asymptotically normal.</p>
 </div>
 <div class="section level3">
 <h3 id="improving-robustness-by-modeling-the-exposure">Improving robustness by modeling the exposure<a class="anchor" aria-label="anchor" href="#improving-robustness-by-modeling-the-exposure"></a>
@@ -173,13 +221,19 @@ selected model.</p>
 is not misspecified.</p>
 <p><em>Correctly specified for confounding</em> - A correctly specified
 model that contains a sufficient set of confounders.</p>
-<p>If we can model <span class="math inline">\(P(X=1|\boldsymbol{Z})\)</span>, and it is
-correctly specified and contains all confounders, then we can use that
-to estimate the probability that each individual <span class="math inline">\(i\)</span> received the treatment that they did
-<span class="math inline">\(W_i = \frac{X_i}{P(X_i=1|\boldsymbol{Z}_i)}
-+ \frac{1-X_i}{1-P(X_i=1|\boldsymbol{Z}_i)}\)</span>. Let <span class="math inline">\(\hat{p}_i\)</span> denote the estimated
-probability that subject <span class="math inline">\(i\)</span> received
-treatment <span class="math inline">\(1\)</span>.</p>
+<p>If we can model
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>=</mo><mn>1</mn><mo stretchy="false" form="prefix">|</mo><mi>𝐙</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">P(X=1|\boldsymbol{Z})</annotation></semantics></math>,
+and it is correctly specified and contains all confounders, then we can
+use that to estimate the probability that each individual
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
+received the treatment that they did
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mi>i</mi></msub><mo>=</mo><mfrac><msub><mi>X</mi><mi>i</mi></msub><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>X</mi><mi>i</mi></msub><mo>=</mo><mn>1</mn><mo stretchy="false" form="prefix">|</mo><msub><mi>𝐙</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow></mfrac><mo>+</mo><mfrac><mrow><mn>1</mn><mo>−</mo><msub><mi>X</mi><mi>i</mi></msub></mrow><mrow><mn>1</mn><mo>−</mo><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>X</mi><mi>i</mi></msub><mo>=</mo><mn>1</mn><mo stretchy="false" form="prefix">|</mo><msub><mi>𝐙</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">W_i = \frac{X_i}{P(X_i=1|\boldsymbol{Z}_i)} + \frac{1-X_i}{1-P(X_i=1|\boldsymbol{Z}_i)}</annotation></semantics></math>.
+Let
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>p</mi><mo accent="true">̂</mo></mover><mi>i</mi></msub><annotation encoding="application/x-tex">\hat{p}_i</annotation></semantics></math>
+denote the estimated probability that subject
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
+received treatment
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1</mn><annotation encoding="application/x-tex">1</annotation></semantics></math>.</p>
 <p>Any consistent estimation method can be used for the outcome and
 exposure models. As long as <em>either</em> the outcome model
 <em>or</em> the propensity score model is correctly specified for
@@ -358,12 +412,14 @@ active, 2 = inactive, 3 = missing</li>
 <span><span class="co">#&gt;  3rd Qu.:1228.8   3rd Qu.:0   3rd Qu.:1.0000  </span></span>
 <span><span class="co">#&gt;  Max.   :1629.0   Max.   :0   Max.   :1.0000  </span></span>
 <span><span class="co">#&gt; </span></span></code></pre></div>
-<p>We will assume that the set of confounders in <span class="math inline">\(\boldsymbol{Z}\)</span> includes sex, race, age,
-education, number of cigarettes smoked per year, the number of years
-smoked, level of physical activity, and baseline weight in 1971. This
-equivalent to assuming that the counterfactual weight gain is
-independent of the exposure conditional on these variables. In other
-words, we are assuming the following directed acyclic graph:</p>
+<p>We will assume that the set of confounders in
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐙</mi><annotation encoding="application/x-tex">\boldsymbol{Z}</annotation></semantics></math>
+includes sex, race, age, education, number of cigarettes smoked per
+year, the number of years smoked, level of physical activity, and
+baseline weight in 1971. This equivalent to assuming that the
+counterfactual weight gain is independent of the exposure conditional on
+these variables. In other words, we are assuming the following directed
+acyclic graph:</p>
 <p><img src="overview_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" width="30%"></p>
 <p>For the specific forms of the conditional expectations required in
 the outcome we assume a linear regression model with both linear and
@@ -441,20 +497,20 @@ group-wise estimates, the difference, and the ratio.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
-<span><span class="co">#&gt; 1    0     1.75     0.256       1.25       2.25</span></span>
-<span><span class="co">#&gt; 2    1     5.21     0.356       4.51       5.91</span></span>
+<span><span class="co">#&gt; 1    0     1.75     0.218       1.32       2.17</span></span>
+<span><span class="co">#&gt; 2    1     5.21     0.419       4.39       6.03</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  difference </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0     0.00     0.000       0.00       0.00</span></span>
-<span><span class="co">#&gt; 2    1     3.46     0.418       2.64       4.28</span></span>
+<span><span class="co">#&gt; 2    1     3.46     0.466       2.55       4.38</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  ratio </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0     1.00     0.000       1.00       1.00</span></span>
-<span><span class="co">#&gt; 2    1     2.98     0.463       2.07       3.89</span></span>
+<span><span class="co">#&gt; 2    1     2.98     0.436       2.13       3.84</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">m2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="overview_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" width="700"></p>
@@ -476,12 +532,12 @@ function:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">m2</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">tidy_m2</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95   contrast transform</span></span>
-<span><span class="co">#&gt; 1    0 1.747216 0.2556332   1.246184   2.248248       none  identity</span></span>
-<span><span class="co">#&gt; 2    1 5.209838 0.3563820   4.511342   5.908334       none  identity</span></span>
+<span><span class="co">#&gt; 1    0 1.747216 0.2179825   1.319979   2.174454       none  identity</span></span>
+<span><span class="co">#&gt; 2    1 5.209838 0.4190740   4.388468   6.031208       none  identity</span></span>
 <span><span class="co">#&gt; 3    0 0.000000 0.0000000   0.000000   0.000000 difference  identity</span></span>
-<span><span class="co">#&gt; 4    1 3.462622 0.4176304   2.644081   4.281162 difference  identity</span></span>
+<span><span class="co">#&gt; 4    1 3.462622 0.4660848   2.549112   4.376131 difference  identity</span></span>
 <span><span class="co">#&gt; 5    0 1.000000 0.0000000   1.000000   1.000000      ratio  identity</span></span>
-<span><span class="co">#&gt; 6    1 2.981793 0.4630392   2.074253   3.889334      ratio  identity</span></span></code></pre></div>
+<span><span class="co">#&gt; 6    1 2.981793 0.4360644   2.127123   3.836464      ratio  identity</span></span></code></pre></div>
 <p>To obtain doubly robust inference we use the following command. Note
 that we now specify a model for the exposure, the propensity score
 model.</p>
@@ -540,8 +596,8 @@ model.</p>
 <span><span class="co">#&gt; 6    1 2.942047 0.4310190   2.097265   3.786829      ratio  identity</span></span></code></pre></div>
 <p>Based on these results, we can report that the estimated effect of
 smoking on average weight change as measured by the difference in
-potential outcome means is 3.46 (2.64 to 4.28) and as measured by the
-ratio of potential outcome means is 2.98 (2.07 to 3.89). Using the
+potential outcome means is 3.46 (2.55 to 4.38) and as measured by the
+ratio of potential outcome means is 2.98 (2.13 to 3.84). Using the
 doubly-robust estimation method, we obtain similarly 3.42 (2.48 to 4.37)
 and as measured by the ratio of potential outcome means is 2.94 (2.10 to
 3.79). In particular, if we believe that the necessary assumptions are
@@ -654,19 +710,19 @@ dichotomizing the weight change at 0.</p>
 <span><span class="co">#&gt; Tables: </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0    0.639    0.0141      0.611      0.666</span></span>
-<span><span class="co">#&gt; 2    1    0.772    0.0203      0.732      0.811</span></span>
+<span><span class="co">#&gt; 2    1    0.772    0.0195      0.733      0.810</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  difference </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0    0.000    0.0000     0.0000      0.000</span></span>
-<span><span class="co">#&gt; 2    1    0.133    0.0247     0.0846      0.181</span></span>
+<span><span class="co">#&gt; 2    1    0.133    0.0237     0.0865      0.179</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  ratio </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0     1.00    0.0000       1.00       1.00</span></span>
-<span><span class="co">#&gt; 2    1     1.21    0.0414       1.13       1.29</span></span></code></pre></div>
+<span><span class="co">#&gt; 2    1     1.21    0.0399       1.13       1.29</span></span></code></pre></div>
 <p>Here we interpret the estimates in terms of probabilities, or the
 risk of gaining weight over 11 years. In particular, smoking causes a
 13% additive increase in the risk of gaining weight, or a 1.2 fold
@@ -700,14 +756,14 @@ ratios on the log scale and back transform.</p>
 <span><span class="co">#&gt; Transform:  </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0   -0.448    0.0221     -0.492     -0.405</span></span>
-<span><span class="co">#&gt; 2    1   -0.259    0.0264     -0.311     -0.208</span></span>
+<span><span class="co">#&gt; 2    1   -0.259    0.0252     -0.309     -0.210</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Transform:  </span></span>
 <span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  difference </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
-<span><span class="co">#&gt; 1    0    0.000    0.0000      0.000      0.000</span></span>
-<span><span class="co">#&gt; 2    1    0.189    0.0343      0.122      0.256</span></span></code></pre></div>
+<span><span class="co">#&gt; 1    0    0.000     0.000      0.000      0.000</span></span>
+<span><span class="co">#&gt; 2    1    0.189     0.033      0.124      0.254</span></span></code></pre></div>
 <p>The estimates reported in the table are log risk ratios, which we now
 back transform by exponentiating and compare to the ratios estimated
 previously.</p>
@@ -719,9 +775,9 @@ previously.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">tm3_log</span>, <span class="va">contrast</span> <span class="op">==</span> <span class="st">"difference"</span> <span class="op">&amp;</span> <span class="va">qsmk</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   qsmk  Estimate  Std.Error lower.0.95 upper.0.95   contrast transform       rr</span></span>
-<span><span class="co">#&gt; 4    1 0.1890909 0.03427325  0.1219166  0.2562653 difference       log 1.208151</span></span>
+<span><span class="co">#&gt; 4    1 0.1890909 0.03303245  0.1243485  0.2538333 difference       log 1.208151</span></span>
 <span><span class="co">#&gt;   rr.lower rr.upper</span></span>
-<span><span class="co">#&gt; 4  1.12966 1.292095</span></span>
+<span><span class="co">#&gt; 4  1.13241 1.288957</span></span>
 <span><span class="va">m3</span></span>
 <span><span class="co">#&gt; Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + </span></span>
 <span><span class="co">#&gt;     smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + </span></span>
@@ -733,19 +789,19 @@ previously.</p>
 <span><span class="co">#&gt; Tables: </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0    0.639    0.0141      0.611      0.666</span></span>
-<span><span class="co">#&gt; 2    1    0.772    0.0203      0.732      0.811</span></span>
+<span><span class="co">#&gt; 2    1    0.772    0.0195      0.733      0.810</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  difference </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0    0.000    0.0000     0.0000      0.000</span></span>
-<span><span class="co">#&gt; 2    1    0.133    0.0247     0.0846      0.181</span></span>
+<span><span class="co">#&gt; 2    1    0.133    0.0237     0.0865      0.179</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  ratio </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0     1.00    0.0000       1.00       1.00</span></span>
-<span><span class="co">#&gt; 2    1     1.21    0.0414       1.13       1.29</span></span></code></pre></div>
+<span><span class="co">#&gt; 2    1     1.21    0.0399       1.13       1.29</span></span></code></pre></div>
 <p>In this case, the estimates and inference using transformation are
 nearly identical to those without transformation.</p>
 <p>Other available transformations include the odds, and logit (log
@@ -774,14 +830,14 @@ and transformed, respectively.</p>
 <span><span class="co">#&gt; Transform:  </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
 <span><span class="co">#&gt; 1    0     1.77     0.108       1.55       1.98</span></span>
-<span><span class="co">#&gt; 2    1     3.38     0.390       2.61       4.14</span></span>
+<span><span class="co">#&gt; 2    1     3.38     0.373       2.65       4.11</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Transform:  </span></span>
 <span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  ratio </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
-<span><span class="co">#&gt; 1    0     1.00     0.000       1.00        1.0</span></span>
-<span><span class="co">#&gt; 2    1     1.91     0.249       1.42        2.4</span></span>
+<span><span class="co">#&gt; 1    0     1.00     0.000       1.00       1.00</span></span>
+<span><span class="co">#&gt; 2    1     1.91     0.238       1.44       2.38</span></span>
 <span></span>
 <span><span class="va">m3_logit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_glm.html">standardize_glm</a></span><span class="op">(</span><span class="va">gained_weight</span> <span class="op">~</span> <span class="va">qsmk</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>               <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">education</span><span class="op">)</span> <span class="op">+</span> <span class="va">smokeintensity</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">smokeintensity</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
@@ -804,31 +860,30 @@ and transformed, respectively.</p>
 <span><span class="co">#&gt; Tables: </span></span>
 <span><span class="co">#&gt; Transform:  </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
-<span><span class="co">#&gt; 1    0    0.569    0.0612      0.449      0.689</span></span>
-<span><span class="co">#&gt; 2    1    1.217    0.1154      0.991      1.443</span></span>
+<span><span class="co">#&gt; 1    0    0.569    0.0613      0.449      0.689</span></span>
+<span><span class="co">#&gt; 2    1    1.217    0.1104      1.001      1.433</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Transform:  </span></span>
 <span><span class="co">#&gt; Reference level:  qsmk = 0 </span></span>
 <span><span class="co">#&gt; Contrast:  difference </span></span>
 <span><span class="co">#&gt;   qsmk Estimate Std.Error lower.0.95 upper.0.95</span></span>
-<span><span class="co">#&gt; 1    0    0.000      0.00      0.000      0.000</span></span>
-<span><span class="co">#&gt; 2    1    0.648      0.13      0.393      0.903</span></span>
+<span><span class="co">#&gt; 1    0    0.000     0.000      0.000      0.000</span></span>
+<span><span class="co">#&gt; 2    1    0.648     0.125      0.404      0.892</span></span>
 <span></span>
 <span><span class="va">m3_logOR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">m3_logit</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">contrast</span> <span class="op">==</span> <span class="st">"difference"</span> <span class="op">&amp;</span> <span class="va">qsmk</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> </span>
 <span>  </span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.2f (%.2f to %.2f)"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">m3_logOR</span><span class="op">$</span><span class="va">Estimate</span><span class="op">)</span>, </span>
 <span>        <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">m3_logOR</span><span class="op">$</span><span class="va">lower.0.95</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">m3_logOR</span><span class="op">$</span><span class="va">upper.0.95</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "1.91 (1.48 to 2.47)"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "1.91 (1.50 to 2.44)"</span></span></code></pre></div>
 <p>In this case the estimate is identical, but the confidence interval
 is slightly different because it is symmetric on the odds ratio scale in
 the first case, and symmetric on the log odds ratio scale in the
 transformed case.</p>
-<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-gabriel2023inverse" class="csl-entry">
-Gabriel, Erin E, Michael C Sachs, Torben Martinussen, Ingeborg
-Waernbaum, Els Goetghebeur, Stijn Vansteelandt, and Arvid Sjölander.
-2024. <span>“Inverse Probability of Treatment Weighting with Generalized
+Gabriel, Erin E, Michael C Sachs, Torben Martinussen, et al. 2024.
+<span>“Inverse Probability of Treatment Weighting with Generalized
 Linear Outcome Models for Doubly Robust Estimation.”</span>
 <em>Statistics in Medicine</em> 43 (3): 534–47.
 </div>
@@ -838,9 +893,9 @@ Package stdReg.”</span> <em>European Journal of Epidemiology</em> 31:
 563–74.
 </div>
 <div id="ref-sjolander2018estimation" class="csl-entry">
-———. 2018. <span>“Estimation of Causal Effect Measures with the
-r-Package stdReg.”</span> <em>European Journal of Epidemiology</em> 33:
-847–58.
+Sjölander, Arvid. 2018. <span>“Estimation of Causal Effect Measures with
+the r-Package stdReg.”</span> <em>European Journal of Epidemiology</em>
+33: 847–58.
 </div>
 <div id="ref-witte2019covariate" class="csl-entry">
 Witte, Janine, and Vanessa Didelez. 2019. <span>“Covariate Selection

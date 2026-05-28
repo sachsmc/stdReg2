@@ -206,6 +206,7 @@ R-package stdReg. *European Journal of Epidemiology* **33**(9), 847-858.
 ## Examples
 
 ``` r
+
 set.seed(6)
 n <- 100
 Z <- rnorm(n)

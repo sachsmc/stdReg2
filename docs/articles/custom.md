@@ -1,6 +1,7 @@
 # Implementing custom and new methods for standardization
 
 ``` r
+
 library(stdReg2)
 library(nnet)
 ```
@@ -26,10 +27,10 @@ exposures, see Robins (1986) or the `gfoRmula` package (McGrath et al.
 2020). Also note that the nonparametric bootstrap may not provide valid
 inference if the outcome model is data-adaptive, e.g., based on machine
 learning algorithms. In such situations alternative inference methods
-may be required (Naimi, Mishler, and Kennedy 2021; Zivich and Breskin
-2021).
+may be required (Naimi et al. 2021; Zivich and Breskin 2021).
 
 ``` r
+
 nhefs_dat <- causaldata::nhefs_complete
 # the target outcome model
 # mfit <- multinom(active ~ qsmk + sex + race + age + I(age^2) + 
@@ -77,6 +78,7 @@ example:
 
 ``` r
 
+
 std_custom2 <- standardize_level(fitter_list = list("multinom", "glm"),
                           arguments = list(list(formula = active ~ qsmk + sex + 
                                              race + age + I(age^2) + 
@@ -100,8 +102,7 @@ std_custom2
 Here we provide a list of fitters, arguments, and predict functions, one
 for each of the desired levels of the exposure.
 
-McGrath, Sean, Victoria Lin, Zilu Zhang, Lucia C. Petito, Roger W.
-Logan, Miguel A. Hernán, and Jessica G. Young. 2020. “gfoRmula: An r
+McGrath, Sean, Victoria Lin, Zilu Zhang, et al. 2020. “gfoRmula: An r
 Package for Estimating the Effects of Sustained Treatment Strategies via
 the Parametric g-Formula.” *Patterns* 1 (3): 100008.
 https://doi.org/<https://doi.org/10.1016/j.patter.2020.100008>.
@@ -114,12 +115,12 @@ Algorithms.” *American Journal of Epidemiology* 192 (9): 1536–44.
 Robins, James. 1986. “A New Approach to Causal Inference in Mortality
 Studies with a Sustained Exposure Period—Application to Control of the
 Healthy Worker Survivor Effect.” *Mathematical Modelling* 7 (9-12):
-1393–1512.
+1393–512.
 
 Tibshirani, Robert J, and Bradley Efron. 1993. “An Introduction to the
 Bootstrap.” *Monographs on Statistics and Applied Probability* 57 (1):
 1–436.
 
-Zivich, Paul N., and Alexander Breskin. 2021. “Machine Learning for
-Causal Inference: On the Use of Cross-Fit Estimators.” 32: 393–401.
-<https://doi.org/10.1097/EDE.0000000000001332>.
+Zivich, Paul N., and Alexander Breskin. 2021. *Machine Learning for
+Causal Inference: On the Use of Cross-Fit Estimators.* (Hagerstown) 32:
+393–401. <https://doi.org/10.1097/EDE.0000000000001332>.

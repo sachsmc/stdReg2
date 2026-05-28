@@ -24,7 +24,7 @@ with the R package stdReg2.” *Annals of Epidemiology*, **105**, 66–74.
 
     @Article{,
       title = {The next generation of regression standardization with the R package stdReg2},
-      author = {Michael C Sachs and Johan Sebastian Ohlendorff and Adam Brand and Arvid Sj"olander and Erin E Gabriel},
+      author = {{Sachs} and Michael C and {Ohlendorff} and Johan Sebastian and {Brand} and {Adam} and {Sj{"o}lander} and {Arvid} and {Gabriel} and Erin E},
       journal = {Annals of Epidemiology},
       volume = {105},
       pages = {66--74},

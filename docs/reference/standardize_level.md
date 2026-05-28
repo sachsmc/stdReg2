@@ -197,6 +197,7 @@ R-package stdReg. *European Journal of Epidemiology* **33**(9), 847-858.
 ## Examples
 
 ``` r
+
 require(survival)
 prob_predict.coxph <- function(object, newdata, times) {
   fit.detail <- suppressWarnings(basehaz(object))

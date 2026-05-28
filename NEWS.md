@@ -1,3 +1,6 @@
+# stdReg2 1.0.8
+* Bugfix: bread/meat in standardize_glm variance calculation. Thanks @lorenzoFabbri
+
 # stdReg2 1.0.7
 * setDtthreads for examples
 

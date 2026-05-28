@@ -1,79 +1,87 @@
 # Estimation of causal effects using stdReg2
 
 ``` r
+
 library(stdReg2)
 ```
 
 ### Introduction and context
 
-Suppose \\X\\ denotes an exposure of interest that takes values 0 or 1.
+Suppose $`X`$ denotes an exposure of interest that takes values 0 or 1.
 This could represent two different medical treatments, environmental
 exposures, economic policies, or genetic variants. We will most often
 use biomedical examples because we are biostatisticians.
 
 We consider the setting where it is of interest to quantify the effect
-of intervening with \\X\\ on outcome that we will denote \\Y\\. The
+of intervening with $`X`$ on outcome that we will denote $`Y`$. The
 outcome could represent some numeric value, it could be the presence or
 absence of a condition, or it could be the time between two events, such
-as time from cancer diagnosis to death. Let \\Y(X = x)\\ denote the
+as time from cancer diagnosis to death. Let $`Y(X = x)`$ denote the
 potential outcome if all subjects in the population would hypothetically
-be exposed to \\X = x\\.
+be exposed to $`X = x`$.
 
-To quantify the effect of \\X\\, we must summarize the distribution of
-\\Y(X = x)\\ with some statistic. If \\Y\\ is dichotomous, it is natural
-to use \\p\\Y(X = x) = 1\\\\, called the risk. If \\Y\\ is continuous,
-the mean is a natural summary statistic \\E\\Y(X = x)\\\\. If \\Y\\ is a
+To quantify the effect of $`X`$, we must summarize the distribution of
+$`Y(X = x)`$ with some statistic. If $`Y`$ is dichotomous, it is natural
+to use $`p\{Y(X = x) = 1\}`$, called the risk. If $`Y`$ is continuous,
+the mean is a natural summary statistic $`E\{Y(X = x)\}`$. If $`Y`$ is a
 continuous time-to-event, the probability of exceeding a particular
-value \\t\\ is a reasonable statistic: \\p\\Y(X = x) \> t\\\\. In
-general, denote the summary statistic of choice as \\T\\Y(X = x)\\\\.
+value $`t`$ is a reasonable statistic: $`p\{Y(X = x) > t\}`$. In
+general, denote the summary statistic of choice as $`T\{Y(X = x)\}`$.
 The summary statistic can also be applied to conditional distributions,
-which we will denote, e.g., \\T\\Y \| X = x\\\\.
+which we will denote, e.g., $`T\{Y | X = x\}`$.
 
-To quantify the effect of \\X\\, we must also decide on a *contrast* to
+To quantify the effect of $`X`$, we must also decide on a *contrast* to
 measure the causal effect. The point of the contrast is to compare the
-chosen summary statistic between the \\X = 1\\ and \\X = 0\\
-interventions. Typical choices would be the difference \\T\\Y(X = 1)\\ -
-T\\Y(X = 0)\\\\ or the ratio \\T\\Y(X = 1)\\ / T\\Y(X = 0)\\\\. It may
-also be of interest to quantify and report the summary statistics within
-each group \\(T\\Y(X = 1)\\, T\\Y(X = 0)\\)\\.
+chosen summary statistic between the $`X = 1`$ and $`X = 0`$
+interventions. Typical choices would be the difference
+$`T\{Y(X = 1)\} - T\{Y(X = 0)\}`$ or the ratio
+$`T\{Y(X = 1)\} / T\{Y(X = 0)\}`$. It may also be of interest to
+quantify and report the summary statistics within each group
+$`(T\{Y(X = 1)\}, T\{Y(X = 0)\})`$.
 
-In observational studies, the relationship between \\X\\ and \\Y\\ is
-likely confounded by a set of other variables \\\boldsymbol{Z}\\. This
-means that the values of the outcome \\Y\\ are determined by at least a
-subset of \\\boldsymbol{Z}\\ and the values of the exposure \\X\\ are
-determined by a subset of \\\boldsymbol{Z}\\. Naively estimating the
+In observational studies, the relationship between $`X`$ and $`Y`$ is
+likely confounded by a set of other variables $`\boldsymbol{Z}`$. This
+means that the values of the outcome $`Y`$ are determined by at least a
+subset of $`\boldsymbol{Z}`$ and the values of the exposure $`X`$ are
+determined by a subset of $`\boldsymbol{Z}`$. Naively estimating the
 contrast would lead to biased estimates of the causal effect.
 
 ### Regression standardization
 
 See Sjölander (2016) and Sjölander (2018) for more details. Suppose that
-the covariates \\\boldsymbol{Z}\\ are sufficient for confounding
+the covariates $`\boldsymbol{Z}`$ are sufficient for confounding
 control. For more information on what constitutes a sufficient
 adjustment set, see Witte and Didelez (2019). For a given summary
-statistic \\T\\, then \\ T\\Y(X = x)\\ = E\_{\boldsymbol{Z}}\[T\\Y \| X
-= x, \boldsymbol{Z}\\\], \\ where the expectation is taken with respect
-to the population distribution of \\\boldsymbol{Z}\\. This is also known
-as the *g-formula* or *adjustment formula*.
+statistic $`T`$, then
+``` math
+T\{Y(X = x)\} = E_{\boldsymbol{Z}}[T\{Y | X = x, \boldsymbol{Z}\}], 
+```
+where the expectation is taken with respect to the population
+distribution of $`\boldsymbol{Z}`$. This is also known as the
+*g-formula* or *adjustment formula*.
 
 In order to estimate this quantity based on an independent and
-identically distributed sample \\(X_1, Y_1, \boldsymbol{Z}\_1), \ldots,
-(X_n, Y_n, \boldsymbol{Z}\_n)\\, we proceed by
+identically distributed sample
+$`(X_1, Y_1, \boldsymbol{Z}_1), \ldots, (X_n, Y_n, \boldsymbol{Z}_n)`$,
+we proceed by
 
-1.  Specifying and estimating a regression model for \\Y\\ given \\X\\
-    and \\\boldsymbol{Z}\\.
-2.  Use the fitted model to obtain estimates of \\T\\Y_i \| X_i = x,
-    \boldsymbol{Z}\_i\\\\ for \\i = 1, \ldots, n\\. This is done by
-    creating a copy of the observed dataset, replacing the observed
-    \\X_i\\ with \\x\\ for each individual, and using the fitted model
-    to get predicted values for the copy of the observed data. Denote
-    these predicted values as \\\hat{T}\\Y_i \| X_i = x,
-    \boldsymbol{Z}\_i\\\\.
-3.  Average over the empirical distribution of \\\boldsymbol{Z}\\ to
-    obtain the estimate \\ \hat{T}\\Y(X = x)\\ = \frac{1}{n}\sum\_{i =
-    1}^n \hat{T}\\Y_i \| X_i = x, \boldsymbol{Z}\_i\\. \\
+1.  Specifying and estimating a regression model for $`Y`$ given $`X`$
+    and $`\boldsymbol{Z}`$.
+2.  Use the fitted model to obtain estimates of
+    $`T\{Y_i | X_i = x, \boldsymbol{Z}_i\}`$ for $`i = 1, \ldots, n`$.
+    This is done by creating a copy of the observed dataset, replacing
+    the observed $`X_i`$ with $`x`$ for each individual, and using the
+    fitted model to get predicted values for the copy of the observed
+    data. Denote these predicted values as
+    $`\hat{T}\{Y_i | X_i = x, \boldsymbol{Z}_i\}`$.
+3.  Average over the empirical distribution of $`\boldsymbol{Z}`$ to
+    obtain the estimate
+    ``` math
+    \hat{T}\{Y(X = x)\} = \frac{1}{n}\sum_{i = 1}^n \hat{T}\{Y_i | X_i = x, \boldsymbol{Z}_i\}.
+    ```
 
-One can do this for each level of \\X = 0, 1\\ and compute the desired
-contrast. Under the assumptions that 1) \\\boldsymbol{Z}\\ is sufficient
+One can do this for each level of $`X = 0, 1`$ and compute the desired
+contrast. Under the assumptions that 1) $`\boldsymbol{Z}`$ is sufficient
 for confounding control, and 2) the regression model in step 1 is
 correctly specified, then this estimator is consistent and
 asymptotically normal.
@@ -96,12 +104,13 @@ misspecified.
 *Correctly specified for confounding* - A correctly specified model that
 contains a sufficient set of confounders.
 
-If we can model \\P(X=1\|\boldsymbol{Z})\\, and it is correctly
-specified and contains all confounders, then we can use that to estimate
-the probability that each individual \\i\\ received the treatment that
-they did \\W_i = \frac{X_i}{P(X_i=1\|\boldsymbol{Z}\_i)} +
-\frac{1-X_i}{1-P(X_i=1\|\boldsymbol{Z}\_i)}\\. Let \\\hat{p}\_i\\ denote
-the estimated probability that subject \\i\\ received treatment \\1\\.
+If we can model $`P(X=1|\boldsymbol{Z})`$, and it is correctly specified
+and contains all confounders, then we can use that to estimate the
+probability that each individual $`i`$ received the treatment that they
+did
+$`W_i = \frac{X_i}{P(X_i=1|\boldsymbol{Z}_i)} + \frac{1-X_i}{1-P(X_i=1|\boldsymbol{Z}_i)}`$.
+Let $`\hat{p}_i`$ denote the estimated probability that subject $`i`$
+received treatment $`1`$.
 
 Any consistent estimation method can be used for the outcome and
 exposure models. As long as *either* the outcome model *or* the
@@ -149,6 +158,7 @@ among others the following variables:
 - ht: height in centimeters in 1971
 
 ``` r
+
 nhefs_dat <- causaldata::nhefs_complete
 summary(nhefs_dat)
 #>       seqn            qsmk            death            yrdth      
@@ -281,7 +291,7 @@ summary(nhefs_dat)
 #> 
 ```
 
-We will assume that the set of confounders in \\\boldsymbol{Z}\\
+We will assume that the set of confounders in $`\boldsymbol{Z}`$
 includes sex, race, age, education, number of cigarettes smoked per
 year, the number of years smoked, level of physical activity, and
 baseline weight in 1971. This equivalent to assuming that the
@@ -296,6 +306,7 @@ outcome we assume a linear regression model with both linear and
 quadratic forms of the continuous covariates. We can fit this as
 
 ``` r
+
 m <- glm(wt82_71 ~ qsmk + sex + race + age + I(age^2) + 
         as.factor(education) + smokeintensity + I(smokeintensity^2) + 
         smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
@@ -352,6 +363,7 @@ command estimates that model and we obtain the group-wise estimates, the
 difference, and the ratio.
 
 ``` r
+
 m2 <- standardize_glm(wt82_71 ~ qsmk + sex + race + age + I(age^2) + 
                as.factor(education) + smokeintensity + I(smokeintensity^2) + 
                smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
@@ -371,20 +383,20 @@ m2
 #> 
 #> Tables: 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
-#> 1    0     1.75     0.256       1.25       2.25
-#> 2    1     5.21     0.356       4.51       5.91
+#> 1    0     1.75     0.218       1.32       2.17
+#> 2    1     5.21     0.419       4.39       6.03
 #> 
 #> Reference level:  qsmk = 0 
 #> Contrast:  difference 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
 #> 1    0     0.00     0.000       0.00       0.00
-#> 2    1     3.46     0.418       2.64       4.28
+#> 2    1     3.46     0.466       2.55       4.38
 #> 
 #> Reference level:  qsmk = 0 
 #> Contrast:  ratio 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
 #> 1    0     1.00     0.000       1.00       1.00
-#> 2    1     2.98     0.463       2.07       3.89
+#> 2    1     2.98     0.436       2.13       3.84
 
 plot(m2)
 ```
@@ -392,6 +404,7 @@ plot(m2)
 ![](overview_files/figure-html/unnamed-chunk-5-1.png)
 
 ``` r
+
 plot(m2, contrast = "difference", reference = 0)
 ```
 
@@ -411,14 +424,15 @@ tidy data frame, suitable for saving as a data table or using in
 downstream analyses or reports, we provide the `tidy` function:
 
 ``` r
+
 (tidy(m2) -> tidy_m2) |> print()
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95   contrast transform
-#> 1    0 1.747216 0.2556332   1.246184   2.248248       none  identity
-#> 2    1 5.209838 0.3563820   4.511342   5.908334       none  identity
+#> 1    0 1.747216 0.2179825   1.319979   2.174454       none  identity
+#> 2    1 5.209838 0.4190740   4.388468   6.031208       none  identity
 #> 3    0 0.000000 0.0000000   0.000000   0.000000 difference  identity
-#> 4    1 3.462622 0.4176304   2.644081   4.281162 difference  identity
+#> 4    1 3.462622 0.4660848   2.549112   4.376131 difference  identity
 #> 5    0 1.000000 0.0000000   1.000000   1.000000      ratio  identity
-#> 6    1 2.981793 0.4630392   2.074253   3.889334      ratio  identity
+#> 6    1 2.981793 0.4360644   2.127123   3.836464      ratio  identity
 ```
 
 To obtain doubly robust inference we use the following command. Note
@@ -426,6 +440,7 @@ that we now specify a model for the exposure, the propensity score
 model.
 
 ``` r
+
 m2_dr <- standardize_glm_dr(formula_outcome = wt82_71 ~ qsmk + sex + race + age + I(age^2) + 
                as.factor(education) + smokeintensity + I(smokeintensity^2) + 
                smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
@@ -482,8 +497,8 @@ m2_dr
 
 Based on these results, we can report that the estimated effect of
 smoking on average weight change as measured by the difference in
-potential outcome means is 3.46 (2.64 to 4.28) and as measured by the
-ratio of potential outcome means is 2.98 (2.07 to 3.89). Using the
+potential outcome means is 3.46 (2.55 to 4.38) and as measured by the
+ratio of potential outcome means is 2.98 (2.13 to 3.84). Using the
 doubly-robust estimation method, we obtain similarly 3.42 (2.48 to 4.37)
 and as measured by the ratio of potential outcome means is 2.94 (2.10 to
 3.79). In particular, if we believe that the necessary assumptions are
@@ -498,6 +513,7 @@ estimated models can be accessed and inspected by looking at the
 `fit_outcome` and `fit_exposure` elements of the return object:
 
 ``` r
+
 m2_dr$res$fit_outcome
 #> 
 #> Call:  fit_glm(formula = formula_outcome, family = family_outcome, data = data, 
@@ -554,6 +570,7 @@ check in practice, we are looking for any practical violations of the
 positivity assumption.
 
 ``` r
+
 hist(m2_dr$res$fit_exposure$fitted[nhefs_dat$qsmk == 0], 
     xlim = c(0, 1), main = "qsmk = 0", xlab = "estimated propensity")
 ```
@@ -561,6 +578,7 @@ hist(m2_dr$res$fit_exposure$fitted[nhefs_dat$qsmk == 0],
 ![](overview_files/figure-html/unnamed-chunk-9-1.png)
 
 ``` r
+
 hist(m2_dr$res$fit_exposure$fitted[nhefs_dat$qsmk == 1], 
     xlim = c(0, 1), main = "qsmk = 1", xlab = "estimated propensity")
 ```
@@ -581,6 +599,7 @@ how it works using the a binary outcome that we create by dichotomizing
 the weight change at 0.
 
 ``` r
+
 nhefs_dat$gained_weight <- 1.0 * (nhefs_dat$wt82_71 > 0)
 m3 <- standardize_glm(gained_weight ~ qsmk + sex + race + age + I(age^2) + 
                as.factor(education) + smokeintensity + I(smokeintensity^2) + 
@@ -603,19 +622,19 @@ m3
 #> Tables: 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
 #> 1    0    0.639    0.0141      0.611      0.666
-#> 2    1    0.772    0.0203      0.732      0.811
+#> 2    1    0.772    0.0195      0.733      0.810
 #> 
 #> Reference level:  qsmk = 0 
 #> Contrast:  difference 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
 #> 1    0    0.000    0.0000     0.0000      0.000
-#> 2    1    0.133    0.0247     0.0846      0.181
+#> 2    1    0.133    0.0237     0.0865      0.179
 #> 
 #> Reference level:  qsmk = 0 
 #> Contrast:  ratio 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
 #> 1    0     1.00    0.0000       1.00       1.00
-#> 2    1     1.21    0.0414       1.13       1.29
+#> 2    1     1.21    0.0399       1.13       1.29
 ```
 
 Here we interpret the estimates in terms of probabilities, or the risk
@@ -630,6 +649,7 @@ ratios, but often it is better to construct confidence intervals of
 ratios on the log scale and back transform.
 
 ``` r
+
 m3_log <- standardize_glm(gained_weight ~ qsmk + sex + race + age + I(age^2) + 
                as.factor(education) + smokeintensity + I(smokeintensity^2) + 
                smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
@@ -652,14 +672,14 @@ m3_log
 #> Transform:  
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
 #> 1    0   -0.448    0.0221     -0.492     -0.405
-#> 2    1   -0.259    0.0264     -0.311     -0.208
+#> 2    1   -0.259    0.0252     -0.309     -0.210
 #> 
 #> Transform:  
 #> Reference level:  qsmk = 0 
 #> Contrast:  difference 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
-#> 1    0    0.000    0.0000      0.000      0.000
-#> 2    1    0.189    0.0343      0.122      0.256
+#> 1    0    0.000     0.000      0.000      0.000
+#> 2    1    0.189     0.033      0.124      0.254
 ```
 
 The estimates reported in the table are log risk ratios, which we now
@@ -667,6 +687,7 @@ back transform by exponentiating and compare to the ratios estimated
 previously.
 
 ``` r
+
 tm3_log <- tidy(m3_log)
 tm3_log$rr <- exp(tm3_log$Estimate)
 tm3_log$rr.lower <- exp(tm3_log$lower.0.95)
@@ -674,9 +695,9 @@ tm3_log$rr.upper <- exp(tm3_log$upper.0.95)
 
 subset(tm3_log, contrast == "difference" & qsmk == 1)
 #>   qsmk  Estimate  Std.Error lower.0.95 upper.0.95   contrast transform       rr
-#> 4    1 0.1890909 0.03427325  0.1219166  0.2562653 difference       log 1.208151
+#> 4    1 0.1890909 0.03303245  0.1243485  0.2538333 difference       log 1.208151
 #>   rr.lower rr.upper
-#> 4  1.12966 1.292095
+#> 4  1.13241 1.288957
 m3
 #> Outcome formula: gained_weight ~ qsmk + sex + race + age + I(age^2) + as.factor(education) + 
 #>     smokeintensity + I(smokeintensity^2) + smokeyrs + I(smokeyrs^2) + 
@@ -688,19 +709,19 @@ m3
 #> Tables: 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
 #> 1    0    0.639    0.0141      0.611      0.666
-#> 2    1    0.772    0.0203      0.732      0.811
+#> 2    1    0.772    0.0195      0.733      0.810
 #> 
 #> Reference level:  qsmk = 0 
 #> Contrast:  difference 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
 #> 1    0    0.000    0.0000     0.0000      0.000
-#> 2    1    0.133    0.0247     0.0846      0.181
+#> 2    1    0.133    0.0237     0.0865      0.179
 #> 
 #> Reference level:  qsmk = 0 
 #> Contrast:  ratio 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
 #> 1    0     1.00    0.0000       1.00       1.00
-#> 2    1     1.21    0.0414       1.13       1.29
+#> 2    1     1.21    0.0399       1.13       1.29
 ```
 
 In this case, the estimates and inference using transformation are
@@ -711,6 +732,7 @@ These can be used to estimate causal odds ratios, untransformed and
 transformed, respectively.
 
 ``` r
+
 m3_odds <- standardize_glm(gained_weight ~ qsmk + sex + race + age + I(age^2) + 
                as.factor(education) + smokeintensity + I(smokeintensity^2) + 
                smokeyrs + I(smokeyrs^2) + as.factor(exercise) + as.factor(active) +
@@ -733,14 +755,14 @@ m3_odds
 #> Transform:  
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
 #> 1    0     1.77     0.108       1.55       1.98
-#> 2    1     3.38     0.390       2.61       4.14
+#> 2    1     3.38     0.373       2.65       4.11
 #> 
 #> Transform:  
 #> Reference level:  qsmk = 0 
 #> Contrast:  ratio 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
-#> 1    0     1.00     0.000       1.00        1.0
-#> 2    1     1.91     0.249       1.42        2.4
+#> 1    0     1.00     0.000       1.00       1.00
+#> 2    1     1.91     0.238       1.44       2.38
 
 m3_logit <- standardize_glm(gained_weight ~ qsmk + sex + race + age + I(age^2) + 
                as.factor(education) + smokeintensity + I(smokeintensity^2) + 
@@ -763,22 +785,22 @@ m3_logit
 #> Tables: 
 #> Transform:  
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
-#> 1    0    0.569    0.0612      0.449      0.689
-#> 2    1    1.217    0.1154      0.991      1.443
+#> 1    0    0.569    0.0613      0.449      0.689
+#> 2    1    1.217    0.1104      1.001      1.433
 #> 
 #> Transform:  
 #> Reference level:  qsmk = 0 
 #> Contrast:  difference 
 #>   qsmk Estimate Std.Error lower.0.95 upper.0.95
-#> 1    0    0.000      0.00      0.000      0.000
-#> 2    1    0.648      0.13      0.393      0.903
+#> 1    0    0.000     0.000      0.000      0.000
+#> 2    1    0.648     0.125      0.404      0.892
 
 m3_logOR <- tidy(m3_logit) |> 
   subset(contrast == "difference" & qsmk == 1) 
   
 sprintf("%.2f (%.2f to %.2f)", exp(m3_logOR$Estimate), 
         exp(m3_logOR$lower.0.95), exp(m3_logOR$upper.0.95))
-#> [1] "1.91 (1.48 to 2.47)"
+#> [1] "1.91 (1.50 to 2.44)"
 ```
 
 In this case the estimate is identical, but the confidence interval is
@@ -786,17 +808,16 @@ slightly different because it is symmetric on the odds ratio scale in
 the first case, and symmetric on the log odds ratio scale in the
 transformed case.
 
-Gabriel, Erin E, Michael C Sachs, Torben Martinussen, Ingeborg
-Waernbaum, Els Goetghebeur, Stijn Vansteelandt, and Arvid Sjölander.
-2024. “Inverse Probability of Treatment Weighting with Generalized
-Linear Outcome Models for Doubly Robust Estimation.” *Statistics in
-Medicine* 43 (3): 534–47.
+Gabriel, Erin E, Michael C Sachs, Torben Martinussen, et al. 2024.
+“Inverse Probability of Treatment Weighting with Generalized Linear
+Outcome Models for Doubly Robust Estimation.” *Statistics in Medicine*
+43 (3): 534–47.
 
 Sjölander, Arvid. 2016. “Regression Standardization with the r Package
 stdReg.” *European Journal of Epidemiology* 31: 563–74.
 
-———. 2018. “Estimation of Causal Effect Measures with the r-Package
-stdReg.” *European Journal of Epidemiology* 33: 847–58.
+Sjölander, Arvid. 2018. “Estimation of Causal Effect Measures with the
+r-Package stdReg.” *European Journal of Epidemiology* 33: 847–58.
 
 Witte, Janine, and Vanessa Didelez. 2019. “Covariate Selection
 Strategies for Causal Inference: Classification and Comparison.”

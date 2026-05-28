@@ -186,6 +186,7 @@ estimation. *Statistics in Medicine*, **43**(3):534–547.
 ## Examples
 
 ``` r
+
 # doubly robust estimator
 # needs to correctly specify either the outcome model or the exposure model
 # for confounding

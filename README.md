@@ -73,27 +73,26 @@ x <- standardize_glm(
 )
 x
 #> Outcome formula: Y ~ X * Z
-#> <environment: 0x64d9875a9fd0>
 #> Outcome family: quasibinomial 
 #> Outcome link function: logit 
 #> Exposure:  X 
 #> 
 #> Tables: 
 #>   X Estimate Std.Error lower.0.95 upper.0.95
-#> 1 0    0.519    0.0633      0.395      0.643
-#> 2 1    0.391    0.0916      0.211      0.570
+#> 1 0    0.519    0.0622      0.397      0.641
+#> 2 1    0.391    0.0924      0.209      0.572
 #> 
 #> Reference level:  X = 0 
 #> Contrast:  difference 
 #>   X Estimate Std.Error lower.0.95 upper.0.95
 #> 1 0    0.000    0.0000      0.000    0.00000
-#> 2 1   -0.129    0.0667     -0.259    0.00222
+#> 2 1   -0.129    0.0639     -0.254   -0.00322
 #> 
 #> Reference level:  X = 0 
 #> Contrast:  ratio 
 #>   X Estimate Std.Error lower.0.95 upper.0.95
-#> 1 0    1.000     0.000      1.000       1.00
-#> 2 1    0.752     0.132      0.494       1.01
+#> 1 0    1.000     0.000        1.0          1
+#> 2 1    0.752     0.129        0.5          1
 plot(x)
 ```
 
@@ -101,13 +100,13 @@ plot(x)
 
 ``` r
 tidy(x)
-#>   X   Estimate  Std.Error lower.0.95  upper.0.95   contrast transform
-#> 1 0  0.5190639 0.06327946  0.3950384 0.643089345       none  identity
-#> 2 1  0.3905311 0.09158654  0.2110248 0.570037429       none  identity
-#> 3 0  0.0000000 0.00000000  0.0000000 0.000000000 difference  identity
-#> 4 1 -0.1285328 0.06671133 -0.2592846 0.002219041 difference  identity
-#> 5 0  1.0000000 0.00000000  1.0000000 1.000000000      ratio  identity
-#> 6 1  0.7523758 0.13178815  0.4940758 1.010675840      ratio  identity
+#>   X   Estimate  Std.Error lower.0.95   upper.0.95   contrast transform
+#> 1 0  0.5190639 0.06219793  0.3971582  0.640969573       none  identity
+#> 2 1  0.3905311 0.09236927  0.2094907  0.571571540       none  identity
+#> 3 0  0.0000000 0.00000000  0.0000000  0.000000000 difference  identity
+#> 4 1 -0.1285328 0.06393487 -0.2538428 -0.003222729 difference  identity
+#> 5 0  1.0000000 0.00000000  1.0000000  1.000000000      ratio  identity
+#> 6 1  0.7523758 0.12876862  0.4999940  1.004757658      ratio  identity
 ```
 
 For more detailed examples, see the vignette “Estimation of causal
@@ -135,6 +134,6 @@ citation("stdReg2")
 #>     pages = {66--74},
 #>     year = {2025},
 #>     publisher = {Elsevier},
-#>     doi = {https://doi.org/10.1016/j.annepidem.2025.04.002},
+#>     doi = {10.1016/j.annepidem.2025.04.002},
 #>   }
 ```

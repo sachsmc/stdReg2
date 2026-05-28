@@ -27,6 +27,7 @@ and mainly to make maintenance and updating easier.
 `stdReg2` is available on CRAN and can be installed with:
 
 ``` r
+
 install.packages("stdReg2")
 ```
 
@@ -34,6 +35,7 @@ You can install the development version of `stdReg2` from
 [GitHub](https://github.com/) with:
 
 ``` r
+
 # install.packages("remotes")
 # remotes::install_github("sachsmc/stdReg2")
 ```
@@ -45,6 +47,7 @@ standardization in a logistic regression model to obtain estimates of
 the causal risk difference and causal risk ratio:
 
 ``` r
+
 library(stdReg2)
 
 # basic example
@@ -93,6 +96,7 @@ plot(x)
 ![](reference/figures/README-example-1.png)
 
 ``` r
+
 tidy(x)
 #>   X   Estimate  Std.Error lower.0.95  upper.0.95   contrast transform
 #> 1 0  0.5190639 0.06327946  0.3950384 0.643089345       none  identity
@@ -109,6 +113,7 @@ effects using stdReg2”.
 ## Citation
 
 ``` r
+
 citation("stdReg2")
 #> To cite package 'stdReg2' in publications use:
 #> 

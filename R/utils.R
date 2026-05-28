@@ -24,7 +24,7 @@ sandwich <- function(fit, data, weights, t, fit.detail) {
     U[is.na(U)] <- 0
     ## Derive Fisher information matrix from asymptotic covariance matrix (MLE theory)
     ## NOTE: summary(fit)$cov.unscaled is weighted
-    I <- sandwich::meat(fit)#-solve(summary(fit)$cov.unscaled) / n
+    I <- solve(sandwich::bread(fit)) #-solve(summary(fit)$cov.unscaled) / n
   }
   if (inherits(x = fit, what = "ah")) {  ## from the ivtools package?
     #---meat---

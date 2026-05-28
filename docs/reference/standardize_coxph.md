@@ -271,6 +271,7 @@ Arvid Sjölander, Adam Brand, Michael Sachs
 
 ``` r
 
+
 require(survival)
 set.seed(7)
 n <- 300

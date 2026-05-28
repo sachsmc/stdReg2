@@ -239,6 +239,7 @@ Arvid Sjölander.
 ## Examples
 
 ``` r
+
 require(drgee)
 #> Loading required package: drgee
 
@@ -260,7 +261,7 @@ fit.std <- standardize_gee(
 )
 print(fit.std)
 #> Outcome formula: Y ~ X + Z + I(X^2)
-#> <environment: 0x568e42a7a2e8>
+#> <environment: 0x571162ccb368>
 #> Outcome family: 
 #> Outcome link function: 
 #> Exposure:  X 
